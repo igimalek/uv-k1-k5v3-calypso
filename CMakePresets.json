@@ -34,7 +34,6 @@
                 "ENABLE_SHOW_CHARGE_LEVEL": false,
                 "ENABLE_REVERSE_BAT_SYMBOL": true,
                 "ENABLE_NO_CODE_SCAN_TIMEOUT": true,
-                "ENABLE_AM_FIX__": false,
                 "ENABLE_SQUELCH_MORE_SENSITIVE": true,
                 "ENABLE_FASTER_CHANNEL_SCAN": true,
                 "ENABLE_RSSI_BAR": true,
@@ -74,11 +73,11 @@
             }
         },
         {
-            "name": "Custom",
+            "name": "Calypso",
             "inherits": "default",
             "cacheVariables": {
-                "EDITION_STRING": "Custom",
-                "TARGET": "f4hwn.custom"
+                "EDITION_STRING": "Calypso",
+                "TARGET": "f4hwn.calypso"
             }
         },
         {
@@ -195,8 +194,8 @@
     ],
     "buildPresets": [
         {
-            "name": "Custom",
-            "configurePreset": "Custom"
+            "name": "Calypso",
+            "configurePreset": "Calypso"
         },
         {
             "name": "Bandscope",
