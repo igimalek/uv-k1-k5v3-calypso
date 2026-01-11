@@ -1057,13 +1057,16 @@ void RADIO_SetModulation(ModulationMode_t modulation)
     BK4819_SetRegValue(afDacGainRegSpec, 0xF);
     BK4819_WriteRegister(BK4819_REG_3D, modulation == MODULATION_USB ? 0 : 0x2AAB);
     BK4819_SetRegValue(afcDisableRegSpec, modulation != MODULATION_FM);
-    // calypso
-    //RADIO_SetupAGC(modulation == MODULATION_AM, false);
-    RADIO_SetupAGC(false, false);
+    RADIO_SetupAGC(modulation == MODULATION_AM, false);
+
 }
 
 void RADIO_SetupAGC(bool listeningAM, bool disable)
-{
+{  
+    listeningAM = false;
+    disable = false;
+
+
     static uint8_t lastSettings;
     uint8_t newSettings = (listeningAM << 1) | disable;
     if(lastSettings == newSettings)
