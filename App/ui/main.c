@@ -1512,7 +1512,7 @@ void UI_DisplayMain(void)
     //#endif
 #endif
 
-    ST7565_BlitFullScreen();
+    ST7565_BlitFullScreen();  // calypso draw now
 }
 
 // ***************************************************************************

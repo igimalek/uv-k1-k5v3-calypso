@@ -349,4 +349,5 @@ void UI_DisplayPopup(const char *string)
 void UI_DisplayClear()
 {
     memset(gFrameBuffer, 0, sizeof(gFrameBuffer));
+    memset(gFrameBufferOld, 1, sizeof(gFrameBufferOld));
 }

@@ -24,6 +24,7 @@
 #include "driver/st7565.h"
 #include "driver/system.h"
 #include "misc.h"
+#include "string.h"
 
 #define SPIx SPI1
 
@@ -31,7 +32,9 @@
 #define PIN_A0 GPIO_MAKE_PIN(GPIOA, LL_GPIO_PIN_6)
 
 uint8_t gStatusLine[LCD_WIDTH];
+uint8_t gStatusLineOld[LCD_WIDTH];
 uint8_t gFrameBuffer[FRAME_LINES][LCD_WIDTH];
+uint8_t gFrameBufferOld[FRAME_LINES][LCD_WIDTH];
 
 static void SPI_Init()
 {
@@ -157,17 +160,31 @@ void ST7565_DrawLine(const unsigned int Column, const unsigned int Line, const u
 
     void ST7565_BlitFullScreen(void)
     {
-        ST7565_BlitScreen(8);
+        if(memcmp(gFrameBuffer, gFrameBufferOld, sizeof(gFrameBuffer)) != 0)
+        {
+          ST7565_BlitScreen(8);
+          memcpy(gFrameBufferOld, gFrameBuffer, sizeof(gFrameBuffer));
+        }
     }
 
     void ST7565_BlitLine(unsigned line)
     {
-        ST7565_BlitScreen(line + 1);
+        if(memcmp(gFrameBuffer, gFrameBufferOld, sizeof(gFrameBuffer)) != 0)
+        {
+          ST7565_BlitScreen(line + 1);
+          memcpy(gFrameBufferOld, gFrameBuffer, sizeof(gFrameBuffer));
+        }
+        
     }
 
     void ST7565_BlitStatusLine(void)
     {
-        ST7565_BlitScreen(0);
+        if(memcmp(gStatusLine, gStatusLineOld, sizeof(gStatusLine)) != 0)
+        {
+          ST7565_BlitScreen(0);
+          memcpy(gStatusLineOld, gStatusLine, sizeof(gStatusLine));
+        }
+        
     }
 #else
     void ST7565_BlitFullScreen(void)

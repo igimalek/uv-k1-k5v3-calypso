@@ -25,7 +25,9 @@
 #define FRAME_LINES 7
 
 extern uint8_t gStatusLine[LCD_WIDTH];
+extern uint8_t gStatusLineOld[LCD_WIDTH];
 extern uint8_t gFrameBuffer[FRAME_LINES][LCD_WIDTH];
+extern uint8_t gFrameBufferOld[FRAME_LINES][LCD_WIDTH];
 
 void ST7565_DrawLine(const unsigned int Column, const unsigned int Line, const uint8_t *pBitmap, const unsigned int Size);
 void ST7565_BlitFullScreen(void);

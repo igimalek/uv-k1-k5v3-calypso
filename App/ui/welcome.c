@@ -55,6 +55,7 @@ void UI_DisplayWelcome(void)
     char WelcomeString3[20];
 
     memset(gStatusLine,  0, sizeof(gStatusLine));
+    memset(gStatusLineOld,  1, sizeof(gStatusLineOld));
 
 #if defined(ENABLE_FEAT_F4HWN_CTR) || defined(ENABLE_FEAT_F4HWN_INV)
         ST7565_ContrastAndInv();
