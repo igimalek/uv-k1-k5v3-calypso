@@ -155,13 +155,6 @@ void UI_DisplayStatus()
             else
         #endif
             {
-                #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-                if(gEeprom.MENU_LOCK == true) {
-                    memcpy(line + x + 2, gFontRO, sizeof(gFontRO));
-                }
-                else
-                {
-                #endif
                     uint8_t dw = (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF) + (gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF) * 2;
                     if(dw == 1 || dw == 3) { // DWR - dual watch + respond
                         if(gDualWatchActive)
@@ -176,9 +169,6 @@ void UI_DisplayStatus()
                     {
                         memcpy(line + x + 2, gFontMO, sizeof(gFontMO));
                     }
-                #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-                }
-                #endif
             }
         }
         x += sizeof(gFontDWR) + 3;
@@ -218,16 +208,10 @@ void UI_DisplayStatus()
         size = sizeof(gFontKeyLock);
     }
     else if (gWasFKeyPressed) {
-        #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-        if (!gEeprom.MENU_LOCK) {
-            src = gFontF;
-            size = sizeof(gFontF);
-        }
-        #else
         src = gFontF;
-        size = sizeof(gFontF);
-        #endif
+        size = sizeof(gFontF);       
     }
+    
     #ifdef ENABLE_FEAT_F4HWN
         else if (gMute) {
             src = gFontMute;

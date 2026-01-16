@@ -88,19 +88,6 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
 {
     uint8_t Vfo = gEeprom.TX_VFO;
 
-#ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-    if(gEeprom.MENU_LOCK == true) {
-        if(Key == 2) { // Enable A/B only
-            gVfoConfigureMode     = VFO_CONFIGURE;
-            COMMON_SwitchVFOs();
-            if (beep)
-                gBeepToPlay = BEEP_1KHZ_60MS_OPTIONAL;
-        }
-
-        return; // prevent F function if MENU LOCK is true
-    }
-#endif
-
     if (gScreenToDisplay == DISPLAY_MENU) {
         gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
         return;
@@ -353,11 +340,6 @@ void channelMove(uint16_t Channel)
     //gRequestSaveVFO            = true;
     gVfoConfigureMode          = VFO_CONFIGURE_RELOAD;
 
-#ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-    gRemoveOffset = false;
-    gPowerHigh = false;
-#endif
-
     RADIO_ConfigureChannel(gEeprom.TX_VFO, gVfoConfigureMode);
     
     return;
@@ -586,18 +568,7 @@ static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
         ACTION_BackLight();
         return;
     }
-    #ifdef ENABLE_FEAT_F4HWN_GAME
-    else if(Key == 7)
-    {
-        #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-            if(gEeprom.MENU_LOCK == true) {
-                return;
-            }
-        #endif
-        APP_RunBreakout();
-        return;
-    }
-    #endif
+
 
     processFKeyFunction(Key, true);
 }
@@ -720,9 +691,6 @@ static void MAIN_Key_MENU(bool bKeyPressed, bool bKeyHeld)
                 return;
             }
 
-            #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-            if(gEeprom.MENU_LOCK == false) {
-            #endif
 
             gFlagRefreshSetting = true;
             gRequestDisplayScreen = DISPLAY_MENU;
@@ -730,9 +698,7 @@ static void MAIN_Key_MENU(bool bKeyPressed, bool bKeyHeld)
                 gAnotherVoiceID   = VOICE_ID_MENU;
             #endif
 
-            #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-            }
-            #endif
+
         }
         else {
             gRequestDisplayScreen = DISPLAY_MAIN;
@@ -742,12 +708,6 @@ static void MAIN_Key_MENU(bool bKeyPressed, bool bKeyHeld)
 
 static void MAIN_Key_STAR(bool bKeyPressed, bool bKeyHeld)
 {
-
-#ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-    if(gEeprom.MENU_LOCK == true) {
-        return; // prevent F function if MENU LOCK is true
-    }
-#endif
 
     if (gCurrentFunction == FUNCTION_TRANSMIT)
         return;
@@ -850,10 +810,6 @@ static void MAIN_Key_UP_DOWN(bool bKeyPressed, bool bKeyHeld, int8_t Direction)
     }
 #endif
 
-#ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-    gRemoveOffset = false;
-    gPowerHigh = false;
-#endif
 
     uint8_t Channel = gEeprom.ScreenChannel[gEeprom.TX_VFO];
 

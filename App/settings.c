@@ -52,13 +52,9 @@ void SETTINGS_InitEEPROM(void)
     #ifdef ENABLE_NOAA
         gEeprom.NOAA_AUTO_SCAN   = (Data[3] <  2) ? Data[3] : false;
     #endif
-    #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-        gEeprom.KEY_LOCK = (Data[4] & 0x01) != 0;
-        gEeprom.MENU_LOCK = (Data[4] & 0x02) != 0;
-        gEeprom.SET_KEY = ((Data[4] >> 2) & 0x0F) > 4 ? 0 : (Data[4] >> 2) & 0x0F;
-    #else
+
         gEeprom.KEY_LOCK             = (Data[4] <  2) ? Data[4] : false;
-    #endif
+    
     #ifdef ENABLE_VOX
         gEeprom.VOX_SWITCH       = (Data[5] <  2) ? Data[5] : false;
         gEeprom.VOX_LEVEL        = (Data[6] < 10) ? Data[6] : 1;
@@ -569,23 +565,7 @@ void SETTINGS_FactoryReset(bool bIsAll)
         #endif
     }
 
-    // Prevent reset to restart in RO mode...
-    #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-        {
-            uint8_t buf[0x10];
 
-            // Bloc 0x0E70..0x0E7F -> offset 0x004000
-            PY25Q16_ReadBuffer(0x004000, buf, sizeof(buf));
-
-            // bit 1 = MENU_LOCK => on le force à 0
-            buf[4] &= (uint8_t)~0x02;
-
-            PY25Q16_WriteBuffer(0x004000, buf, sizeof(buf), true);
-
-            // cohérence RAM
-            gEeprom.MENU_LOCK = 0;
-        }
-    #endif
 }
 
 #ifdef ENABLE_FMRADIO
@@ -662,11 +642,9 @@ void SETTINGS_SaveSettings(void)
         State[3] = false;
     #endif
 
-    #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-        State[4] = (gEeprom.KEY_LOCK ? 0x01 : 0) | (gEeprom.MENU_LOCK ? 0x02 :0) | ((gEeprom.SET_KEY & 0x0F) << 2);
-    #else
+ 
         State[4] = gEeprom.KEY_LOCK;
-    #endif
+   
 
     #ifdef ENABLE_VOX
         State[5] = gEeprom.VOX_SWITCH;
@@ -1096,9 +1074,7 @@ State[1] = 0
 #ifdef ENABLE_SPECTRUM
     | (1 << 5)
 #endif
-#ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-    | (1 << 6)
-#endif
+
 ;
     PY25Q16_WriteBuffer(0x00c000, State, sizeof(State), true);
 }

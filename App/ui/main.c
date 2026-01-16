@@ -871,9 +871,6 @@ void UI_DisplayMain(void)
             if (IS_MR_CHANNEL(gEeprom.ScreenChannel[vfo_num]))
             {   // it's a channel
 
-                #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-                    if(gEeprom.MENU_LOCK == false) {
-                #endif
                 uint8_t countList = 0;
                 uint8_t shiftList = 0;
 
@@ -913,11 +910,7 @@ void UI_DisplayMain(void)
                     memcpy(p_line0 + 127 - (1 * 6), BITMAP_ScanListE, sizeof(BITMAP_ScanListE));
                 }
 
-                #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-                {
-                    }
-                }
-                #endif
+
 
                 // compander symbol
 #ifndef ENABLE_BIG_FREQ
@@ -1229,17 +1222,8 @@ void UI_DisplayMain(void)
         if (vfoInfo->freq_config_RX.Frequency != vfoInfo->freq_config_TX.Frequency)
         {   // show the TX offset symbol
             int i = vfoInfo->TX_OFFSET_FREQUENCY_DIRECTION % 3;
-
-            #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-                const char dir_list[][2] = {"", "+", "-", "D"};
-
-                if(gTxVfo->TX_OFFSET_FREQUENCY_DIRECTION != 0 && gTxVfo->pTX == &gTxVfo->freq_config_RX && !vfoInfo->FrequencyReverse)
-                {
-                    i = 3;
-                }
-            #else
-                const char dir_list[][2] = {"", "+", "-"};
-            #endif
+            const char dir_list[][2] = {"", "+", "-"};
+           
 
 #if ENABLE_FEAT_F4HWN
         if (gSetting_set_gui)
@@ -1248,18 +1232,7 @@ void UI_DisplayMain(void)
         }
         else
         {
-            #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-            if(i == 3)
-            {
-                GUI_DisplaySmallest(dir_list[i], 43, line == 0 ? 17 : 49, false, true);
-            }
-            else
-            {
-            #endif
             UI_PrintStringSmallNormal(dir_list[i], LCD_WIDTH + 41, 0, line + 1);
-            #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-            }
-            #endif
         }
 #else
             UI_PrintStringSmallNormal(dir_list[i], LCD_WIDTH + 54, 0, line + 1);
@@ -1487,10 +1460,7 @@ void UI_DisplayMain(void)
     }
 
 #ifdef ENABLE_FEAT_F4HWN
-    //#ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-    //if(gEeprom.MENU_LOCK == false)
-    //{
-    //#endif
+
     if (isMainOnly() && !gDTMF_InputMode)
     {
         sprintf(String, "VFO %s", activeTxVFO ? "B" : "A");
@@ -1500,9 +1470,7 @@ void UI_DisplayMain(void)
             gFrameBuffer[6][i] ^= 0x7F;
         }
     }
-    //#ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-    //}
-    //#endif
+
 #endif
 
     ST7565_BlitFullScreen();  // calypso draw now

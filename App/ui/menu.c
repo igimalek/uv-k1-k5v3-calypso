@@ -154,9 +154,6 @@ const t_menu_item MenuList[] =
 #ifdef ENABLE_FEAT_F4HWN_VOL
     {"SetVol",      MENU_SET_VOL       },
 #endif
-#ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-    {"SetKey",      MENU_SET_KEY       },
-#endif
 #ifdef ENABLE_NOAA
     {"SetNWR",      MENU_NOAA_S    },
 #endif
@@ -405,16 +402,6 @@ const char gSubMenu_SCRAMBLER[][7] =
         };
     #endif
 
-    #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-        const char gSubMenu_SET_KEY[][9] =
-        {
-            "KEY_MENU",
-            "KEY_UP",
-            "KEY_DOWN",
-            "KEY_EXIT",
-            "KEY_STAR"
-        };
-    #endif
 #endif
 
 const t_sidefunction gSubMenu_SIDEFUNCTIONS[] =
@@ -457,10 +444,6 @@ const t_sidefunction gSubMenu_SIDEFUNCTIONS[] =
     //#if !defined(ENABLE_SPECTRUM) || !defined(ENABLE_FMRADIO)
     {"MUTE",            ACTION_OPT_MUTE},
     //#endif
-    #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-        {"POWER\nHIGH",    ACTION_OPT_POWER_HIGH},
-        {"REMOVE\nOFFSET",  ACTION_OPT_REMOVE_OFFSET},
-    #endif
 #endif
 };
 
@@ -1149,12 +1132,6 @@ void UI_DisplayMenu(void)
                     (gEeprom.VOLUME_GAIN << 4) |     // AF Rx Gain-2
                     (gEeprom.DAC_GAIN    << 0));     // AF DAC Gain (after Gain-1 and Gain-2)
                 break;
-        #endif
-
-        #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-            case MENU_SET_KEY:
-                strcpy(String, gSubMenu_SET_KEY[gSubMenuSelection]);
-                break;                
         #endif
 #endif
 

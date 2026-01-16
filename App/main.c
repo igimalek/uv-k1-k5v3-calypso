@@ -117,30 +117,7 @@ void Main(void)
 
     BOOT_Mode_t  BootMode = BOOT_GetMode();
 
-#ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-    if (BootMode == BOOT_MODE_RESCUE_OPS)
-    {
-        gEeprom.MENU_LOCK = !gEeprom.MENU_LOCK;
-        SETTINGS_SaveSettings();
-    }
 
-    /*
-    if(gEeprom.MENU_LOCK == true) // Force Main Only
-    {
-        gEeprom.DUAL_WATCH = 0;
-        gEeprom.CROSS_BAND_RX_TX = 0;
-        //gFlagReconfigureVfos = true;
-        //gUpdateStatus        = true;
-    }
-    */
-#endif
-
-#ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-    if (BootMode == BOOT_MODE_F_LOCK && gEeprom.MENU_LOCK == true)
-    {
-        BootMode = BOOT_MODE_NORMAL;
-    }
-#endif
 
     if (BootMode == BOOT_MODE_F_LOCK)
     {
@@ -158,9 +135,7 @@ void Main(void)
             #ifdef ENABLE_NOAA
                 gMenuCursor += 1; // move to hidden section, fix me if change... !!!
             #endif
-            #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-                gMenuCursor += 1; // move to hidden section, fix me if change... !!!
-            #endif
+  
             gSubMenuSelection = gSetting_F_LOCK;
         #endif
     }
