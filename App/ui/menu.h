@@ -101,9 +101,7 @@ enum
     MENU_VOL,
     MENU_BAT_TXT,
     MENU_AM,
-#ifdef ENABLE_AM_FIX__
-    MENU_AM_FIX,
-#endif
+
 #ifndef ENABLE_FEAT_F4HWN
     #ifdef ENABLE_NOAA
         MENU_NOAA_S,

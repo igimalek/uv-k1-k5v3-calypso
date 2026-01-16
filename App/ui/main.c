@@ -19,9 +19,6 @@
 
 #include "app/chFrScanner.h"
 #include "app/dtmf.h"
-#ifdef ENABLE_AM_FIX__
-    #include "am_fix.h"
-#endif
 #include "bitmaps.h"
 #include "board.h"
 #include "driver/bk4819.h"
@@ -321,9 +318,7 @@ void DisplayRSSIBar(const bool now)
 #ifdef ENABLE_FEAT_F4HWN
     int16_t rssi_dBm =
         BK4819_GetRSSI_dBm()
-#ifdef ENABLE_AM_FIX__
-        + ((gSetting_AM_fix && gRxVfo->Modulation == MODULATION_AM) ? AM_fix_get_gain_diff() : 0)
-#endif
+
         + dBmCorrTable[gRxVfo->Band];
 
     rssi_dBm = -rssi_dBm;
@@ -347,9 +342,7 @@ void DisplayRSSIBar(const bool now)
     const int16_t s0_dBm   = -gEeprom.S0_LEVEL;                  // S0 .. base level
     const int16_t rssi_dBm =
         BK4819_GetRSSI_dBm()
-#ifdef ENABLE_AM_FIX__
-        + ((gSetting_AM_fix && gRxVfo->Modulation == MODULATION_AM) ? AM_fix_get_gain_diff() : 0)
-#endif
+
         + dBmCorrTable[gRxVfo->Band];
 
     int s0_9 = gEeprom.S0_LEVEL - gEeprom.S9_LEVEL;
