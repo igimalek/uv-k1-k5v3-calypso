@@ -25,6 +25,7 @@
 KEY_Code_t gKeyReading0     = KEY_INVALID;
 KEY_Code_t gKeyReading1     = KEY_INVALID;
 uint16_t   gDebounceCounter = 0;
+
 bool       gWasFKeyPressed  = false;
 
 #define GPIOx               GPIOB

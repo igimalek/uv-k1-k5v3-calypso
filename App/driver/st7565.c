@@ -163,7 +163,7 @@ void ST7565_DrawLine(const unsigned int Column, const unsigned int Line, const u
         if(memcmp(gFrameBuffer, gFrameBufferOld, sizeof(gFrameBuffer)) != 0)
         {
           ST7565_BlitScreen(8);
-          memcpy(gFrameBufferOld, gFrameBuffer, sizeof(gFrameBuffer));
+          memcpy(gFrameBufferOld, gFrameBuffer, sizeof(gFrameBufferOld));
         }
     }
 
@@ -172,7 +172,7 @@ void ST7565_DrawLine(const unsigned int Column, const unsigned int Line, const u
         if(memcmp(gFrameBuffer, gFrameBufferOld, sizeof(gFrameBuffer)) != 0)
         {
           ST7565_BlitScreen(line + 1);
-          memcpy(gFrameBufferOld, gFrameBuffer, sizeof(gFrameBuffer));
+          memcpy(gFrameBufferOld, gFrameBuffer, sizeof(gFrameBufferOld));
         }
         
     }
@@ -182,7 +182,7 @@ void ST7565_DrawLine(const unsigned int Column, const unsigned int Line, const u
         if(memcmp(gStatusLine, gStatusLineOld, sizeof(gStatusLine)) != 0)
         {
           ST7565_BlitScreen(0);
-          memcpy(gStatusLineOld, gStatusLine, sizeof(gStatusLine));
+          memcpy(gStatusLineOld, gStatusLine, sizeof(gStatusLineOld));
         }
         
     }

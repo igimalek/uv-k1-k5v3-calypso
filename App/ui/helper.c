@@ -350,4 +350,6 @@ void UI_DisplayClear()
 {
     memset(gFrameBuffer, 0, sizeof(gFrameBuffer));
     memset(gFrameBufferOld, 1, sizeof(gFrameBufferOld));
+    memset(gStatusLine,  0, sizeof(gStatusLine));
+    memset(gStatusLineOld,  1, sizeof(gStatusLineOld));
 }

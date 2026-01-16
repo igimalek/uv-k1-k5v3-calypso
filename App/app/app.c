@@ -1357,6 +1357,10 @@ static void CheckKeys(void)
             return;
 
         gDebounceCounter = key_repeat_delay_10ms+1;
+
+        
+
+
     }
 }
 
