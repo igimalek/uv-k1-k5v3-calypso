@@ -883,6 +883,36 @@ void SETTINGS_SaveSettings(void)
 #endif
 }
 
+// ============================================================================
+// SETTINGS_SaveChannel - Save channel or VFO configuration to flash
+// ============================================================================
+// Writes 16 bytes of VFO/channel data to flash memory with attribute updates.
+// Handles both memory channels (MR) and frequency channels (VFO).
+//
+// Parameters:
+//   Channel: Channel number (0-199=MR, 200+=VFO)
+//   VFO:     VFO index (0 or 1) for frequency channels
+//   pVFO:    Pointer to VFO_Info_t structure with frequency, codes, modulation
+//   Mode:    Save mode (0=normal, 2+=copy VFO to channel, affects name handling)
+//
+// Dependencies:
+//   - PY25Q16_WriteBuffer() - writes 16 bytes to flash
+//   - SETTINGS_UpdateChannel() - updates band/scanlist attributes
+//   - SETTINGS_SaveChannelName() - saves channel name (conditional)
+//   - IS_FREQ_CHANNEL(), IS_MR_CHANNEL() - channel type identification
+//   - Various ENABLE_* macros for conditional compilation
+//
+// Timing:
+//   - Flash write: ~5-10ms (16 bytes)
+//   - Attribute update: ~1-10ms
+//   - Name save: ~1-5ms (optional)
+//   - Total: ~7-25ms (blocking)
+//
+// Notes:
+//   - Stores frequency, TX offset, codes (CTCSS/CDCSS), modulation type
+//   - Updates sector cache to avoid redundant erases
+//   - Different offsets for MR channels (0x0000+) vs VFO (0x1000+)
+//
 void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, uint8_t Mode)
 {
 #ifdef ENABLE_NOAA
@@ -930,7 +960,7 @@ void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, 
 #endif
         ;
         State -> _8[6] =  pVFO->STEP_SETTING;
-#ifdef ENABLE_FEAT_F4HWN__ // calypso
+#ifdef ENABLE_FEAT_F4HWN__ 
         State -> _8[7] =  0;
 #else
         State -> _8[7] =  pVFO->SCRAMBLING_TYPE;
@@ -954,12 +984,51 @@ void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, 
 
 }
 
+// ============================================================================
+// SETTINGS_SaveBatteryCalibration - Save battery ADC calibration values
+// ============================================================================
+// Writes 12 bytes (3 x uint16_t) of battery calibration data to flash.
+// Used for accurate battery level reporting.
+//
+// Parameters:
+//   batteryCalibration: Pointer to 12-byte calibration data (3 ADC values)
+//
+// Dependencies:
+//   - PY25Q16_WriteBuffer() - writes to flash at 0x010140
+//
+// Timing:
+//   - Flash write: ~1-5ms (12 bytes)
+//
+// Storage:
+//   - Address: 0x010000 + 0x140 = 0x010140
+//
 void SETTINGS_SaveBatteryCalibration(const uint16_t * batteryCalibration)
 {
     // 0x1F40
     PY25Q16_WriteBuffer(0x010000 + 0x140, batteryCalibration, 12, false);
 }
 
+// ============================================================================
+// SETTINGS_SaveChannelName - Save channel name to flash (10 char max)
+// ============================================================================
+// Writes up to 10 characters of null-terminated name to 16-byte block.
+// Rest of block is zero-padded.
+//
+// Parameters:
+//   channel: Channel number (0-199)
+//   name:    Null-terminated string (max 10 characters)
+//
+// Dependencies:
+//   - PY25Q16_WriteBuffer() - writes 16 bytes to flash
+//   - strlen(), memcpy() - string handling
+//
+// Timing:
+//   - Flash write: ~1-5ms (16 bytes)
+//
+// Storage:
+//   - Address: 0x00E000 + (channel * 16)
+//   - Each channel gets 16 bytes for name + padding
+//
 void SETTINGS_SaveChannelName(uint8_t channel, const char * name)
 {
     uint16_t offset = channel * 16;
@@ -969,6 +1038,38 @@ void SETTINGS_SaveChannelName(uint8_t channel, const char * name)
     PY25Q16_WriteBuffer(0x00e000 + offset, buf, 0x10, false);
 }
 
+// ============================================================================
+// SETTINGS_UpdateChannel - Update channel attributes (band, scanlists, compander)
+// ============================================================================
+// Reads 224-byte attributes block, updates one channel's attributes, writes back.
+// Attributes include band, scan list participation, compander settings.
+// Uses caching to avoid writing if no changes detected.
+//
+// Parameters:
+//   channel: Channel number (0-199)
+//   pVFO:    Pointer to VFO with attribute values
+//   keep:    true=preserve/update attributes, false=reset to defaults
+//   check:   true=skip write if no change (optimization), false=always write
+//   save:    true=write to flash, false=update cache only
+//
+// Dependencies:
+//   - PY25Q16_ReadBuffer() - reads 224-byte attribute block
+//   - PY25Q16_WriteBuffer() - writes attributes back
+//   - gMR_ChannelAttributes[] - static cache for attributes
+//   - ENABLE_NOAA, ENABLE_FEAT_F4HWN - conditional behavior
+//   - SETTINGS_SaveChannelName() - clear name if not keeping attributes
+//
+// Timing:
+//   - Read: ~1ms (224 bytes)
+//   - Write: ~5-10ms (224 bytes, if needed)
+//   - Can skip write if check=true and no changes (~saves 10ms)
+//   - Total: ~1-11ms (blocking)
+//
+// Notes:
+//   - Attribute block at 0x002000: one byte per channel (0-223)
+//   - Attributes packed: band(3 bits)|compander(2)|scanlist1(1)|scanlist2(1)|scanlist3(1)
+//   - Optimization: memcmp() detects unchanged attributes to skip write
+//
 void SETTINGS_UpdateChannel(uint8_t channel, const VFO_Info_t *pVFO, bool keep, bool check, bool save)
 {
 #ifdef ENABLE_NOAA
@@ -1021,6 +1122,42 @@ void SETTINGS_UpdateChannel(uint8_t channel, const VFO_Info_t *pVFO, bool keep, 
     }
 }
 
+// ============================================================================
+// SETTINGS_WriteBuildOptions - Write firmware capability flags to flash
+// ============================================================================
+// Encodes compile-time ENABLE_* defines into 8 bytes, writes to flash.
+// Used to detect firmware features at runtime (e.g., for compatibility).
+//
+// Byte 0 bits:
+//   0: ENABLE_FMRADIO
+//   1: ENABLE_NOAA
+//   2: ENABLE_VOICE
+//   3: ENABLE_VOX
+//   4: ENABLE_ALARM
+//   5: ENABLE_TX1750
+//   6: ENABLE_PWRON_PASSWORD
+//   7: ENABLE_DTMF_CALLING
+//
+// Byte 1 bits:
+//   0: ENABLE_FLASHLIGHT
+//   1: ENABLE_WIDE_RX
+//   2: ENABLE_BYP_RAW_DEMODULATORS
+//   3: ENABLE_FEAT_F4HWN_GAME
+//   5: ENABLE_SPECTRUM
+//
+// Dependencies:
+//   - PY25Q16_ReadBuffer() - read existing flags (if ENABLE_FEAT_F4HWN)
+//   - PY25Q16_WriteBuffer() - writes 8 bytes to flash
+//   - Various ENABLE_* macros from build configuration
+//
+// Timing:
+//   - Read: ~1ms (if ENABLE_FEAT_F4HWN)
+//   - Write: ~1-5ms (8 bytes)
+//   - Total: ~1-6ms (blocking)
+//
+// Storage:
+//   - Address: 0x00C000 (start of feature flags area)
+//
 void SETTINGS_WriteBuildOptions(void)
 {
     uint8_t State[8];
@@ -1080,6 +1217,33 @@ State[1] = 0
 }
 
 #ifdef ENABLE_FEAT_F4HWN_RESUME_STATE
+// ============================================================================
+// SETTINGS_WriteCurrentState - Save radio resume state to flash
+// ============================================================================
+// Reads 16-byte state block, updates byte 15 with resume information, writes back.
+// Allows radio to resume to last VFO/channel and scan list on power-on.
+//
+// Dependencies:
+//   - PY25Q16_ReadBuffer() - reads 16 bytes from flash
+//   - PY25Q16_WriteBuffer() - writes 16 bytes to flash
+//   - gEeprom.VFO_OPEN - last open VFO (0 or 1)
+//   - gEeprom.CURRENT_STATE - last state (3 bits)
+//   - gEeprom.SCAN_LIST_DEFAULT - last scan list (3 bits)
+//   - ENABLE_FEAT_F4HWN_RESUME_STATE - conditional compilation
+//
+// Timing:
+//   - Read: ~1ms (16 bytes)
+//   - Write: ~1-5ms (16 bytes, append mode)
+//   - Total: ~2-6ms (blocking)
+//
+// Storage:
+//   - Address: 0x004000 (16-byte state block)
+//   - Byte 15 contains: VFO_OPEN(1)|CURRENT_STATE(3)|SCAN_LIST_DEFAULT(3)
+//
+// Notes:
+//   - Only compiled if ENABLE_FEAT_F4HWN_RESUME_STATE is enabled
+//   - Saves last selection for quick resume on boot
+//
     void SETTINGS_WriteCurrentState(void)
     {
         uint8_t State[0x10];

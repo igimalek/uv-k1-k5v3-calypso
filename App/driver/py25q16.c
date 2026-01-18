@@ -249,6 +249,38 @@ void PY25Q16_ReadBuffer(uint32_t Address, void *pBuffer, uint32_t Size)
     CS_Release();
 }
 
+// ============================================================================
+// PY25Q16_WriteBuffer - Flash write with sector caching and wear leveling
+// ============================================================================
+// Writes data to flash with intelligent sector caching to minimize erase cycles.
+// Compares new data with cached sector; only erases if data differs from 0xFF.
+// Optimized for write operations: avoids unnecessary erases using memcmp().
+//
+// Parameters:
+//   Address: 24-bit flash address (0x000000 - 0x1FFFFF)
+//   pBuffer: Pointer to source data
+//   Size:    Number of bytes to write (any size; handles sector boundaries)
+//   Append:  true=partial sector updates; false=full sector write
+//
+// Dependencies:
+//   - PY25Q16_ReadBuffer() - reads sector into cache
+//   - SectorErase() - erases 4KB sectors
+//   - SectorProgram() - programs up to 4KB
+//   - memcmp(), memcpy(), memset() - data manipulation
+//   - Static cache: SectorCache[4096], SectorCacheAddr
+//
+// Timing:
+//   - No change: ~1ms (cache hit, memcmp detects no change)
+//   - Program only: ~5-50ms (partial write, no erase)
+//   - Erase + program: ~50-150ms (must erase sector)
+//   - Multiple sectors: Add ~50-150ms per sector
+//   - Blocking; CPU waits for flash completion
+//
+// Notes:
+//   - Flash can only change bits from 1 to 0, not 0 to 1
+//   - Erase sets all bits to 1 (0xFF) in 4KB sectors
+//   - Sector size: 0x1000 (4096 bytes)
+//
 void PY25Q16_WriteBuffer(uint32_t Address, const void *pBuffer, uint32_t Size, bool Append)
 {
 #ifdef DEBUG
@@ -315,6 +347,30 @@ void PY25Q16_WriteBuffer(uint32_t Address, const void *pBuffer, uint32_t Size, b
     } // while
 }
 
+// ============================================================================
+// PY25Q16_SectorErase - Public sector erase with cache invalidation
+// ============================================================================
+// Erases a 4KB sector and invalidates the sector cache if affected.
+// Used for explicit sector erasure when needed.
+//
+// Parameters:
+//   Address: Any address within the 4KB sector (automatically aligned)
+//
+// Dependencies:
+//   - SectorErase() - low-level SPI erase command
+//   - SectorCacheAddr, SectorCache[] - static cache for optimization
+//   - SECTOR_SIZE (0x1000) - 4KB sector boundary
+//
+// Timing:
+//   - Erase operation: ~50-100ms
+//   - Cache invalidation: negligible
+//   - Total: ~50-100ms (blocking)
+//
+// Notes:
+//   - Sets all bits to 1 (0xFF) in the 4KB sector
+//   - Address is automatically aligned down to sector boundary
+//   - Cache is flushed to prevent stale data
+//
 void PY25Q16_SectorErase(uint32_t Address)
 {
     Address -= (Address % SECTOR_SIZE);
@@ -325,6 +381,20 @@ void PY25Q16_SectorErase(uint32_t Address)
     }
 }
 
+// ============================================================================
+// WriteAddr - Transmit 24-bit address via SPI (big-endian)
+// ============================================================================
+// Sends 3-byte address to flash chip per SPI flash protocol (MSB first).
+//
+// Parameters:
+//   Addr: 24-bit address (0x000000 - 0x1FFFFF)
+//
+// Dependencies:
+//   - SPI_WriteByte() - low-level SPI transmission
+//
+// Timing:
+//   - 3 bytes @ ~1us each ≈ 3-5us total
+//
 static inline void WriteAddr(uint32_t Addr)
 {
     SPI_WriteByte(0xff & (Addr >> 16));
@@ -332,6 +402,27 @@ static inline void WriteAddr(uint32_t Addr)
     SPI_WriteByte(0xff & Addr);
 }
 
+// ============================================================================
+// ReadStatusReg - Read flash status register (0, 1, or 2)
+// ============================================================================
+// Reads one of three status registers to check flash state.
+// Register 0: WIP (bit 0), WEL (bit 1), BP[2:0] (bits 4-2), etc.
+// Register 1-2: Reserved/manufacturer specific
+//
+// Parameters:
+//   Which: Register index (0=Status 1, 1=Status 2, 2=Status 3)
+//
+// Dependencies:
+//   - SPI_WriteByte() - SPI communication
+//   - CS_Assert(), CS_Release() - chip select control
+//   - Commands: 0x05, 0x35, 0x15 (SPI flash standard)
+//
+// Timing:
+//   - Read cycle: ~5-10us
+//
+// Returns:
+//   Status byte value (0 if invalid register)
+//
 static uint8_t ReadStatusReg(uint32_t Which)
 {
     uint8_t Cmd;
@@ -358,6 +449,27 @@ static uint8_t ReadStatusReg(uint32_t Which)
     return Value;
 }
 
+// ============================================================================
+// WaitWIP - Poll status register until write operation completes
+// ============================================================================
+// Blocks until WIP (Write In Progress) bit clears in status register 0.
+// Used after erase, write enable, or program operations.
+//
+// Dependencies:
+//   - ReadStatusReg(0) - status register polling
+//   - SYSTICK_DelayUs() - microsecond delay between polls
+//
+// Timing:
+//   - Typical erase: 50-100ms
+//   - Typical program: 1-5ms
+//   - Poll interval: 10us between checks
+//   - Timeout: ~10 seconds (1,000,000 iterations x 10us)
+//   - Blocking; CPU busy-waits
+//
+// Notes:
+//   - Critical for data integrity; must wait for flash operations
+//   - Long timeout protects against flash command failures
+//
 static void WaitWIP()
 {
     for (int i = 0; i < 1000000; i++)
@@ -372,6 +484,24 @@ static void WaitWIP()
     }
 }
 
+// ============================================================================
+// WriteEnable - Set Write Enable Latch (WEL) bit in status register
+// ============================================================================
+// Sends WREN command to enable write/erase operations.
+// Must be called before any program or erase command.
+//
+// Dependencies:
+//   - SPI_WriteByte() - command transmission
+//   - CS_Assert(), CS_Release() - chip select
+//   - Command: 0x06 (SPI flash standard WREN)
+//
+// Timing:
+//   - ~5us
+//
+// Notes:
+//   - WEL bit automatically clears after write/erase completes
+//   - Must be called for each write/erase operation
+//
 static void WriteEnable()
 {
     CS_Assert();
@@ -379,6 +509,33 @@ static void WriteEnable()
     CS_Release();
 }
 
+// ============================================================================
+// SectorErase - Erase a 4KB sector (low-level SPI command)
+// ============================================================================
+// Sends SE (Sector Erase) command 0x20 to flash chip.
+// Erases entire 4KB sector, setting all bits to 1 (0xFF).
+//
+// Parameters:
+//   Addr: Starting address of 4KB sector
+//
+// Dependencies:
+//   - WriteEnable() - must enable writes first
+//   - WaitWIP() - must wait for previous op to complete and for erase to finish
+//   - WriteAddr() - address transmission
+//   - SPI_WriteByte(), CS_Assert(), CS_Release() - SPI control
+//   - Command: 0x20 (SPI flash standard SE)
+//
+// Timing:
+//   - Pre-erase setup: WriteEnable() ~5us + WaitWIP() ~1us
+//   - Erase command: ~10us
+//   - Erase operation: ~50-100ms (longest part)
+//   - Post-erase: WaitWIP() ~50-100ms
+//   - Total: ~100-200ms (blocking)
+//
+// Notes:
+//   - Highest power consumption during erase
+//   - Must wait for completion before next operation
+//
 static void SectorErase(uint32_t Addr)
 {
 #ifdef DEBUG
@@ -395,6 +552,30 @@ static void SectorErase(uint32_t Addr)
     WaitWIP();
 }
 
+// ============================================================================
+// SectorProgram - Program up to 4KB of data, handling page boundaries
+// ============================================================================
+// Writes data to flash by programming one 256-byte page at a time.
+// Automatically handles crossing page (256B) boundaries.
+//
+// Parameters:
+//   Addr: Starting address within erased sector
+//   Buf:  Pointer to source data
+//   Size: Bytes to program (1-4096)
+//
+// Dependencies:
+//   - PageProgram() - programs individual 256-byte pages
+//   - PAGE_SIZE (0x100) constant - 256-byte page size
+//
+// Timing:
+//   - Per 256-byte page: ~1-5ms
+//   - 4KB sector (16 pages): ~16-80ms total
+//   - Blocking; waits for each page completion
+//
+// Notes:
+//   - Flash must be erased before programming (bits only go 1→0)
+//   - Page programming is required; cannot program arbitrary sizes
+//
 static void SectorProgram(uint32_t Addr, const uint8_t *Buf, uint32_t Size)
 {
     uint32_t Size1 = PAGE_SIZE - (Addr % PAGE_SIZE);
@@ -416,6 +597,39 @@ static void SectorProgram(uint32_t Addr, const uint8_t *Buf, uint32_t Size)
     }
 }
 
+// ============================================================================
+// PageProgram - Program a single 256-byte page (low-level SPI command)
+// ============================================================================
+// Sends PP (Page Program) command 0x02 to write up to 256 bytes.
+// Programs within single page boundary; larger data requires SectorProgram().
+//
+// Parameters:
+//   Addr: Address within page (will wrap if exceeds page boundary)
+//   Buf:  Source data pointer
+//   Size: Bytes to program (1-256; wraps at page boundary)
+//
+// Dependencies:
+//   - WriteEnable() - enable writes before programming
+//   - WaitWIP() - wait for completion after programming
+//   - WriteAddr() - send 24-bit address
+//   - SPI_WriteBuf() or SPI_WriteByte() - data transmission
+//   - CS_Assert(), CS_Release() - chip select control
+//   - Command: 0x02 (SPI flash standard PP)
+//
+// Timing:
+//   - Setup: WriteEnable() ~5us
+//   - Command: ~10us
+//   - Data transmission: ~256us (256 bytes @ ~1us each)
+//   - Programming: ~1-5ms (typical 4ms)
+//   - Post-program: WaitWIP() ~5ms
+//   - Total: ~5-10ms (blocking)
+//
+// Notes:
+//   - Uses DMA for data if Size >= 16 bytes (SPI_WriteBuf)
+//   - Uses single-byte SPI writes if Size < 16 bytes
+//   - Wraps within 256-byte page if address+size exceeds boundary
+//   - Flash must be erased before programming
+//
 static void PageProgram(uint32_t Addr, const uint8_t *Buf, uint32_t Size)
 {
 #ifdef DEBUG
