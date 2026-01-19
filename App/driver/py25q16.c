@@ -52,6 +52,30 @@ static inline void CS_Release()
     GPIO_SetOutputPin(CS_PIN);
 }
 
+// ============================================================================
+// SPI_Init - Initialize SPI peripheral and DMA for flash communication
+// ============================================================================
+// Configures SPI2 for master mode with DMA support for efficient data transfer.
+// Sets up GPIO pins for SPI signals and enables DMA channels for read/write.
+//
+// Dependencies:
+//   - LL_APB1_GRP1_EnableClock() - enable SPI2 clock
+//   - LL_AHB1_GRP1_EnableClock() - enable DMA1 clock
+//   - LL_IOP_GRP1_EnableClock() - enable GPIOA clock
+//   - LL_GPIO_Init() - configure GPIO pins
+//   - LL_SYSCFG_SetDMARemap() - map DMA channels to SPI
+//   - NVIC_SetPriority(), NVIC_EnableIRQ() - enable DMA interrupts
+//   - LL_SPI_Init() - configure SPI parameters
+//
+// Timing:
+//   - Initialization: ~1ms (clock enables and register setup)
+//
+// Notes:
+//   - SPI mode: Full-duplex, CPOL=1, CPHA=1 (mode 3)
+//   - Baud rate: Prescaler DIV2 (high speed for flash)
+//   - DMA channels: CH4 for RX, CH5 for TX
+//   - Interrupts: DMA transfer complete on CH4
+//
 static void SPI_Init()
 {
     LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_SPI2);
@@ -102,6 +126,35 @@ static void SPI_Init()
     LL_SPI_Enable(SPIx);
 }
 
+// ============================================================================
+// SPI_ReadBuf - Read data from SPI using DMA (bulk transfer)
+// ============================================================================
+// Performs efficient bulk read from SPI peripheral using DMA.
+// Configures DMA channels for peripheral-to-memory transfer.
+// Uses dummy writes to BlackHole buffer to clock out data.
+//
+// Parameters:
+//   Buf:  Destination buffer for received data
+//   Size: Number of bytes to read
+//
+// Dependencies:
+//   - DMA1 channels 4 (RX) and 5 (TX)
+//   - SPI2 peripheral
+//   - TC_Flag (volatile bool) - set by DMA ISR on completion
+//   - BlackHole[1] - dummy buffer for TX
+//
+// Timing:
+//   - Setup: ~10-20us (DMA config and SPI enable)
+//   - Transfer: Size bytes @ SPI baud rate (~1us per byte)
+//   - Wait: Blocking until DMA complete (TC_Flag set in ISR)
+//   - Total: ~Size us + overhead (blocking)
+//
+// Notes:
+//   - TC_Flag is set to false before transfer, polled in while loop
+//   - DMA ISR (DMA1_Channel4_5_6_7_IRQHandler) sets TC_Flag = true on completion
+//   - While (!TC_Flag) loop waits for transfer to finish
+//   - Full-duplex: RX from SPI, TX dummy data
+//
 static void SPI_ReadBuf(uint8_t *Buf, uint32_t Size)
 {
     LL_SPI_Disable(SPIx);
@@ -151,6 +204,35 @@ static void SPI_ReadBuf(uint8_t *Buf, uint32_t Size)
         ;
 }
 
+// ============================================================================
+// SPI_WriteBuf - Write data to SPI using DMA (bulk transfer)
+// ============================================================================
+// Performs efficient bulk write to SPI peripheral using DMA.
+// Configures DMA channels for memory-to-peripheral transfer.
+// Receives dummy data into BlackHole buffer during transmission.
+//
+// Parameters:
+//   Buf:  Source buffer containing data to send
+//   Size: Number of bytes to write
+//
+// Dependencies:
+//   - DMA1 channels 4 (RX) and 5 (TX)
+//   - SPI2 peripheral
+//   - TC_Flag (volatile bool) - set by DMA ISR on completion
+//   - BlackHole[1] - dummy buffer for RX
+//
+// Timing:
+//   - Setup: ~10-20us (DMA config and SPI enable)
+//   - Transfer: Size bytes @ SPI baud rate (~1us per byte)
+//   - Wait: Blocking until DMA complete (TC_Flag set in ISR)
+//   - Total: ~Size us + overhead (blocking)
+//
+// Notes:
+//   - TC_Flag is set to false before transfer, polled in while loop
+//   - DMA ISR (DMA1_Channel4_5_6_7_IRQHandler) sets TC_Flag = true on completion
+//   - While (!TC_Flag) loop waits for transfer to finish
+//   - Full-duplex: TX to SPI, RX dummy data
+//
 static void SPI_WriteBuf(const uint8_t *Buf, uint32_t Size)
 {
     LL_SPI_Disable(SPIx);
@@ -200,6 +282,35 @@ static void SPI_WriteBuf(const uint8_t *Buf, uint32_t Size)
         ;
 }
 
+// ============================================================================
+// SPI_WriteByte - Transmit and receive a single byte via SPI (polling)
+// ============================================================================
+// Sends one byte to SPI and receives one byte in return.
+// Uses polling for TXE (transmit buffer empty) and RXNE (receive buffer not empty).
+//
+// Parameters:
+//   Value: Byte to transmit
+//
+// Returns:
+//   Received byte from SPI
+//
+// Dependencies:
+//   - SPI2 peripheral
+//   - LL_SPI_IsActiveFlag_TXE() - check transmit ready
+//   - LL_SPI_IsActiveFlag_RXNE() - check receive ready
+//   - LL_SPI_TransmitData8(), LL_SPI_ReceiveData8() - data transfer
+//
+// Timing:
+//   - Wait TXE: ~1-5us (depends on SPI speed)
+//   - Transmit: immediate
+//   - Wait RXNE: ~1-5us
+//   - Receive: immediate
+//   - Total: ~2-10us (blocking)
+//
+// Notes:
+//   - Blocking function; waits for SPI hardware
+//   - Used for small transfers or when DMA overhead not justified
+//
 static uint8_t SPI_WriteByte(uint8_t Value)
 {
     while (!LL_SPI_IsActiveFlag_TXE(SPIx))
@@ -637,7 +748,7 @@ static void PageProgram(uint32_t Addr, const uint8_t *Buf, uint32_t Size)
 #endif
 
     WriteEnable();
-    // WaitWIP();
+    // WaitWIP();  // calypso marker
 
     CS_Assert();
 
@@ -661,6 +772,29 @@ static void PageProgram(uint32_t Addr, const uint8_t *Buf, uint32_t Size)
     WaitWIP();
 }
 
+// ============================================================================
+// DMA1_Channel4_5_6_7_IRQHandler - DMA transfer complete interrupt handler
+// ============================================================================
+// Handles DMA transfer completion for SPI read/write operations.
+// Sets TC_Flag to true when DMA channel 4 (RX) finishes transfer.
+// Ensures SPI FIFOs are empty before signaling completion.
+//
+// Dependencies:
+//   - DMA1 channel 4 (SPI RX)
+//   - SPI2 peripheral
+//   - TC_Flag (volatile bool) - global flag for transfer completion
+//
+// Timing:
+//   - ISR entry: immediate on DMA TC
+//   - FIFO checks: ~1-5us
+//   - Flag set: immediate
+//   - Total: ~5-10us
+//
+// Notes:
+//   - TC_Flag is initialized to false in SPI_ReadBuf/SPI_WriteBuf
+//   - While (!TC_Flag) loop in those functions waits for this flag
+//   - Ensures all SPI data is processed before signaling done
+//
 void DMA1_Channel4_5_6_7_IRQHandler()
 {
     if (LL_DMA_IsActiveFlag_TC4(DMA1) && LL_DMA_IsEnabledIT_TC(DMA1, CHANNEL_RD))
