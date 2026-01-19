@@ -162,6 +162,7 @@ static void SPI_ReadBuf(uint8_t *Buf, uint32_t Size)
     LL_DMA_DisableChannel(DMA1, CHANNEL_WR);
 
     LL_DMA_ClearFlag_GI4(DMA1);
+    LL_DMA_ClearFlag_GI5(DMA1); // calypso marker
 
     LL_DMA_ConfigTransfer(DMA1, CHANNEL_RD,                 //
                           LL_DMA_DIRECTION_PERIPH_TO_MEMORY //
@@ -199,9 +200,23 @@ static void SPI_ReadBuf(uint8_t *Buf, uint32_t Size)
     LL_SPI_EnableDMAReq_RX(SPIx);
     LL_SPI_Enable(SPIx);
     LL_SPI_EnableDMAReq_TX(SPIx);
-
-    while (!TC_Flag)
+    
+    // calypso marker
+    // Add safety timeout to prevent infinite hang
+    uint32_t timeout = 1000000; // ~1 second safety timeout
+    while (!TC_Flag && timeout--)
         ;
+
+    // calypso marker
+    if (!TC_Flag) {
+        // Timeout occurred - disable everything to prevent further issues
+        LL_SPI_Disable(SPIx);
+        LL_DMA_DisableChannel(DMA1, CHANNEL_RD);
+        LL_DMA_DisableChannel(DMA1, CHANNEL_WR);
+#ifdef DEBUG
+        printf("ERROR: SPI_ReadBuf timeout - DMA did not complete\n");
+#endif
+    }
 }
 
 // ============================================================================
@@ -240,6 +255,7 @@ static void SPI_WriteBuf(const uint8_t *Buf, uint32_t Size)
     LL_DMA_DisableChannel(DMA1, CHANNEL_WR);
 
     LL_DMA_ClearFlag_GI4(DMA1);
+    LL_DMA_ClearFlag_GI5(DMA1); // calypso marker
 
     LL_DMA_ConfigTransfer(DMA1, CHANNEL_RD,                 //
                           LL_DMA_DIRECTION_PERIPH_TO_MEMORY //
@@ -278,8 +294,22 @@ static void SPI_WriteBuf(const uint8_t *Buf, uint32_t Size)
     LL_SPI_Enable(SPIx);
     LL_SPI_EnableDMAReq_TX(SPIx);
 
-    while (!TC_Flag)
+    // calypso marker
+    // Add safety timeout to prevent infinite hang
+    uint32_t timeout = 1000000; // ~1 second safety timeout
+    while (!TC_Flag && timeout--)
         ;
+    
+    // calypso marker    
+    if (!TC_Flag) {
+        // Timeout occurred - disable everything to prevent further issues
+        LL_SPI_Disable(SPIx);
+        LL_DMA_DisableChannel(DMA1, CHANNEL_RD);
+        LL_DMA_DisableChannel(DMA1, CHANNEL_WR);
+#ifdef DEBUG
+        printf("ERROR: SPI_WriteBuf timeout - DMA did not complete\n");
+#endif
+    }
 }
 
 // ============================================================================
@@ -652,8 +682,9 @@ static void SectorErase(uint32_t Addr)
 #ifdef DEBUG
     printf("spi flash sector erase: %06x\n", Addr);
 #endif
+    WaitWIP();  // calypso marker CRITICAL: Wait for any previous operation to complete before issuing WriteEnable
     WriteEnable();
-    WaitWIP();
+    //WaitWIP();
 
     CS_Assert();
     SPI_WriteByte(0x20);
@@ -747,8 +778,8 @@ static void PageProgram(uint32_t Addr, const uint8_t *Buf, uint32_t Size)
     printf("spi flash page program: %06x %ld\n", Addr, Size);
 #endif
 
+    WaitWIP();  // calypso marker CRITICAL: Wait for any previous operation to complete before issuing WriteEnable
     WriteEnable();
-    // WaitWIP();  // calypso marker
 
     CS_Assert();
 
