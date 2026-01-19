@@ -682,8 +682,9 @@ static void SectorErase(uint32_t Addr)
 #ifdef DEBUG
     printf("spi flash sector erase: %06x\n", Addr);
 #endif
+    WaitWIP();  // calypso marker CRITICAL: Wait for any previous operation to complete before issuing WriteEnable
     WriteEnable();
-    WaitWIP();
+    //WaitWIP();
 
     CS_Assert();
     SPI_WriteByte(0x20);
