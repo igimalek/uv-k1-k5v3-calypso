@@ -1114,9 +1114,8 @@ void RADIO_SetModulation(ModulationMode_t modulation)
         BK4819_WriteRegister(0x2a,0x7434);
         BK4819_WriteRegister(0x2b,0x300);
         BK4819_WriteRegister(0x2f,0x9990);
-        // calypso
-        //BK4819_WriteRegister(0x54, 0x9775);
-        //BK4819_WriteRegister(0x55, 0x32c6); 
+        //BK4819_WriteRegister(0x54, 0x9775);  // calypso
+        //BK4819_WriteRegister(0x55, 0x32c6);  // removed for better AM reception
         BK4819_SetFilterBandwidth(BK4819_FILTER_BW_AM, true);
     }
     
