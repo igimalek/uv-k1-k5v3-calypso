@@ -1106,6 +1106,7 @@ void RADIO_SetModulation(ModulationMode_t modulation)
         // stock firmware values:
         //BK4819_WriteRegister(0x54, 0x9009);
         //BK4819_WriteRegister(0x55, 0x31a9);
+        // steef values
         BK4819_WriteRegister(0x54, 0x8546);
         BK4819_WriteRegister(0x55, 0x3af0);
     }
@@ -1118,9 +1119,13 @@ void RADIO_SetModulation(ModulationMode_t modulation)
         BK4819_WriteRegister(0x2b,0x300);
         BK4819_WriteRegister(0x2f,0x9990);
 
-
         //BK4819_WriteRegister(0x54, 0x9775);  // calypso
         //BK4819_WriteRegister(0x55, 0x32c6);  // removed for better AM reception
+        
+        // steef values
+        BK4819_WriteRegister(0x54, 0x8546);
+        BK4819_WriteRegister(0x55, 0x3af0);
+
         BK4819_SetFilterBandwidth(BK4819_FILTER_BW_AM, true);
     }
     
