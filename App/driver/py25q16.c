@@ -162,7 +162,7 @@ static void SPI_ReadBuf(uint8_t *Buf, uint32_t Size)
     LL_DMA_DisableChannel(DMA1, CHANNEL_WR);
 
     LL_DMA_ClearFlag_GI4(DMA1);
-    LL_DMA_ClearFlag_GI5(DMA1); // calypso marker
+    //LL_DMA_ClearFlag_GI5(DMA1); // calypso marker
 
     LL_DMA_ConfigTransfer(DMA1, CHANNEL_RD,                 //
                           LL_DMA_DIRECTION_PERIPH_TO_MEMORY //
@@ -255,7 +255,7 @@ static void SPI_WriteBuf(const uint8_t *Buf, uint32_t Size)
     LL_DMA_DisableChannel(DMA1, CHANNEL_WR);
 
     LL_DMA_ClearFlag_GI4(DMA1);
-    LL_DMA_ClearFlag_GI5(DMA1); // calypso marker
+    //LL_DMA_ClearFlag_GI5(DMA1); // calypso marker
 
     LL_DMA_ConfigTransfer(DMA1, CHANNEL_RD,                 //
                           LL_DMA_DIRECTION_PERIPH_TO_MEMORY //
@@ -684,7 +684,9 @@ static void SectorErase(uint32_t Addr)
 #endif
     WaitWIP();  // calypso marker CRITICAL: Wait for any previous operation to complete before issuing WriteEnable
     WriteEnable();
-    WaitWIP();
+    SYSTICK_DelayUs(10);
+    //WaitWIP();
+    
 
     CS_Assert();
     SPI_WriteByte(0x20);
@@ -780,7 +782,8 @@ static void PageProgram(uint32_t Addr, const uint8_t *Buf, uint32_t Size)
 
     WaitWIP();  // calypso marker CRITICAL: Wait for any previous operation to complete before issuing WriteEnable
     WriteEnable();
-    WaitWIP();
+    //WaitWIP();
+    SYSTICK_DelayUs(10);
     
     CS_Assert();
 
