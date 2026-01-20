@@ -1137,25 +1137,19 @@ void RADIO_SetModulation(ModulationMode_t modulation)
  */
 void RADIO_SetupAGC(bool listeningAM, bool disable)
 {  
-    listeningAM = false;
+    //listeningAM = false;
     disable = false;
-
 
     static uint8_t lastSettings;
     uint8_t newSettings = (listeningAM << 1) | disable;
     if(lastSettings == newSettings)
         return;
     lastSettings = newSettings;
+    
+    BK4819_SetAGC(!disable);
+    BK4819_InitAGC(listeningAM);
+    
 
-
-    if(!listeningAM) { // if not actively listening AM we don't need any AM specific regulation
-        BK4819_SetAGC(!disable);
-        BK4819_InitAGC(false);
-    }
-    else {
-        BK4819_SetAGC(!disable);
-        BK4819_InitAGC(true); 
-    }
 }
 
 // ============================================================================
