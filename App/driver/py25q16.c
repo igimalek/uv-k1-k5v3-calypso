@@ -162,7 +162,7 @@ static void SPI_ReadBuf(uint8_t *Buf, uint32_t Size)
     LL_DMA_DisableChannel(DMA1, CHANNEL_WR);
 
     LL_DMA_ClearFlag_GI4(DMA1);
-    //LL_DMA_ClearFlag_GI5(DMA1); // calypso marker
+    LL_DMA_ClearFlag_GI5(DMA1); // calypso marker
 
     LL_DMA_ConfigTransfer(DMA1, CHANNEL_RD,                 //
                           LL_DMA_DIRECTION_PERIPH_TO_MEMORY //
@@ -255,7 +255,7 @@ static void SPI_WriteBuf(const uint8_t *Buf, uint32_t Size)
     LL_DMA_DisableChannel(DMA1, CHANNEL_WR);
 
     LL_DMA_ClearFlag_GI4(DMA1);
-    //LL_DMA_ClearFlag_GI5(DMA1); // calypso marker
+    LL_DMA_ClearFlag_GI5(DMA1); // calypso marker
 
     LL_DMA_ConfigTransfer(DMA1, CHANNEL_RD,                 //
                           LL_DMA_DIRECTION_PERIPH_TO_MEMORY //
