@@ -64,7 +64,7 @@
                 "ENABLE_UART_RW_BK_REGS": false,
                 "ENABLE_NAVIG_LEFT_RIGHT": true,
                 "ENABLE_SWD": false,
-                "VERSION_STRING_1": "v1.2.1",
+                "VERSION_STRING_1": "v1.3.0",
                 "VERSION_STRING_2": "v4.3.2"
             }
         },
