@@ -684,8 +684,8 @@ static void SectorErase(uint32_t Addr)
 #endif
     WaitWIP();  // calypso marker CRITICAL: Wait for any previous operation to complete before issuing WriteEnable
     WriteEnable();
-    SYSTICK_DelayUs(10);
-    //WaitWIP();
+    //SYSTICK_DelayUs(10);
+    WaitWIP();
     
 
     CS_Assert();
@@ -782,8 +782,8 @@ static void PageProgram(uint32_t Addr, const uint8_t *Buf, uint32_t Size)
 
     WaitWIP();  // calypso marker CRITICAL: Wait for any previous operation to complete before issuing WriteEnable
     WriteEnable();
-    //WaitWIP();
-    SYSTICK_DelayUs(10);
+    WaitWIP();
+    //SYSTICK_DelayUs(10);
     
     CS_Assert();
 
