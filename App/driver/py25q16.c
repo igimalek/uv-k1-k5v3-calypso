@@ -52,6 +52,23 @@ static inline void CS_Release()
     GPIO_SetOutputPin(CS_PIN);
 }
 
+// py25q16 timing parameters from datasheet
+/*
+Symbol Parameter  2.3V~3.6V Units Min Typ Max 
+TESL(4) Erase Suspend Latency   30 us 
+TPSL(4) Program Suspend Latency   30 us 
+TPRS(2) Latency between Program Resume and next Suspend 0.5   us 
+TERS(3) Latency between Erase Resume and next Suspend 0.5   us 
+tPSR Program Security Registers time (up to 256 bytes)  0.4 2.4 ms 
+tESR Erase Security Registers time  40 300 ms 
+tPP Page program time (up to 256 bytes)  0.4 2.4 ms 
+tbp Byte program time(1byte)  30 50 us 
+tSE Sector erase time  40 300 ms 
+tBE1 Block erase time for 32K bytes  0.12 0.8 s 
+tBE2 Block erase time for 64K bytes  0.15 1.2 s 
+tCE Chip erase time   5 15 s
+*/
+
 // ============================================================================
 // SPI_Init - Initialize SPI peripheral and DMA for flash communication
 // ============================================================================
@@ -388,6 +405,7 @@ void PY25Q16_ReadBuffer(uint32_t Address, void *pBuffer, uint32_t Size)
     }
 
     CS_Release();
+    
 }
 
 // ============================================================================
