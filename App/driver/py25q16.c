@@ -117,7 +117,7 @@ static void SPI_Init()
     InitStruct.TransferDirection = LL_SPI_FULL_DUPLEX;
     InitStruct.ClockPhase = LL_SPI_PHASE_2EDGE;
     InitStruct.ClockPolarity = LL_SPI_POLARITY_HIGH;
-    InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV2;
+    InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV2;  // calypso marker slow down SPI for stability
     InitStruct.BitOrder = LL_SPI_MSB_FIRST;
     InitStruct.NSS = LL_SPI_NSS_SOFT;
     InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
@@ -684,14 +684,14 @@ static void SectorErase(uint32_t Addr)
 #endif
     WaitWIP();  // calypso marker CRITICAL: Wait for any previous operation to complete before issuing WriteEnable
     WriteEnable();
-    //SYSTICK_DelayUs(10);
-    WaitWIP();
     
-
+    
     CS_Assert();
     SPI_WriteByte(0x20);
     WriteAddr(Addr);
     CS_Release();
+
+    SYSTICK_DelayUs(150000);  // calypso marker block erase time typical 150ms
 
     WaitWIP();
 }
@@ -782,8 +782,7 @@ static void PageProgram(uint32_t Addr, const uint8_t *Buf, uint32_t Size)
 
     WaitWIP();  // calypso marker CRITICAL: Wait for any previous operation to complete before issuing WriteEnable
     WriteEnable();
-    WaitWIP();
-    //SYSTICK_DelayUs(10);
+
     
     CS_Assert();
 
@@ -803,6 +802,8 @@ static void PageProgram(uint32_t Addr, const uint8_t *Buf, uint32_t Size)
     }
 
     CS_Release();
+
+    SYSTICK_DelayUs(400000);  // calypso marker page program time typical 400ms
 
     WaitWIP();
 }
