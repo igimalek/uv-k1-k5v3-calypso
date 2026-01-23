@@ -52,22 +52,70 @@ static inline void CS_Release()
     GPIO_SetOutputPin(CS_PIN);
 }
 
-// py25q16 timing parameters from datasheet
+// ============================================================================
+// py25q16 timing parameters from PY25Q16HB datasheet V1.3
+// ============================================================================
 /*
-Symbol Parameter  2.3V~3.6V Units Min Typ Max 
-TESL(4) Erase Suspend Latency   30 us 
-TPSL(4) Program Suspend Latency   30 us 
-TPRS(2) Latency between Program Resume and next Suspend 0.5   us 
-TERS(3) Latency between Erase Resume and next Suspend 0.5   us 
-tPSR Program Security Registers time (up to 256 bytes)  0.4 2.4 ms 
-tESR Erase Security Registers time  40 300 ms 
-tPP Page program time (up to 256 bytes)  0.4 2.4 ms 
-tbp Byte program time(1byte)  30 50 us 
-tSE Sector erase time  40 300 ms 
-tBE1 Block erase time for 32K bytes  0.12 0.8 s 
-tBE2 Block erase time for 64K bytes  0.15 1.2 s 
-tCE Chip erase time   5 15 s
+Symbol Parameter                    Min    Typ    Max    Units
+TESL(4) Erase Suspend Latency                30          us
+TPSL(4) Program Suspend Latency             30          us
+TPRS(2) Latency between Program Resume      0.5         us
+TERS(3) Latency between Erase Resume        0.5         us
+tPSR   Program Security Registers (256B)    0.4   2.4   ms
+tESR   Erase Security Registers             40    300   ms
+tPP    Page program time (256 bytes)        0.4   2.4   ms
+tbp    Byte program time (1 byte)           30    50    us
+tSE    Sector erase time (4KB)              40    300   ms
+tBE1   Block erase time (32KB)              120   800   ms
+tBE2   Block erase time (64KB)              150   1200  ms
+tCE    Chip erase time                      5     15    s
+tRES   Recovery time after Power Loss              20    ms (min)
+tCO    Chip Select to Output Valid                10    us (max)
+tCSDH  CS deselect high time                      50    ns (min)
+tSHSL  Interval between operations (CS high)      0     ns (min)
+
+Manufacturer ID: 0x94
+Memory Type: 0x60
+Capacity ID: 0x15 (16 Mbit = 2 Mbyte)
+
+SPI Mode: 0 (CPOL=0, CPHA=0) or 3 (CPOL=1, CPHA=1)
+Max frequency: 80 MHz (with proper timing)
+Clock duty cycle: max 50%
 */
+
+// ============================================================================
+// SPI Commands (PY25Q16HB)
+// ============================================================================
+#define CMD_READ         0x03    // Read Data
+#define CMD_FAST_READ    0x0B    // Fast Read
+#define CMD_PAGE_PROG    0x02    // Page Program (PP)
+#define CMD_SECTOR_ERASE 0x20    // Sector Erase (SE) - 4KB
+#define CMD_BLOCK_ERASE_32K 0x52 // Block Erase (BE1) - 32KB
+#define CMD_BLOCK_ERASE_64K 0xD8 // Block Erase (BE2) - 64KB
+#define CMD_CHIP_ERASE   0x60    // Chip Erase (CE) - sequence: 0x60, then 0xC7
+#define CMD_READ_SR1     0x05    // Read Status Register 1
+#define CMD_READ_SR2     0x35    // Read Status Register 2
+#define CMD_READ_SR3     0x15    // Read Status Register 3
+#define CMD_WRITE_ENABLE 0x06    // Write Enable (WREN)
+#define CMD_WRITE_DISABLE 0x04   // Write Disable (WRDI)
+#define CMD_RDID         0x9F    // Read Identification (RDID)
+#define CMD_REMS         0x90    // Read Electronic Manufacturer Signature
+#define CMD_PROG_SUSPEND 0x75    // Program Suspend
+#define CMD_ERASE_SUSPEND 0xB0   // Erase Suspend
+#define CMD_PROG_RESUME  0x7A    // Program Resume
+#define CMD_ERASE_RESUME 0x30    // Erase Resume
+#define CMD_DEEP_POWER_DOWN 0xB9 // Deep Power Down
+#define CMD_RELEASE_POWER_DOWN 0xAB // Release from Deep Power Down
+
+// Status Register 1 bits (0x05)
+#define SR1_WIP   0x01    // Write In Progress
+#define SR1_WEL   0x02    // Write Enable Latch
+#define SR1_BP0   0x04    // Block Protect 0
+#define SR1_BP1   0x08    // Block Protect 1
+#define SR1_BP2   0x10    // Block Protect 2
+#define SR1_BP3   0x20    // Block Protect 3
+#define SR1_QE    0x40    // Quad Enable (reserved for dual/quad SPI)
+#define SR1_SRWD  0x80    // Status Register Write Disable
 
 // ============================================================================
 // SPI_Init - Initialize SPI peripheral and DMA for flash communication
@@ -274,6 +322,8 @@ static void SPI_WriteBuf(const uint8_t *Buf, uint32_t Size)
     LL_DMA_ClearFlag_GI4(DMA1);
     LL_DMA_ClearFlag_GI5(DMA1); // calypso marker
 
+    // CRITICAL FIX: RX DMA must use MEMORY_NOINCREMENT (BlackHole buffer) but must use PRIORITY_MEDIUM
+    // to ensure RX FIFO empties and TC interrupt fires. Using PRIORITY_LOW starves RX channel.
     LL_DMA_ConfigTransfer(DMA1, CHANNEL_RD,                 //
                           LL_DMA_DIRECTION_PERIPH_TO_MEMORY //
                               | LL_DMA_MODE_NORMAL          //
@@ -281,9 +331,10 @@ static void SPI_WriteBuf(const uint8_t *Buf, uint32_t Size)
                               | LL_DMA_MEMORY_NOINCREMENT   //
                               | LL_DMA_PDATAALIGN_BYTE      //
                               | LL_DMA_MDATAALIGN_BYTE      //
-                              | LL_DMA_PRIORITY_LOW         //
+                              | LL_DMA_PRIORITY_MEDIUM      // FIXED: Was LOW, caused starvation
     );
 
+    // TX DMA: Memory has data, must increment to read next bytes
     LL_DMA_ConfigTransfer(DMA1, CHANNEL_WR,                 //
                           LL_DMA_DIRECTION_MEMORY_TO_PERIPH //
                               | LL_DMA_MODE_NORMAL          //
@@ -291,7 +342,7 @@ static void SPI_WriteBuf(const uint8_t *Buf, uint32_t Size)
                               | LL_DMA_MEMORY_INCREMENT     //
                               | LL_DMA_PDATAALIGN_BYTE      //
                               | LL_DMA_MDATAALIGN_BYTE      //
-                              | LL_DMA_PRIORITY_LOW         //
+                              | LL_DMA_PRIORITY_MEDIUM      // FIXED: Was LOW, must match RX priority
     );
 
     LL_DMA_SetMemoryAddress(DMA1, CHANNEL_RD, (uint32_t)BlackHole);
@@ -375,11 +426,22 @@ static void WriteEnable();
 static void SectorErase(uint32_t Addr);
 static void SectorProgram(uint32_t Addr, const uint8_t *Buf, uint32_t Size);
 static void PageProgram(uint32_t Addr, const uint8_t *Buf, uint32_t Size);
+static void ReadID(uint8_t *ManufID, uint8_t *MemType, uint8_t *CapacityID);
 
 void PY25Q16_Init()
 {
     CS_Release();
     SPI_Init();
+    
+    // Per datasheet: After power-up, wait min 20ms recovery time (tRES)
+    // This is handled by firmware startup sequencing
+    // Optional: Verify chip is correct (Manufacturer 0x94, Type 0x60, Capacity 0x15)
+#ifdef DEBUG
+    uint8_t ManufID, MemType, CapacityID;
+    ReadID(&ManufID, &MemType, &CapacityID);
+    printf("Flash ID: Manufacturer=0x%02X, Type=0x%02X, Capacity=0x%02X\n", 
+           ManufID, MemType, CapacityID);
+#endif
 }
 
 void PY25Q16_ReadBuffer(uint32_t Address, void *pBuffer, uint32_t Size)
@@ -389,7 +451,7 @@ void PY25Q16_ReadBuffer(uint32_t Address, void *pBuffer, uint32_t Size)
 #endif
     CS_Assert();
 
-    SPI_WriteByte(0x03); // Fast read
+    SPI_WriteByte(CMD_READ);  // FIXED: Use CMD_READ (0x03) instead of magic 0x03
     WriteAddr(Address);
 
     if (Size >= 16)
@@ -629,12 +691,41 @@ static uint8_t ReadStatusReg(uint32_t Which)
 //   - Critical for data integrity; must wait for flash operations
 //   - Long timeout protects against flash command failures
 //
+// ============================================================================
+// WaitWIP - Poll status register until write operation completes
+// ============================================================================
+// Blocks until WIP (Write In Progress) bit clears in status register 0.
+// Used after erase, write enable, or program operations.
+// Implements CS timing requirements per datasheet:
+//   - tSHSL: Minimum interval between operations (CS high): 0ns
+//   - tCSDH: CS deselect high time: 50ns minimum
+//
+// Dependencies:
+//   - ReadStatusReg(0) - status register polling
+//   - SYSTICK_DelayUs() - microsecond delay between polls
+//
+// Timing:
+//   - Typical erase: 50-100ms
+//   - Typical program: 1-5ms
+//   - Poll interval: 10us between checks
+//   - Timeout: ~10 seconds (1,000,000 iterations x 10us)
+//   - Blocking; CPU busy-waits
+//
+// Notes:
+//   - Critical for data integrity; must wait for flash operations
+//   - Long timeout protects against flash command failures
+//   - Per datasheet: WIP bit is bit 0 of Status Register 1
+//
 static void WaitWIP()
 {
+    // Ensure minimum CS high time (50ns per datasheet tCSDH)
+    // One NOP or two is typically enough on modern CPUs
+    __asm volatile ("nop; nop;");
+    
     for (int i = 0; i < 1000000; i++)
     {
         uint8_t Status = ReadStatusReg(0);
-        if (1 & Status) // WIP
+        if (SR1_WIP & Status)  // FIXED: Use SR1_WIP constant instead of magic 0x01
         {
             SYSTICK_DelayUs(10);
             continue;
@@ -661,11 +752,37 @@ static void WaitWIP()
 //   - WEL bit automatically clears after write/erase completes
 //   - Must be called for each write/erase operation
 //
+// ============================================================================
+// WriteEnable - Set Write Enable Latch (WEL) bit in status register
+// ============================================================================
+// Sends WREN command to enable write/erase operations.
+// Must be called before any program or erase command.
+// Per datasheet: WEL bit (bit 1) should be set after WREN command.
+//
+// Dependencies:
+//   - SPI_WriteByte() - command transmission
+//   - CS_Assert(), CS_Release() - chip select
+//   - Command: 0x06 (CMD_WRITE_ENABLE - per SPI flash standard)
+//   - SYSTICK_DelayUs() - CS timing delay
+//
+// Timing:
+//   - ~5us command
+//   - tCSDH: 50ns minimum CS high time (enforced by WaitWIP delay)
+//
+// Notes:
+//   - WEL bit automatically clears after write/erase completes
+//   - Must be called for each write/erase operation
+//   - Per datasheet, WEL should be verified if critical
+//
 static void WriteEnable()
 {
     CS_Assert();
-    SPI_WriteByte(0x6);
+    SPI_WriteByte(CMD_WRITE_ENABLE);
     CS_Release();
+    
+    // Ensure minimum CS high time (tCSDH = 50ns)
+    // Small delay ensures flash chip recognizes CS deselect
+    __asm volatile ("nop; nop;");
 }
 
 // ============================================================================
@@ -705,12 +822,12 @@ static void SectorErase(uint32_t Addr)
     
     
     CS_Assert();
-    SPI_WriteByte(0x20);
+    SPI_WriteByte(CMD_SECTOR_ERASE);  // FIXED: Use CMD_SECTOR_ERASE (0x20) instead of magic number
     WriteAddr(Addr);
     CS_Release();
 
-    SYSTICK_DelayUs(150000);  // calypso marker block erase time typical 150ms
-
+    // Per datasheet: tSE (Sector Erase) = 40-300ms typical
+    // WaitWIP() will poll until completion, don't add extra delay
     WaitWIP();
 }
 
@@ -804,7 +921,7 @@ static void PageProgram(uint32_t Addr, const uint8_t *Buf, uint32_t Size)
     
     CS_Assert();
 
-    SPI_WriteByte(0x2);
+    SPI_WriteByte(CMD_PAGE_PROG);  // FIXED: Use CMD_PAGE_PROG (0x02) instead of magic 0x2
     WriteAddr(Addr);
 
     if (Size >= 16)
@@ -821,8 +938,8 @@ static void PageProgram(uint32_t Addr, const uint8_t *Buf, uint32_t Size)
 
     CS_Release();
 
-    SYSTICK_DelayUs(400000);  // calypso marker page program time typical 400ms
-
+    // Per datasheet: tPP (Page Program) = 0.4-2.4ms typical
+    // WaitWIP() will poll until completion, don't add extra delay
     WaitWIP();
 }
 
