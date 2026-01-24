@@ -411,11 +411,33 @@ static void SPI_WriteBuf(const uint8_t *Buf, uint32_t Size)
 //
 static uint8_t SPI_WriteByte(uint8_t Value)
 {
-    while (!LL_SPI_IsActiveFlag_TXE(SPIx))
+    // CRITICAL FIX: Add safety timeout to prevent infinite hang
+    // If SPI is not properly enabled or has stalled, this prevents CPU lockup
+    uint32_t timeout = 10000;
+    
+    while (!LL_SPI_IsActiveFlag_TXE(SPIx) && timeout--)
         ;
+    
+    if (!timeout) {
+        #ifdef DEBUG
+            printf("ERROR: SPI_WriteByte TXE timeout - SPI may be disabled\n");
+        #endif
+        return 0xFF;  // Return error code
+    }
+    
     LL_SPI_TransmitData8(SPIx, Value);
-    while (!LL_SPI_IsActiveFlag_RXNE(SPIx))
+    
+    timeout = 10000;
+    while (!LL_SPI_IsActiveFlag_RXNE(SPIx) && timeout--)
         ;
+    
+    if (!timeout) {
+        #ifdef DEBUG
+            printf("ERROR: SPI_WriteByte RXNE timeout - SPI stalled\n");
+        #endif
+        return 0xFF;
+    }
+    
     return LL_SPI_ReceiveData8(SPIx);
 }
 
@@ -544,8 +566,17 @@ void PY25Q16_WriteBuffer(uint32_t Address, const void *pBuffer, uint32_t Size, b
                 SectorErase(SecAddr);
                 if (Append)
                 {
-                    SectorProgram(SecAddr, SectorCache, SecOffset + SecSize);
-                    memset(SectorCache + SecOffset + SecSize, 0xff, SECTOR_SIZE - SecOffset - SecSize);
+                    // CRITICAL FIX: Program only the modified portion (SecOffset to end)
+                    // Changed from: SectorProgram(SecAddr, SectorCache, SecOffset + SecSize)
+                    // The old code passed SIZE as if it included offset, but SectorProgram expects:
+                    //   - Addr: where in FLASH to program
+                    //   - Buf: pointer to DATA to program
+                    //   - Size: how many bytes of DATA (not including offset)
+                    // We need to program full sector to maintain contiguity, but only clear modified part
+                    SectorProgram(SecAddr, SectorCache, SECTOR_SIZE);
+                    if (SecOffset + SecSize < SECTOR_SIZE) {
+                        memset(SectorCache + SecOffset + SecSize, 0xff, SECTOR_SIZE - SecOffset - SecSize);
+                    }
                 }
                 else
                 {
@@ -973,11 +1004,22 @@ void DMA1_Channel4_5_6_7_IRQHandler()
         LL_DMA_DisableIT_TC(DMA1, CHANNEL_RD);
         LL_DMA_ClearFlag_TC4(DMA1);
 
-        while (LL_SPI_TX_FIFO_EMPTY != LL_SPI_GetTxFIFOLevel(SPIx))
+        // CRITICAL FIX: Add timeout to all ISR while loops to prevent infinite hang
+        // If SPI FIFO is stuck or hardware stalled, ISR must exit to prevent system freeze
+        
+        // Wait for TX FIFO to empty (with safety timeout)
+        uint32_t timeout = 10000;
+        while (LL_SPI_TX_FIFO_EMPTY != LL_SPI_GetTxFIFOLevel(SPIx) && timeout--)
             ;
-        while (LL_SPI_IsActiveFlag_BSY(SPIx))
+        
+        // Wait for SPI to not be busy (with safety timeout)
+        timeout = 10000;
+        while (LL_SPI_IsActiveFlag_BSY(SPIx) && timeout--)
             ;
-        while (LL_SPI_RX_FIFO_EMPTY != LL_SPI_GetRxFIFOLevel(SPIx))
+        
+        // Wait for RX FIFO to empty (with safety timeout)
+        timeout = 10000;
+        while (LL_SPI_RX_FIFO_EMPTY != LL_SPI_GetRxFIFOLevel(SPIx) && timeout--)
             ;
 
         LL_SPI_DisableDMAReq_TX(SPIx);

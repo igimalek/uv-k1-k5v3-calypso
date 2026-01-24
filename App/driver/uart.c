@@ -111,7 +111,8 @@ void UART_Send(const void *pBuffer, uint32_t Size)
 
     for (i = 0; i < Size; i++)
     {
-        while (!LL_USART_IsActiveFlag_TXE(USARTx))
+        int timeout = 10000;
+        while (!LL_USART_IsActiveFlag_TXE(USARTx) && timeout--)
             ;
         LL_USART_TransmitData8(USARTx, pData[i]);
     }

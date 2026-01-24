@@ -49,7 +49,8 @@ static void AES_Transform(const void *pIn, void *pOut)
     AES_DINR = pI[2];
     AES_DINR = pI[3];
 
-    while ((AES_SR & AES_SR_CCF_MASK) == AES_SR_CCF_BITS_NOT_COMPLETE) {
+    int timeout = 10000;
+    while ((AES_SR & AES_SR_CCF_MASK) == AES_SR_CCF_BITS_NOT_COMPLETE && timeout--) {
     }
 
     pO[0] = AES_DOUTR;
