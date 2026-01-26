@@ -47,6 +47,19 @@
 #include "ui/ui.h"
 #include <stdlib.h>
 
+/**
+ * @brief Toggle the selected channel's scanlist participation or scan range settings.
+ * 
+ * Manages scanning behavior by:
+ * - For frequency channels: sets scan range start/stop points
+ * - For memory channels: cycles through scanlist participation (none/list1/list2/list3/combinations)
+ * - Handles channel exclusion from scanning
+ * 
+ * @dependencies
+ *   - SCANNER_IsScanning() - checks if scanning is active
+ *   - SETTINGS_UpdateChannel() - saves updated channel settings
+ *   - Global vars: gTxVfo, gEeprom, gScanRangeStart, gScanRangeStop, gMR_ChannelExclude
+ */
 static void toggle_chan_scanlist(void)
 {   // toggle the selected channels scanlist setting
 
@@ -84,6 +97,36 @@ static void toggle_chan_scanlist(void)
     gFlagResetVfos    = true;
 }
 
+/**
+ * @brief Handle F-key (function key) combinations (F+0 through F+9, F+UP/DOWN, F+SIDE1/2).
+ * 
+ * Maps function keys to actions:
+ * - F+0: FM radio toggle
+ * - F+1: Copy channel to VFO or cycle frequency bands
+ * - F+2: Switch active VFO
+ * - F+3: Toggle VFO mode (simplex/duplex)
+ * - F+4: Start frequency scanner
+ * - F+5: Toggle NOAA/Channel or show spectrum
+ * - F+6: Toggle power level
+ * - F+7: Toggle VOX (voice activation)
+ * - F+8: Toggle frequency reverse
+ * - F+9: Jump to CHAN_1_CALL channel
+ * - F+UP/DOWN: Adjust squelch level
+ * - F+SIDE1/2: Adjust step frequency
+ * 
+ * @param Key - Key code to process
+ * @param beep - If true, produce audio feedback
+ * 
+ * @dependencies
+ *   - ACTION_FM(), ACTION_Power(), ACTION_Vox() - action handlers
+ *   - COMMON_SwitchVFOs(), COMMON_SwitchVFOMode() - VFO control
+ *   - SCANNER_Start() - initiate scanning
+ *   - RADIO_SelectVfos(), RADIO_ApplyOffset(), RADIO_ConfigureSquelchAndOutputPower() - radio config
+ *   - APP_RunSpectrum() - spectrum analyzer
+ *   - FREQUENCY_GetSortedIdxFromStepIdx(), FREQUENCY_GetStepIdxFromSortedIdx() - frequency stepping
+ *   - toggle_chan_scanlist() - scanlist management
+ *   - Global vars: gScreenToDisplay, gTxVfo, gEeprom, gBeepToPlay, gWasFKeyPressed, etc.
+ */
 static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
 {
     uint8_t Vfo = gEeprom.TX_VFO;
@@ -317,6 +360,19 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
     }
 }
 
+/**
+ * @brief Switch to specified memory channel and configure radio.
+ * 
+ * Validates and loads a memory channel, updating VFO settings and triggering
+ * radio reconfiguration. Called after user enters channel number.
+ * 
+ * @param Channel - Memory channel number to load (0-based)
+ * 
+ * @dependencies
+ *   - RADIO_CheckValidChannel() - validate channel exists
+ *   - RADIO_ConfigureChannel() - apply channel configuration to radio
+ *   - Global vars: gEeprom, gTxVfo, gBeepToPlay, gVfoConfigureMode, gAnotherVoiceID
+ */
 void channelMove(uint16_t Channel)
 {
     const uint8_t Vfo = gEeprom.TX_VFO;
@@ -345,6 +401,17 @@ void channelMove(uint16_t Channel)
     return;
 }
 
+/**
+ * @brief Process accumulated digit input and switch to specified channel.
+ * 
+ * Converts user-entered digit sequence to channel number and executes the switch.
+ * Handles 1-3 digit channel input (channels 1-999).
+ * 
+ * @dependencies
+ *   - channelMove() - switch to target channel
+ *   - SETTINGS_SaveVfoIndices() - persist VFO state
+ *   - Global vars: gTxVfo, gInputBox, gInputBoxIndex, gKeyInputCountdown
+ */
 void channelMoveSwitch(void) {
     if (IS_MR_CHANNEL(gTxVfo->CHANNEL_SAVE)) { // user is entering channel number
         uint16_t Channel = 0;
@@ -386,6 +453,31 @@ void channelMoveSwitch(void) {
     }
 }
 
+/**
+ * @brief Handle numeric keypad input (0-9, SIDE1/2) on main display.
+ * 
+ * Processes digit entry for:
+ * - Channel number entry (1-3 digits, channels 1-999)
+ * - Frequency entry (6-7 digits based on band)
+ * - NOAA channel entry (2 digits, channels 1-10)
+ * - F-key function selection when held
+ * - Scan list selection during scanning (KEY_0-5)
+ * - Backlight control (KEY_8-9)
+ * 
+ * @param Key - Key code (KEY_0 through KEY_9, KEY_SIDE1, KEY_SIDE2)
+ * @param bKeyPressed - True when key is initially pressed
+ * @param bKeyHeld - True if key is held down
+ * 
+ * @dependencies
+ *   - INPUTBOX_Append(), INPUTBOX_GetAscii() - manage input buffer
+ *   - channelMoveSwitch() - process digit input for channel selection
+ *   - processFKeyFunction() - handle F-key functions
+ *   - ACTION_BackLightOnDemand(), ACTION_BackLight() - backlight control
+ *   - FREQUENCY_GetBand(), FREQUENCY_RoundToStep() - frequency validation/rounding
+ *   - RADIO_ConfigureChannel() - configure radio for new frequency
+ *   - BK4819_SetFrequency(), BK4819_RX_TurnOn() - radio tuning
+ *   - Global vars: gInputBox, gInputBoxIndex, gKeyInputCountdown, gTxVfo, gEeprom, etc.
+ */
 static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 {
     if (bKeyHeld) { // key held down
@@ -502,7 +594,7 @@ static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
                 gEeprom.ScreenChannel[Vfo] = band + FREQ_CHANNEL_FIRST;
                 gEeprom.FreqChannel[Vfo]   = band + FREQ_CHANNEL_FIRST;
 
-                SETTINGS_SaveVfoIndices();
+                SETTINGS_SaveVfoIndices();  // calypso marker
 
                 RADIO_ConfigureChannel(Vfo, VFO_CONFIGURE_RELOAD);
             }
@@ -515,7 +607,7 @@ static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
                 Frequency = (Frequency < center) ? BX4819_band1.upper - gTxVfo->StepFrequency : BX4819_band2.lower;
             }
 
-            gTxVfo->freq_config_RX.Frequency = Frequency;
+            gTxVfo->freq_config_RX.Frequency = Frequency;  // calypso marker
 
             gRequestSaveChannel = 1;
             return;
@@ -573,6 +665,21 @@ static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
     processFKeyFunction(Key, true);
 }
 
+/**
+ * @brief Handle EXIT key (ESC) - cancel operations and navigate back.
+ * 
+ * Short press: Delete last input character or cancel current scan
+ * Long press (held): Clear all input modes and DTMF state
+ * 
+ * @param bKeyPressed - True when key is initially pressed
+ * @param bKeyHeld - True if key is held down
+ * 
+ * @dependencies
+ *   - CHFRSCANNER_Stop() - abort frequency/channel scanner
+ *   - ACTION_FM() - toggle FM radio mode
+ *   - Global vars: gInputBox, gInputBoxIndex, gDTMF_InputMode, gDTMF_InputBox_Index,
+ *                  gScanStateDir, gFmRadioMode, gCurrentFunction, etc.
+ */
 static void MAIN_Key_EXIT(bool bKeyPressed, bool bKeyHeld)
 {
     if (!bKeyHeld && bKeyPressed) { // exit key pressed
@@ -635,6 +742,21 @@ static void MAIN_Key_EXIT(bool bKeyPressed, bool bKeyHeld)
     }
 }
 
+/**
+ * @brief Handle MENU key - access settings menu and channel exclusion.
+ * 
+ * Short press: Open settings menu
+ * Long press: Exclude/include current channel from scanning (ENABLE_FEAT_F4HWN)
+ * 
+ * @param bKeyPressed - True when key is initially pressed
+ * @param bKeyHeld - True if key is held down
+ * 
+ * @dependencies
+ *   - ACTION_Handle() - general action handler (KEY_MENU)
+ *   - CHFRSCANNER_Stop(), CHFRSCANNER_ContinueScanning() - scanner control
+ *   - Global vars: gInputBoxIndex, gScreenToDisplay, gScanStateDir, gRequestDisplayScreen,
+ *                  gDTMF_InputMode, gFlagRefreshSetting, gTxVfo, gMR_ChannelExclude
+ */
 static void MAIN_Key_MENU(bool bKeyPressed, bool bKeyHeld)
 {
     if (bKeyPressed && !bKeyHeld) // menu key pressed
@@ -706,6 +828,22 @@ static void MAIN_Key_MENU(bool bKeyPressed, bool bKeyHeld)
     }
 }
 
+/**
+ * @brief Handle STAR (*) key - DTMF entry, tone scanning, and scan control.
+ * 
+ * Short press: Start DTMF tone input (if not transmitting, not scanning, not NOAA/scan range)
+ * Long press: Toggle frequency/tone scanning
+ * With F-key: Start CTCSS/DCS code scanner
+ * 
+ * @param bKeyPressed - True when key is initially pressed
+ * @param bKeyHeld - True if key is held down
+ * 
+ * @dependencies
+ *   - ACTION_Scan() - toggle scanning mode
+ *   - SCANNER_Start() - begin code/tone scanning
+ *   - Global vars: gInputBoxIndex, gCurrentFunction, gWasFKeyPressed, gScanStateDir,
+ *                  gDTMF_InputMode, gDTMF_InputBox, gDTMF_String, gTxVfo, gBeepToPlay
+ */
 static void MAIN_Key_STAR(bool bKeyPressed, bool bKeyHeld)
 {
 
@@ -792,6 +930,31 @@ static void MAIN_Key_STAR(bool bKeyPressed, bool bKeyHeld)
     gUpdateStatus   = true;
 }
 
+/**
+ * @brief Handle UP/DOWN arrow keys - channel/frequency navigation and scanning.
+ * 
+ * No input active:
+ *   - Frequency mode: Step frequency up/down by step size
+ *   - Channel mode: Jump to next valid channel (up/down)
+ *   - NOAA mode: Cycle through NOAA channels (if enabled)
+ *   - During scan: Continue scanning in specified direction
+ * 
+ * With F-key: Adjust squelch (ENABLE_FEAT_F4HWN)
+ * Long press: Announce current channel number (if voice enabled)
+ * 
+ * @param bKeyPressed - True when key is initially pressed
+ * @param bKeyHeld - True if key is held down
+ * @param Direction - +1 for UP, -1 for DOWN
+ * 
+ * @dependencies
+ *   - APP_SetFrequencyByStep() - compute next frequency
+ *   - RX_freq_check() - validate frequency is allowed
+ *   - RADIO_FindNextChannel() - locate next valid memory channel
+ *   - CHFRSCANNER_Start() - continue channel/frequency scanning
+ *   - BK4819_SetFrequency(), BK4819_RX_TurnOn() - tune radio
+ *   - processFKeyFunction() - handle F-key squelch adjustment
+ *   - Global vars: gInputBoxIndex, gScanStateDir, gWasFKeyPressed, gTxVfo, gEeprom, etc.
+ */
 static void MAIN_Key_UP_DOWN(bool bKeyPressed, bool bKeyHeld, int8_t Direction)
 {
 
@@ -892,6 +1055,31 @@ static void MAIN_Key_UP_DOWN(bool bKeyPressed, bool bKeyHeld, int8_t Direction)
     gPttWasReleased = true;
 }
 
+/**
+ * @brief Main keyboard event dispatcher for the radio's main display.
+ * 
+ * Routes all key events to appropriate handler functions based on current mode:
+ * - Digit keys (0-9, SIDE1/2) -> MAIN_Key_DIGITS()
+ * - MENU key -> MAIN_Key_MENU()
+ * - UP/DOWN arrows -> MAIN_Key_UP_DOWN()
+ * - EXIT key -> MAIN_Key_EXIT()
+ * - STAR key -> MAIN_Key_STAR()
+ * - F key -> GENERIC_Key_F()
+ * - PTT key -> GENERIC_Key_PTT()
+ * 
+ * Blocks most keys during FM radio mode (except PTT and EXIT)
+ * Handles DTMF digit input when in DTMF mode
+ * 
+ * @param Key - Key code to process
+ * @param bKeyPressed - True when key is initially pressed
+ * @param bKeyHeld - True if key is held down
+ * 
+ * @dependencies
+ *   - MAIN_Key_DIGITS(), MAIN_Key_MENU(), MAIN_Key_EXIT(), MAIN_Key_STAR(), MAIN_Key_UP_DOWN()
+ *   - GENERIC_Key_F(), GENERIC_Key_PTT() - generic key handlers
+ *   - DTMF_GetCharacter(), DTMF_Append() - DTMF tone management
+ *   - Global vars: gFmRadioMode, gDTMF_InputMode, gBeepToPlay, gKeyInputCountdown, etc.
+ */
 void MAIN_ProcessKeys(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 {
 #ifdef ENABLE_FMRADIO

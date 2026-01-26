@@ -413,8 +413,7 @@ static uint8_t SPI_WriteByte(uint8_t Value)
 {
     // CRITICAL FIX: Add safety timeout to prevent infinite hang
     // If SPI is not properly enabled or has stalled, this prevents CPU lockup
-    uint32_t timeout = 10000;
-    
+    uint32_t timeout = 1000000;
     while (!LL_SPI_IsActiveFlag_TXE(SPIx) && timeout--)
         ;
     
@@ -427,7 +426,7 @@ static uint8_t SPI_WriteByte(uint8_t Value)
     
     LL_SPI_TransmitData8(SPIx, Value);
     
-    timeout = 10000;
+    timeout = 1000000;
     while (!LL_SPI_IsActiveFlag_RXNE(SPIx) && timeout--)
         ;
     
@@ -524,7 +523,7 @@ void PY25Q16_ReadBuffer(uint32_t Address, void *pBuffer, uint32_t Size)
 //   - Erase sets all bits to 1 (0xFF) in 4KB sectors
 //   - Sector size: 0x1000 (4096 bytes)
 //
-void PY25Q16_WriteBuffer(uint32_t Address, const void *pBuffer, uint32_t Size, bool Append)
+void PY25Q16_WriteBuffer(uint32_t Address, const void *pBuffer, uint32_t Size, bool Append)  // stalls CPU
 {
 #ifdef DEBUG
     printf("spi flash write: %06x %ld %d\n", Address, Size, Append);
@@ -582,11 +581,11 @@ void PY25Q16_WriteBuffer(uint32_t Address, const void *pBuffer, uint32_t Size, b
                 {
                     SectorProgram(SecAddr, SectorCache, SECTOR_SIZE);
                 }
-            }
+                            }
             else
             {
                 SectorProgram(Address, pBuffer, SecSize);
-            }
+                            }
         }
 
         Address += SecSize;
@@ -1008,17 +1007,17 @@ void DMA1_Channel4_5_6_7_IRQHandler()
         // If SPI FIFO is stuck or hardware stalled, ISR must exit to prevent system freeze
         
         // Wait for TX FIFO to empty (with safety timeout)
-        uint32_t timeout = 10000;
+        uint32_t timeout = 100000;
         while (LL_SPI_TX_FIFO_EMPTY != LL_SPI_GetTxFIFOLevel(SPIx) && timeout--)
             ;
         
         // Wait for SPI to not be busy (with safety timeout)
-        timeout = 10000;
+        timeout = 100000;
         while (LL_SPI_IsActiveFlag_BSY(SPIx) && timeout--)
             ;
         
         // Wait for RX FIFO to empty (with safety timeout)
-        timeout = 10000;
+        timeout = 100000;
         while (LL_SPI_RX_FIFO_EMPTY != LL_SPI_GetRxFIFOLevel(SPIx) && timeout--)
             ;
 

@@ -717,6 +717,27 @@ void SETTINGS_SaveFM(void)
     }
 #endif
 
+
+// ============================================================================
+// SETTINGS_SaveVfoIndices - Save current VFO/channel selections to flash
+// ============================================================================
+// Persists which channel/VFO is currently selected in each VFO.
+// Allows radio to resume at last channel selection after power-off.
+// Called when user switches between channels/VFOs.
+//
+// State Saved (8 bytes at 0x005000):
+//   [0]: ScreenChannel[0] - displayed channel in VFO A
+//   [1]: MrChannel[0] - selected memory channel in VFO A
+//   [2]: FreqChannel[0] - selected VFO frequency channel in VFO A
+//   [3]: ScreenChannel[1] - displayed channel in VFO B
+//   [4]: MrChannel[1] - selected memory channel in VFO B
+//   [5]: FreqChannel[1] - selected VFO frequency channel in VFO B
+//   [6]: NoaaChannel[0] - NOAA channel (if ENABLE_NOAA)
+//   [7]: NoaaChannel[1] - NOAA channel (if ENABLE_NOAA)
+//
+// Timing: ~2-5ms flash write (8 bytes)
+// Related Functions: SETTINGS_InitEEPROM() loads these on startup
+//
 void SETTINGS_SaveVfoIndices(void)
 {
     uint8_t State[8];
@@ -741,26 +762,8 @@ void SETTINGS_SaveVfoIndices(void)
     PY25Q16_WriteBuffer(0x005000, State, 8, true);
 }
 
-// ============================================================================
-// SETTINGS_SaveVfoIndices - Save current VFO/channel selections to flash
-// ============================================================================
-// Persists which channel/VFO is currently selected in each VFO.
-// Allows radio to resume at last channel selection after power-off.
-// Called when user switches between channels/VFOs.
-//
-// State Saved (8 bytes at 0x005000):
-//   [0]: ScreenChannel[0] - displayed channel in VFO A
-//   [1]: MrChannel[0] - selected memory channel in VFO A
-//   [2]: FreqChannel[0] - selected VFO frequency channel in VFO A
-//   [3]: ScreenChannel[1] - displayed channel in VFO B
-//   [4]: MrChannel[1] - selected memory channel in VFO B
-//   [5]: FreqChannel[1] - selected VFO frequency channel in VFO B
-//   [6]: NoaaChannel[0] - NOAA channel (if ENABLE_NOAA)
-//   [7]: NoaaChannel[1] - NOAA channel (if ENABLE_NOAA)
-//
-// Timing: ~2-5ms flash write (8 bytes)
-// Related Functions: SETTINGS_InitEEPROM() loads these on startup
-//
+
+
 // ============================================================================
 // SETTINGS_SaveSettings - Save all radio settings to flash memory
 // ============================================================================
@@ -1100,7 +1103,7 @@ void SETTINGS_SaveSettings(void)
 //   - Updates sector cache to avoid redundant erases
 //   - Different offsets for MR channels (0x0000+) vs VFO (0x1000+)
 //
-void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, uint8_t Mode)
+void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, uint8_t Mode)  // calypso marker this function stalls CPU
 {
 #ifdef ENABLE_NOAA
     if (IS_NOAA_CHANNEL(Channel))
@@ -1124,7 +1127,7 @@ void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, 
         
         State_t *State;
 
-        uint8_t Buf[0x10];
+        uint8_t Buf[0x10] __attribute__((aligned(4))) = {0};  // Force 4-byte alignment for uint32_t access
 
         State = (State_t *)Buf;
         State -> _32[0] = pVFO->freq_config_RX.Frequency;
@@ -1152,10 +1155,10 @@ void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, 
 #else
         State -> _8[7] =  pVFO->SCRAMBLING_TYPE;
 #endif
+        // PY25Q16_WriteBuffer(uint32_t Address, const void *pBuffer, uint32_t Size, bool Append)
+        PY25Q16_WriteBuffer(OffsetVFO, Buf, 0x10, false); //calypso marker CPU stall here
 
-        PY25Q16_WriteBuffer(OffsetVFO, Buf, 0x10, false);
-
-        SETTINGS_UpdateChannel(Channel, pVFO, true, true, true);
+        SETTINGS_UpdateChannel(Channel, pVFO, true, true, true); 
 
         if (IS_MR_CHANNEL(Channel)) {
 #ifndef ENABLE_KEEP_MEM_NAME
