@@ -39,7 +39,7 @@
 
 static uint32_t SectorCacheAddr = 0x1000000;
 static uint8_t SectorCache[SECTOR_SIZE];
-static uint8_t BlackHole[1];
+static uint32_t BlackHole[1];
 static volatile bool TC_Flag;
 
 static inline void CS_Assert()
@@ -206,7 +206,7 @@ static void SPI_Init()
 //   - DMA1 channels 4 (RX) and 5 (TX)
 //   - SPI2 peripheral
 //   - TC_Flag (volatile bool) - set by DMA ISR on completion
-//   - BlackHole[1] - dummy buffer for TX
+//   - BlackHole - dummy buffer for TX
 //
 // Timing:
 //   - Setup: ~10-20us (DMA config and SPI enable)
@@ -313,7 +313,7 @@ static void SPI_ReadBuf(uint8_t *Buf, uint32_t Size)
 //   - While (!TC_Flag) loop waits for transfer to finish
 //   - Full-duplex: TX to SPI, RX dummy data
 //
-static void SPI_WriteBuf(const uint8_t *Buf, uint32_t Size)
+static void SPI_WriteBuf(const uint8_t *Buf, uint32_t Size)  
 {
     LL_SPI_Disable(SPIx);
     LL_DMA_DisableChannel(DMA1, CHANNEL_RD);
@@ -417,25 +417,11 @@ static uint8_t SPI_WriteByte(uint8_t Value)
     while (!LL_SPI_IsActiveFlag_TXE(SPIx) && timeout--)
         ;
     
-    if (!timeout) {
-        #ifdef DEBUG
-            printf("ERROR: SPI_WriteByte TXE timeout - SPI may be disabled\n");
-        #endif
-        return 0xFF;  // Return error code
-    }
-    
     LL_SPI_TransmitData8(SPIx, Value);
     
     timeout = 1000000;
     while (!LL_SPI_IsActiveFlag_RXNE(SPIx) && timeout--)
         ;
-    
-    if (!timeout) {
-        #ifdef DEBUG
-            printf("ERROR: SPI_WriteByte RXNE timeout - SPI stalled\n");
-        #endif
-        return 0xFF;
-    }
     
     return LL_SPI_ReceiveData8(SPIx);
 }
@@ -523,7 +509,7 @@ void PY25Q16_ReadBuffer(uint32_t Address, void *pBuffer, uint32_t Size)
 //   - Erase sets all bits to 1 (0xFF) in 4KB sectors
 //   - Sector size: 0x1000 (4096 bytes)
 //
-void PY25Q16_WriteBuffer(uint32_t Address, const void *pBuffer, uint32_t Size, bool Append)  // stalls CPU
+void PY25Q16_WriteBuffer(uint32_t Address, const void *pBuffer, uint32_t Size, bool Append)  
 {
 #ifdef DEBUG
     printf("spi flash write: %06x %ld %d\n", Address, Size, Append);
@@ -579,13 +565,13 @@ void PY25Q16_WriteBuffer(uint32_t Address, const void *pBuffer, uint32_t Size, b
                 }
                 else
                 {
-                    SectorProgram(SecAddr, SectorCache, SECTOR_SIZE);
+                    SectorProgram(SecAddr, SectorCache, SECTOR_SIZE);  
                 }
-                            }
+            }
             else
             {
                 SectorProgram(Address, pBuffer, SecSize);
-                            }
+            }
         }
 
         Address += SecSize;
@@ -809,10 +795,7 @@ static void WriteEnable()
     CS_Assert();
     SPI_WriteByte(CMD_WRITE_ENABLE);
     CS_Release();
-    
-    // Ensure minimum CS high time (tCSDH = 50ns)
-    // Small delay ensures flash chip recognizes CS deselect
-    __asm volatile ("nop; nop;");
+
 }
 
 // ============================================================================

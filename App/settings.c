@@ -1103,7 +1103,7 @@ void SETTINGS_SaveSettings(void)
 //   - Updates sector cache to avoid redundant erases
 //   - Different offsets for MR channels (0x0000+) vs VFO (0x1000+)
 //
-void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, uint8_t Mode)  // calypso marker this function stalls CPU
+void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, uint8_t Mode)  
 {
 #ifdef ENABLE_NOAA
     if (IS_NOAA_CHANNEL(Channel))
@@ -1156,7 +1156,7 @@ void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, 
         State -> _8[7] =  pVFO->SCRAMBLING_TYPE;
 #endif
         // PY25Q16_WriteBuffer(uint32_t Address, const void *pBuffer, uint32_t Size, bool Append)
-        PY25Q16_WriteBuffer(OffsetVFO, Buf, 0x10, false); //calypso marker CPU stall here
+        PY25Q16_WriteBuffer(OffsetVFO, Buf, 0x10, false); 
 
         SETTINGS_UpdateChannel(Channel, pVFO, true, true, true); 
 
