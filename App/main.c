@@ -83,8 +83,13 @@ void Main(void)
     VCP_Init();
 #endif
 
-    // Not implementing authentic device checks
 
+    memset(gFrameBuffer, 0, sizeof(gFrameBuffer));
+    memset(gFrameBufferOld, 1, sizeof(gFrameBufferOld));
+    memset(gStatusLine,  0, sizeof(gStatusLine));
+    memset(gStatusLineOld,  1, sizeof(gStatusLineOld));
+
+    // Not implementing authentic device checks
     memset(gDTMF_String, '-', sizeof(gDTMF_String));
     gDTMF_String[sizeof(gDTMF_String) - 1] = 0;
 

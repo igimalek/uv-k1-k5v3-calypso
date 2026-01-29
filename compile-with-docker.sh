@@ -22,7 +22,7 @@ EXTRA_ARGS=("$@")
 # ---------------------------------------------
 # Validate preset name
 # ---------------------------------------------
-if [[ ! "$PRESET" =~ ^(Calypso|Bandscope|Broadcast|Basic|RescueOps|Game|Fusion|All)$ ]]; then
+if [[ ! "$PRESET" =~ ^(Calypso|Basic|All)$ ]]; then
   echo "❌ Unknown preset: '$PRESET'"
   echo "Valid presets are: Calypso, Bandscope, Broadcast, Basic, RescueOps, Game, Fusion, All"
   exit 1

@@ -671,7 +671,7 @@ void SETTINGS_FactoryReset(bool bIsAll)
 
         #ifdef ENABLE_FEAT_F4HWN_RESET_CHANNEL
             // set the first few memory channels
-            for (i = 0; i < ARRAY_SIZE(gDefaultFrequencyTable); i++)
+            for (uint8_t i = 0; i < ARRAY_SIZE(gDefaultFrequencyTable); i++)
             {
                 const uint32_t Frequency   = gDefaultFrequencyTable[i];
                 gRxVfo->freq_config_RX.Frequency = Frequency;
