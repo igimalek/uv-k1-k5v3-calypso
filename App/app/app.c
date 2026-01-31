@@ -2200,7 +2200,7 @@ Skip:
     }
 
     if (gRequestSaveChannel > 0) { // TODO: remove the gRequestSaveChannel, why use global variable for that??
-        if ((!bKeyHeld && !bKeyPressed) ) //|| UI_MENU_GetCurrentMenuId()) // calypso marker: must not write on every up/down button hold
+        if ((!bKeyHeld && !bKeyPressed) || UI_MENU_GetCurrentMenuId()) // calypso marker: must not write on every up/down button hold
         {
             SETTINGS_SaveChannel(gTxVfo->CHANNEL_SAVE, gEeprom.TX_VFO, gTxVfo, gRequestSaveChannel);
 

@@ -546,8 +546,7 @@ void MENU_AcceptSetting(void)
                     BK4819_DisableScramble();
                                        
                 //if (gRxVfo->Modulation == MODULATION_AM)
-                  // BK4819_SetFilterBandwidth(BK4819_FILTER_BW_AM, true);
-
+                //    BK4819_SetFilterBandwidth(BK4819_FILTER_BW_AM, true);
 
             gRequestSaveChannel     = 1;
             return;
