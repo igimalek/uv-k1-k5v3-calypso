@@ -483,15 +483,7 @@ void UI_DisplayMenu(void)
 
     UI_DisplayClear();
 
-#ifdef ENABLE_FEAT_F4HWN
-    UI_DrawLineBuffer(gFrameBuffer, 48, 0, 48, 55, 1); // Be ware, status zone = 8 lines, the rest = 56 ->total 64
-    //UI_DrawLineDottedBuffer(gFrameBuffer, 0, 46, 50, 46, 1);
 
-    for (uint8_t i = 0; i < 48; i += 2)
-    {
-        gFrameBuffer[5][i] = 0x40;
-    }
-#endif
 
 #ifndef ENABLE_CUSTOM_MENU_LAYOUT
         // original menu layout
@@ -507,9 +499,6 @@ void UI_DisplayMenu(void)
         gFrameBuffer[3][i] ^= 0xFF;
     }
 
-    // draw vertical separating dotted line
-    for (i = 0; i < 7; i++)
-        gFrameBuffer[i][(8 * menu_list_width) + 1] = 0xAA;
 
     // draw the little sub-menu triangle marker
     if (gIsInSubMenu)
@@ -1307,6 +1296,77 @@ void UI_DisplayMenu(void)
         char *pPrintStr = (gAskForConfirmation == 1) ? "SURE?" : "WAIT!";
         UI_PrintString(pPrintStr, menu_item_x1, menu_item_x2, 5, 8);
     }
+
+
+    //   НЕСКОЛЬКО КОРОТКИХ ПУНКТИРНЫХ ЛИНИЙ ГОРИЗОНТ — ПОЛНАЯ НАСТРОЙКА КАЖДОЙ!
+// ────────────────────────────────────────────────────────────────
+typedef struct {
+	uint8_t y;        // высота (0..63)
+	uint8_t x_start;  // отступ слева
+	uint8_t x_end;    // отступ справа
+	uint8_t step;     // шаг пунктира: 1 = сплошная, 2 = •◦, 3 = •◦◦, 4 = •◦◦◦ и т.д.
+} dashed_line_t;
+
+// ─────── ТУТ НАСТРАИВАЙ СКОЛЬКО УГОДНО ЛИНИЙ ───────
+static const dashed_line_t dashed_lines[] = {
+	{ 8,  0, 127, 2 },   // линия 1: частый пунктир
+	{ 52,  0, 47, 2 },   // линия 2: сплошная (step = 1)
+	// хочешь ещё? — добавляй:
+	// { 24,  15, 113, 3 },
+	// { 40,   8, 120, 5 },
+};
+
+const uint8_t num_lines = ARRAY_SIZE(dashed_lines);
+
+// Рисуем все линии
+for (uint8_t i = 0; i < num_lines; i++)
+{
+	const dashed_line_t *l = &dashed_lines[i];
+	const uint8_t y = l->y;
+
+	for (uint8_t x = l->x_start; x <= l->x_end; x += l->step)
+	{
+		if (y < 8)
+			gStatusLine[x] |= (1u << y);                                         // статусная строка
+		else
+			gFrameBuffer[(y - 8) >> 3][x] |= (1u << ((y - 8) & 7));              // основной экран
+	}
+}
+// ────────────────────────────────────────────────────────────────
+//   НЕСКОЛЬКО ВЕРТИКАЛЬНЫХ ПУНКТИРНЫХ ЛИНИЙ — ПОЛНАЯ НАСТРОЙКА КАЖДОЙ!
+// ────────────────────────────────────────────────────────────────
+typedef struct {
+	uint8_t x;        // позиция по горизонтали (0..127)
+	uint8_t y_start;  // отступ сверху
+	uint8_t y_end;    // отступ снизу
+	uint8_t step;     // шаг пунктира: 1 = сплошная, 2 = •◦, 3 = •◦◦ и т.д.
+} vertical_line_t;
+
+// ─────── НАСТРАИВАЙ СКОЛЬКО УГОДНО ВЕРТИКАЛЬНЫХ ЛИНИЙ ───────
+static const vertical_line_t vertical_lines[] = {
+	{  49,  10, 64, 2 },   // левая линия — частый пунктир
+	// добавляй свои:
+	// { 30, 15, 50, 4 },
+	// { 90, 12, 52, 1 },
+};
+
+const uint8_t num_vlines = ARRAY_SIZE(vertical_lines);
+
+// Рисуем все вертикальные линии
+for (uint8_t i = 0; i < num_vlines; i++)
+{
+	const vertical_line_t *l = &vertical_lines[i];
+	const uint8_t x = l->x;
+
+	for (uint8_t y = l->y_start; y <= l->y_end; y += l->step)
+	{
+		if (y < 8)
+			gStatusLine[x] |= (1u << y);
+		else
+			gFrameBuffer[(y - 8) >> 3][x] |= (1u << ((y - 8) & 7));
+	}
+}
+// ────────────────────────────────────────────────────────────────
 
     ST7565_BlitFullScreen();
 }

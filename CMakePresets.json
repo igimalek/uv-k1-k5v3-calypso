@@ -51,6 +51,7 @@
                 "ENABLE_FEAT_F4HWN_CHARGING_C": false,
                 "ENABLE_FEAT_F4HWN_SLEEP": false,
                 "ENABLE_FEAT_F4HWN_RESUME_STATE": true,
+                "ENABLE_FEAT_F4HWN_RX_TX_TIMER": true, // добавил таймер
                 "ENABLE_FEAT_F4HWN_NARROWER": true,
                 "ENABLE_FEAT_F4HWN_INV": true,
                 "ENABLE_FEAT_F4HWN_CTR": true,
@@ -64,7 +65,7 @@
                 "ENABLE_UART_RW_BK_REGS": false,
                 "ENABLE_NAVIG_LEFT_RIGHT": true,
                 "ENABLE_SWD": false,
-                "VERSION_STRING_1": "v1.3.2",
+                "VERSION_STRING_1": "v1.3.1",
                 "VERSION_STRING_2": "v4.3.2"
             }
         },
