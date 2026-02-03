@@ -1,20 +1,4 @@
-/* Copyright 2025 muzkr https://github.com/muzkr
- * Copyright 2023 Manuel Jinger
- * Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #include "driver/gpio.h"
 #include "driver/keyboard.h"
@@ -42,34 +26,34 @@ static inline uint32_t read_rows()
 }
 
 static const KEY_Code_t keyboard[5][4] = {
-    {   // Zero col
-        // Set to zero to handle special case of nothing pulled down
+    {    
+         
         KEY_SIDE1, 
         KEY_SIDE2, 
 
-        // Duplicate to fill the array with valid values
+         
         KEY_INVALID, 
         KEY_INVALID, 
     },
-    {   // First col
+    {    
         KEY_MENU, 
         KEY_1, 
         KEY_4, 
         KEY_7, 
     },
-    {   // Second col
+    {    
         KEY_UP, 
         KEY_2 , 
         KEY_5 , 
         KEY_8 , 
     },
-    {   // Third col
+    {    
         KEY_DOWN, 
         KEY_3   , 
         KEY_6   , 
         KEY_9   , 
     },
-    {   // Fourth col
+    {    
         KEY_EXIT, 
         KEY_STAR, 
         KEY_0   , 
@@ -81,10 +65,6 @@ KEY_Code_t KEYBOARD_Poll(void)
 {
     KEY_Code_t Key = KEY_INVALID;
 
-    //  if (!GPIO_CheckBit(&GPIOC->DATA, GPIOC_PIN_PTT))
-    //      return KEY_PTT;
-
-    // *****************
 
     for (unsigned int j = 0; j < 5; j++)
     {
@@ -92,14 +72,14 @@ KEY_Code_t KEYBOARD_Poll(void)
         unsigned int i;
         unsigned int k;
 
-        // Set all high
+         
         GPIO_SetOutputPin(PIN_COLS);
 
-        // Clear the pin we are selecting
+         
         if (j > 0)
             GPIO_ResetOutputPin(PIN_COL(j - 1));
 
-        // Read all 4 GPIO pins at once .. with de-noise, max of 8 sample loops
+         
         for (i = 0, k = 0, reg = 0; i < 3 && k < 8; i++, k++)
         {
             SYSTICK_DelayUs(1);
@@ -109,7 +89,7 @@ KEY_Code_t KEYBOARD_Poll(void)
         }
 
         if (i < 3)
-            break; // noise is too bad
+            break;  
 
         for (unsigned int i = 0; i < 4; i++)
         {

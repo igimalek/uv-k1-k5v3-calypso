@@ -1,18 +1,4 @@
-/* Copyright 2025 muzkr
- * https://github.com/muzkr
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #include <string.h>
 
@@ -26,7 +12,6 @@
 #include "driver/systick.h"
 #include "external/printf/printf.h"
 
-// #define DEBUG
 
 #define SPIx SPI2
 #define CHANNEL_RD LL_DMA_CHANNEL_4
@@ -52,95 +37,39 @@ static inline void CS_Release()
     GPIO_SetOutputPin(CS_PIN);
 }
 
-// ============================================================================
-// py25q16 timing parameters from PY25Q16HB datasheet V1.3
-// ============================================================================
-/*
-Symbol Parameter                    Min    Typ    Max    Units
-TESL(4) Erase Suspend Latency                30          us
-TPSL(4) Program Suspend Latency             30          us
-TPRS(2) Latency between Program Resume      0.5         us
-TERS(3) Latency between Erase Resume        0.5         us
-tPSR   Program Security Registers (256B)    0.4   2.4   ms
-tESR   Erase Security Registers             40    300   ms
-tPP    Page program time (256 bytes)        0.4   2.4   ms
-tbp    Byte program time (1 byte)           30    50    us
-tSE    Sector erase time (4KB)              40    300   ms
-tBE1   Block erase time (32KB)              120   800   ms
-tBE2   Block erase time (64KB)              150   1200  ms
-tCE    Chip erase time                      5     15    s
-tRES   Recovery time after Power Loss              20    ms (min)
-tCO    Chip Select to Output Valid                10    us (max)
-tCSDH  CS deselect high time                      50    ns (min)
-tSHSL  Interval between operations (CS high)      0     ns (min)
 
-Manufacturer ID: 0x94
-Memory Type: 0x60
-Capacity ID: 0x15 (16 Mbit = 2 Mbyte)
+#define CMD_READ         0x03     
+#define CMD_FAST_READ    0x0B     
+#define CMD_PAGE_PROG    0x02     
+#define CMD_SECTOR_ERASE 0x20     
+#define CMD_BLOCK_ERASE_32K 0x52  
+#define CMD_BLOCK_ERASE_64K 0xD8  
+#define CMD_CHIP_ERASE   0x60     
+#define CMD_READ_SR1     0x05     
+#define CMD_READ_SR2     0x35     
+#define CMD_READ_SR3     0x15     
+#define CMD_WRITE_ENABLE 0x06     
+#define CMD_WRITE_DISABLE 0x04    
+#define CMD_RDID         0x9F     
+#define CMD_REMS         0x90     
+#define CMD_PROG_SUSPEND 0x75     
+#define CMD_ERASE_SUSPEND 0xB0    
+#define CMD_PROG_RESUME  0x7A     
+#define CMD_ERASE_RESUME 0x30     
+#define CMD_DEEP_POWER_DOWN 0xB9  
+#define CMD_RELEASE_POWER_DOWN 0xAB  
 
-SPI Mode: 0 (CPOL=0, CPHA=0) or 3 (CPOL=1, CPHA=1)
-Max frequency: 80 MHz (with proper timing)
-Clock duty cycle: max 50%
-*/
+ 
+#define SR1_WIP   0x01     
+#define SR1_WEL   0x02     
+#define SR1_BP0   0x04     
+#define SR1_BP1   0x08     
+#define SR1_BP2   0x10     
+#define SR1_BP3   0x20     
+#define SR1_QE    0x40     
+#define SR1_SRWD  0x80     
 
-// ============================================================================
-// SPI Commands (PY25Q16HB)
-// ============================================================================
-#define CMD_READ         0x03    // Read Data
-#define CMD_FAST_READ    0x0B    // Fast Read
-#define CMD_PAGE_PROG    0x02    // Page Program (PP)
-#define CMD_SECTOR_ERASE 0x20    // Sector Erase (SE) - 4KB
-#define CMD_BLOCK_ERASE_32K 0x52 // Block Erase (BE1) - 32KB
-#define CMD_BLOCK_ERASE_64K 0xD8 // Block Erase (BE2) - 64KB
-#define CMD_CHIP_ERASE   0x60    // Chip Erase (CE) - sequence: 0x60, then 0xC7
-#define CMD_READ_SR1     0x05    // Read Status Register 1
-#define CMD_READ_SR2     0x35    // Read Status Register 2
-#define CMD_READ_SR3     0x15    // Read Status Register 3
-#define CMD_WRITE_ENABLE 0x06    // Write Enable (WREN)
-#define CMD_WRITE_DISABLE 0x04   // Write Disable (WRDI)
-#define CMD_RDID         0x9F    // Read Identification (RDID)
-#define CMD_REMS         0x90    // Read Electronic Manufacturer Signature
-#define CMD_PROG_SUSPEND 0x75    // Program Suspend
-#define CMD_ERASE_SUSPEND 0xB0   // Erase Suspend
-#define CMD_PROG_RESUME  0x7A    // Program Resume
-#define CMD_ERASE_RESUME 0x30    // Erase Resume
-#define CMD_DEEP_POWER_DOWN 0xB9 // Deep Power Down
-#define CMD_RELEASE_POWER_DOWN 0xAB // Release from Deep Power Down
 
-// Status Register 1 bits (0x05)
-#define SR1_WIP   0x01    // Write In Progress
-#define SR1_WEL   0x02    // Write Enable Latch
-#define SR1_BP0   0x04    // Block Protect 0
-#define SR1_BP1   0x08    // Block Protect 1
-#define SR1_BP2   0x10    // Block Protect 2
-#define SR1_BP3   0x20    // Block Protect 3
-#define SR1_QE    0x40    // Quad Enable (reserved for dual/quad SPI)
-#define SR1_SRWD  0x80    // Status Register Write Disable
-
-// ============================================================================
-// SPI_Init - Initialize SPI peripheral and DMA for flash communication
-// ============================================================================
-// Configures SPI2 for master mode with DMA support for efficient data transfer.
-// Sets up GPIO pins for SPI signals and enables DMA channels for read/write.
-//
-// Dependencies:
-//   - LL_APB1_GRP1_EnableClock() - enable SPI2 clock
-//   - LL_AHB1_GRP1_EnableClock() - enable DMA1 clock
-//   - LL_IOP_GRP1_EnableClock() - enable GPIOA clock
-//   - LL_GPIO_Init() - configure GPIO pins
-//   - LL_SYSCFG_SetDMARemap() - map DMA channels to SPI
-//   - NVIC_SetPriority(), NVIC_EnableIRQ() - enable DMA interrupts
-//   - LL_SPI_Init() - configure SPI parameters
-//
-// Timing:
-//   - Initialization: ~1ms (clock enables and register setup)
-//
-// Notes:
-//   - SPI mode: Full-duplex, CPOL=1, CPHA=1 (mode 3)
-//   - Baud rate: Prescaler DIV2 (high speed for flash)
-//   - DMA channels: CH4 for RX, CH5 for TX
-//   - Interrupts: DMA transfer complete on CH4
-//
 static void SPI_Init()
 {
     LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_SPI2);
@@ -149,9 +78,7 @@ static void SPI_Init()
 
     do
     {
-        // SCK: PA0
-        // MOSI: PA1
-        // MISO: PA2
+
 
         LL_GPIO_InitTypeDef InitStruct;
         LL_GPIO_StructInit(&InitStruct);
@@ -182,7 +109,7 @@ static void SPI_Init()
     InitStruct.TransferDirection = LL_SPI_FULL_DUPLEX;
     InitStruct.ClockPhase = LL_SPI_PHASE_2EDGE;
     InitStruct.ClockPolarity = LL_SPI_POLARITY_HIGH;
-    InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV2;  // calypso marker slow down SPI for stability
+    InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV2;   
     InitStruct.BitOrder = LL_SPI_MSB_FIRST;
     InitStruct.NSS = LL_SPI_NSS_SOFT;
     InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
@@ -191,35 +118,7 @@ static void SPI_Init()
     LL_SPI_Enable(SPIx);
 }
 
-// ============================================================================
-// SPI_ReadBuf - Read data from SPI using DMA (bulk transfer)
-// ============================================================================
-// Performs efficient bulk read from SPI peripheral using DMA.
-// Configures DMA channels for peripheral-to-memory transfer.
-// Uses dummy writes to BlackHole buffer to clock out data.
-//
-// Parameters:
-//   Buf:  Destination buffer for received data
-//   Size: Number of bytes to read
-//
-// Dependencies:
-//   - DMA1 channels 4 (RX) and 5 (TX)
-//   - SPI2 peripheral
-//   - TC_Flag (volatile bool) - set by DMA ISR on completion
-//   - BlackHole - dummy buffer for TX
-//
-// Timing:
-//   - Setup: ~10-20us (DMA config and SPI enable)
-//   - Transfer: Size bytes @ SPI baud rate (~1us per byte)
-//   - Wait: Blocking until DMA complete (TC_Flag set in ISR)
-//   - Total: ~Size us + overhead (blocking)
-//
-// Notes:
-//   - TC_Flag is set to false before transfer, polled in while loop
-//   - DMA ISR (DMA1_Channel4_5_6_7_IRQHandler) sets TC_Flag = true on completion
-//   - While (!TC_Flag) loop waits for transfer to finish
-//   - Full-duplex: RX from SPI, TX dummy data
-//
+
 static void SPI_ReadBuf(uint8_t *Buf, uint32_t Size)
 {
     LL_SPI_Disable(SPIx);
@@ -227,26 +126,26 @@ static void SPI_ReadBuf(uint8_t *Buf, uint32_t Size)
     LL_DMA_DisableChannel(DMA1, CHANNEL_WR);
 
     LL_DMA_ClearFlag_GI4(DMA1);
-    LL_DMA_ClearFlag_GI5(DMA1); // calypso marker
+    LL_DMA_ClearFlag_GI5(DMA1);  
 
-    LL_DMA_ConfigTransfer(DMA1, CHANNEL_RD,                 //
-                          LL_DMA_DIRECTION_PERIPH_TO_MEMORY //
-                              | LL_DMA_MODE_NORMAL          //
-                              | LL_DMA_PERIPH_NOINCREMENT   //
-                              | LL_DMA_MEMORY_INCREMENT     //
-                              | LL_DMA_PDATAALIGN_BYTE      //
-                              | LL_DMA_MDATAALIGN_BYTE      //
-                              | LL_DMA_PRIORITY_MEDIUM      //
+    LL_DMA_ConfigTransfer(DMA1, CHANNEL_RD,                  
+                          LL_DMA_DIRECTION_PERIPH_TO_MEMORY  
+                              | LL_DMA_MODE_NORMAL           
+                              | LL_DMA_PERIPH_NOINCREMENT    
+                              | LL_DMA_MEMORY_INCREMENT      
+                              | LL_DMA_PDATAALIGN_BYTE       
+                              | LL_DMA_MDATAALIGN_BYTE       
+                              | LL_DMA_PRIORITY_MEDIUM       
     );
 
-    LL_DMA_ConfigTransfer(DMA1, CHANNEL_WR,                 //
-                          LL_DMA_DIRECTION_MEMORY_TO_PERIPH //
-                              | LL_DMA_MODE_NORMAL          //
-                              | LL_DMA_PERIPH_NOINCREMENT   //
-                              | LL_DMA_MEMORY_NOINCREMENT   //
-                              | LL_DMA_PDATAALIGN_BYTE      //
-                              | LL_DMA_MDATAALIGN_BYTE      //
-                              | LL_DMA_PRIORITY_MEDIUM      //
+    LL_DMA_ConfigTransfer(DMA1, CHANNEL_WR,                  
+                          LL_DMA_DIRECTION_MEMORY_TO_PERIPH  
+                              | LL_DMA_MODE_NORMAL           
+                              | LL_DMA_PERIPH_NOINCREMENT    
+                              | LL_DMA_MEMORY_NOINCREMENT    
+                              | LL_DMA_PDATAALIGN_BYTE       
+                              | LL_DMA_MDATAALIGN_BYTE       
+                              | LL_DMA_PRIORITY_MEDIUM       
     );
 
     LL_DMA_SetMemoryAddress(DMA1, CHANNEL_RD, (uint32_t)Buf);
@@ -265,16 +164,15 @@ static void SPI_ReadBuf(uint8_t *Buf, uint32_t Size)
     LL_SPI_EnableDMAReq_RX(SPIx);
     LL_SPI_Enable(SPIx);
     LL_SPI_EnableDMAReq_TX(SPIx);
-    
-    // calypso marker
-    // Add safety timeout to prevent infinite hang
-    uint32_t timeout = 1000000; // ~1 second safety timeout
+
+
+    uint32_t timeout = 1000000;  
     while (!TC_Flag && timeout--)
         ;
 
-    // calypso marker
+     
     if (!TC_Flag) {
-        // Timeout occurred - disable everything to prevent further issues
+         
         LL_SPI_Disable(SPIx);
         LL_DMA_DisableChannel(DMA1, CHANNEL_RD);
         LL_DMA_DisableChannel(DMA1, CHANNEL_WR);
@@ -284,35 +182,7 @@ static void SPI_ReadBuf(uint8_t *Buf, uint32_t Size)
     }
 }
 
-// ============================================================================
-// SPI_WriteBuf - Write data to SPI using DMA (bulk transfer)
-// ============================================================================
-// Performs efficient bulk write to SPI peripheral using DMA.
-// Configures DMA channels for memory-to-peripheral transfer.
-// Receives dummy data into BlackHole buffer during transmission.
-//
-// Parameters:
-//   Buf:  Source buffer containing data to send
-//   Size: Number of bytes to write
-//
-// Dependencies:
-//   - DMA1 channels 4 (RX) and 5 (TX)
-//   - SPI2 peripheral
-//   - TC_Flag (volatile bool) - set by DMA ISR on completion
-//   - BlackHole[1] - dummy buffer for RX
-//
-// Timing:
-//   - Setup: ~10-20us (DMA config and SPI enable)
-//   - Transfer: Size bytes @ SPI baud rate (~1us per byte)
-//   - Wait: Blocking until DMA complete (TC_Flag set in ISR)
-//   - Total: ~Size us + overhead (blocking)
-//
-// Notes:
-//   - TC_Flag is set to false before transfer, polled in while loop
-//   - DMA ISR (DMA1_Channel4_5_6_7_IRQHandler) sets TC_Flag = true on completion
-//   - While (!TC_Flag) loop waits for transfer to finish
-//   - Full-duplex: TX to SPI, RX dummy data
-//
+
 static void SPI_WriteBuf(const uint8_t *Buf, uint32_t Size)  
 {
     LL_SPI_Disable(SPIx);
@@ -320,29 +190,28 @@ static void SPI_WriteBuf(const uint8_t *Buf, uint32_t Size)
     LL_DMA_DisableChannel(DMA1, CHANNEL_WR);
 
     LL_DMA_ClearFlag_GI4(DMA1);
-    LL_DMA_ClearFlag_GI5(DMA1); // calypso marker
+    LL_DMA_ClearFlag_GI5(DMA1);  
 
-    // CRITICAL FIX: RX DMA must use MEMORY_NOINCREMENT (BlackHole buffer) but must use PRIORITY_MEDIUM
-    // to ensure RX FIFO empties and TC interrupt fires. Using PRIORITY_LOW starves RX channel.
-    LL_DMA_ConfigTransfer(DMA1, CHANNEL_RD,                 //
-                          LL_DMA_DIRECTION_PERIPH_TO_MEMORY //
-                              | LL_DMA_MODE_NORMAL          //
-                              | LL_DMA_PERIPH_NOINCREMENT   //
-                              | LL_DMA_MEMORY_NOINCREMENT   //
-                              | LL_DMA_PDATAALIGN_BYTE      //
-                              | LL_DMA_MDATAALIGN_BYTE      //
-                              | LL_DMA_PRIORITY_MEDIUM      // FIXED: Was LOW, caused starvation
+
+    LL_DMA_ConfigTransfer(DMA1, CHANNEL_RD,                  
+                          LL_DMA_DIRECTION_PERIPH_TO_MEMORY  
+                              | LL_DMA_MODE_NORMAL           
+                              | LL_DMA_PERIPH_NOINCREMENT    
+                              | LL_DMA_MEMORY_NOINCREMENT    
+                              | LL_DMA_PDATAALIGN_BYTE       
+                              | LL_DMA_MDATAALIGN_BYTE       
+                              | LL_DMA_PRIORITY_MEDIUM       
     );
 
-    // TX DMA: Memory has data, must increment to read next bytes
-    LL_DMA_ConfigTransfer(DMA1, CHANNEL_WR,                 //
-                          LL_DMA_DIRECTION_MEMORY_TO_PERIPH //
-                              | LL_DMA_MODE_NORMAL          //
-                              | LL_DMA_PERIPH_NOINCREMENT   //
-                              | LL_DMA_MEMORY_INCREMENT     //
-                              | LL_DMA_PDATAALIGN_BYTE      //
-                              | LL_DMA_MDATAALIGN_BYTE      //
-                              | LL_DMA_PRIORITY_MEDIUM      // FIXED: Was LOW, must match RX priority
+     
+    LL_DMA_ConfigTransfer(DMA1, CHANNEL_WR,                  
+                          LL_DMA_DIRECTION_MEMORY_TO_PERIPH  
+                              | LL_DMA_MODE_NORMAL           
+                              | LL_DMA_PERIPH_NOINCREMENT    
+                              | LL_DMA_MEMORY_INCREMENT      
+                              | LL_DMA_PDATAALIGN_BYTE       
+                              | LL_DMA_MDATAALIGN_BYTE       
+                              | LL_DMA_PRIORITY_MEDIUM       
     );
 
     LL_DMA_SetMemoryAddress(DMA1, CHANNEL_RD, (uint32_t)BlackHole);
@@ -362,15 +231,14 @@ static void SPI_WriteBuf(const uint8_t *Buf, uint32_t Size)
     LL_SPI_Enable(SPIx);
     LL_SPI_EnableDMAReq_TX(SPIx);
 
-    // calypso marker
-    // Add safety timeout to prevent infinite hang
-    uint32_t timeout = 1000000; // ~1 second safety timeout
+
+    uint32_t timeout = 1000000;  
     while (!TC_Flag && timeout--)
         ;
     
-    // calypso marker    
+     
     if (!TC_Flag) {
-        // Timeout occurred - disable everything to prevent further issues
+         
         LL_SPI_Disable(SPIx);
         LL_DMA_DisableChannel(DMA1, CHANNEL_RD);
         LL_DMA_DisableChannel(DMA1, CHANNEL_WR);
@@ -380,39 +248,11 @@ static void SPI_WriteBuf(const uint8_t *Buf, uint32_t Size)
     }
 }
 
-// ============================================================================
-// SPI_WriteByte - Transmit and receive a single byte via SPI (polling)
-// ============================================================================
-// Sends one byte to SPI and receives one byte in return.
-// Uses polling for TXE (transmit buffer empty) and RXNE (receive buffer not empty).
-//
-// Parameters:
-//   Value: Byte to transmit
-//
-// Returns:
-//   Received byte from SPI
-//
-// Dependencies:
-//   - SPI2 peripheral
-//   - LL_SPI_IsActiveFlag_TXE() - check transmit ready
-//   - LL_SPI_IsActiveFlag_RXNE() - check receive ready
-//   - LL_SPI_TransmitData8(), LL_SPI_ReceiveData8() - data transfer
-//
-// Timing:
-//   - Wait TXE: ~1-5us (depends on SPI speed)
-//   - Transmit: immediate
-//   - Wait RXNE: ~1-5us
-//   - Receive: immediate
-//   - Total: ~2-10us (blocking)
-//
-// Notes:
-//   - Blocking function; waits for SPI hardware
-//   - Used for small transfers or when DMA overhead not justified
-//
+
 static uint8_t SPI_WriteByte(uint8_t Value)
 {
-    // CRITICAL FIX: Add safety timeout to prevent infinite hang
-    // If SPI is not properly enabled or has stalled, this prevents CPU lockup
+     
+     
     uint32_t timeout = 1000000;
     while (!LL_SPI_IsActiveFlag_TXE(SPIx) && timeout--)
         ;
@@ -439,10 +279,8 @@ void PY25Q16_Init()
 {
     CS_Release();
     SPI_Init();
-    
-    // Per datasheet: After power-up, wait min 20ms recovery time (tRES)
-    // This is handled by firmware startup sequencing
-    // Optional: Verify chip is correct (Manufacturer 0x94, Type 0x60, Capacity 0x15)
+
+
 #ifdef DEBUG
     uint8_t ManufID, MemType, CapacityID;
     ReadID(&ManufID, &MemType, &CapacityID);
@@ -458,7 +296,7 @@ void PY25Q16_ReadBuffer(uint32_t Address, void *pBuffer, uint32_t Size)
 #endif
     CS_Assert();
 
-    SPI_WriteByte(CMD_READ);  // FIXED: Use CMD_READ (0x03) instead of magic 0x03
+    SPI_WriteByte(CMD_READ);   
     WriteAddr(Address);
 
     if (Size >= 16)
@@ -477,38 +315,7 @@ void PY25Q16_ReadBuffer(uint32_t Address, void *pBuffer, uint32_t Size)
     
 }
 
-// ============================================================================
-// PY25Q16_WriteBuffer - Flash write with sector caching and wear leveling
-// ============================================================================
-// Writes data to flash with intelligent sector caching to minimize erase cycles.
-// Compares new data with cached sector; only erases if data differs from 0xFF.
-// Optimized for write operations: avoids unnecessary erases using memcmp().
-//
-// Parameters:
-//   Address: 24-bit flash address (0x000000 - 0x1FFFFF)
-//   pBuffer: Pointer to source data
-//   Size:    Number of bytes to write (any size; handles sector boundaries)
-//   Append:  true=partial sector updates; false=full sector write
-//
-// Dependencies:
-//   - PY25Q16_ReadBuffer() - reads sector into cache
-//   - SectorErase() - erases 4KB sectors
-//   - SectorProgram() - programs up to 4KB
-//   - memcmp(), memcpy(), memset() - data manipulation
-//   - Static cache: SectorCache[4096], SectorCacheAddr
-//
-// Timing:
-//   - No change: ~1ms (cache hit, memcmp detects no change)
-//   - Program only: ~5-50ms (partial write, no erase)
-//   - Erase + program: ~50-150ms (must erase sector)
-//   - Multiple sectors: Add ~50-150ms per sector
-//   - Blocking; CPU waits for flash completion
-//
-// Notes:
-//   - Flash can only change bits from 1 to 0, not 0 to 1
-//   - Erase sets all bits to 1 (0xFF) in 4KB sectors
-//   - Sector size: 0x1000 (4096 bytes)
-//
+
 void PY25Q16_WriteBuffer(uint32_t Address, const void *pBuffer, uint32_t Size, bool Append)  
 {
 #ifdef DEBUG
@@ -551,13 +358,8 @@ void PY25Q16_WriteBuffer(uint32_t Address, const void *pBuffer, uint32_t Size, b
                 SectorErase(SecAddr);
                 if (Append)
                 {
-                    // CRITICAL FIX: Program only the modified portion (SecOffset to end)
-                    // Changed from: SectorProgram(SecAddr, SectorCache, SecOffset + SecSize)
-                    // The old code passed SIZE as if it included offset, but SectorProgram expects:
-                    //   - Addr: where in FLASH to program
-                    //   - Buf: pointer to DATA to program
-                    //   - Size: how many bytes of DATA (not including offset)
-                    // We need to program full sector to maintain contiguity, but only clear modified part
+
+
                     SectorProgram(SecAddr, SectorCache, SECTOR_SIZE);
                     if (SecOffset + SecSize < SECTOR_SIZE) {
                         memset(SectorCache + SecOffset + SecSize, 0xff, SECTOR_SIZE - SecOffset - SecSize);
@@ -581,33 +383,10 @@ void PY25Q16_WriteBuffer(uint32_t Address, const void *pBuffer, uint32_t Size, b
         SecAddr += SECTOR_SIZE;
         SecOffset = 0;
         SecSize = SECTOR_SIZE;
-    } // while
+    }  
 }
 
-// ============================================================================
-// PY25Q16_SectorErase - Public sector erase with cache invalidation
-// ============================================================================
-// Erases a 4KB sector and invalidates the sector cache if affected.
-// Used for explicit sector erasure when needed.
-//
-// Parameters:
-//   Address: Any address within the 4KB sector (automatically aligned)
-//
-// Dependencies:
-//   - SectorErase() - low-level SPI erase command
-//   - SectorCacheAddr, SectorCache[] - static cache for optimization
-//   - SECTOR_SIZE (0x1000) - 4KB sector boundary
-//
-// Timing:
-//   - Erase operation: ~50-100ms
-//   - Cache invalidation: negligible
-//   - Total: ~50-100ms (blocking)
-//
-// Notes:
-//   - Sets all bits to 1 (0xFF) in the 4KB sector
-//   - Address is automatically aligned down to sector boundary
-//   - Cache is flushed to prevent stale data
-//
+
 void PY25Q16_SectorErase(uint32_t Address)
 {
     Address -= (Address % SECTOR_SIZE);
@@ -618,20 +397,7 @@ void PY25Q16_SectorErase(uint32_t Address)
     }
 }
 
-// ============================================================================
-// WriteAddr - Transmit 24-bit address via SPI (big-endian)
-// ============================================================================
-// Sends 3-byte address to flash chip per SPI flash protocol (MSB first).
-//
-// Parameters:
-//   Addr: 24-bit address (0x000000 - 0x1FFFFF)
-//
-// Dependencies:
-//   - SPI_WriteByte() - low-level SPI transmission
-//
-// Timing:
-//   - 3 bytes @ ~1us each ≈ 3-5us total
-//
+
 static inline void WriteAddr(uint32_t Addr)
 {
     SPI_WriteByte(0xff & (Addr >> 16));
@@ -639,27 +405,7 @@ static inline void WriteAddr(uint32_t Addr)
     SPI_WriteByte(0xff & Addr);
 }
 
-// ============================================================================
-// ReadStatusReg - Read flash status register (0, 1, or 2)
-// ============================================================================
-// Reads one of three status registers to check flash state.
-// Register 0: WIP (bit 0), WEL (bit 1), BP[2:0] (bits 4-2), etc.
-// Register 1-2: Reserved/manufacturer specific
-//
-// Parameters:
-//   Which: Register index (0=Status 1, 1=Status 2, 2=Status 3)
-//
-// Dependencies:
-//   - SPI_WriteByte() - SPI communication
-//   - CS_Assert(), CS_Release() - chip select control
-//   - Commands: 0x05, 0x35, 0x15 (SPI flash standard)
-//
-// Timing:
-//   - Read cycle: ~5-10us
-//
-// Returns:
-//   Status byte value (0 if invalid register)
-//
+
 static uint8_t ReadStatusReg(uint32_t Which)
 {
     uint8_t Cmd;
@@ -686,62 +432,17 @@ static uint8_t ReadStatusReg(uint32_t Which)
     return Value;
 }
 
-// ============================================================================
-// WaitWIP - Poll status register until write operation completes
-// ============================================================================
-// Blocks until WIP (Write In Progress) bit clears in status register 0.
-// Used after erase, write enable, or program operations.
-//
-// Dependencies:
-//   - ReadStatusReg(0) - status register polling
-//   - SYSTICK_DelayUs() - microsecond delay between polls
-//
-// Timing:
-//   - Typical erase: 50-100ms
-//   - Typical program: 1-5ms
-//   - Poll interval: 10us between checks
-//   - Timeout: ~10 seconds (1,000,000 iterations x 10us)
-//   - Blocking; CPU busy-waits
-//
-// Notes:
-//   - Critical for data integrity; must wait for flash operations
-//   - Long timeout protects against flash command failures
-//
-// ============================================================================
-// WaitWIP - Poll status register until write operation completes
-// ============================================================================
-// Blocks until WIP (Write In Progress) bit clears in status register 0.
-// Used after erase, write enable, or program operations.
-// Implements CS timing requirements per datasheet:
-//   - tSHSL: Minimum interval between operations (CS high): 0ns
-//   - tCSDH: CS deselect high time: 50ns minimum
-//
-// Dependencies:
-//   - ReadStatusReg(0) - status register polling
-//   - SYSTICK_DelayUs() - microsecond delay between polls
-//
-// Timing:
-//   - Typical erase: 50-100ms
-//   - Typical program: 1-5ms
-//   - Poll interval: 10us between checks
-//   - Timeout: ~10 seconds (1,000,000 iterations x 10us)
-//   - Blocking; CPU busy-waits
-//
-// Notes:
-//   - Critical for data integrity; must wait for flash operations
-//   - Long timeout protects against flash command failures
-//   - Per datasheet: WIP bit is bit 0 of Status Register 1
-//
+
 static void WaitWIP()
 {
-    // Ensure minimum CS high time (50ns per datasheet tCSDH)
-    // One NOP or two is typically enough on modern CPUs
+     
+     
     __asm volatile ("nop; nop;");
     
     for (int i = 0; i < 1000000; i++)
     {
         uint8_t Status = ReadStatusReg(0);
-        if (SR1_WIP & Status)  // FIXED: Use SR1_WIP constant instead of magic 0x01
+        if (SR1_WIP & Status)   
         {
             SYSTICK_DelayUs(10);
             continue;
@@ -750,46 +451,7 @@ static void WaitWIP()
     }
 }
 
-// ============================================================================
-// WriteEnable - Set Write Enable Latch (WEL) bit in status register
-// ============================================================================
-// Sends WREN command to enable write/erase operations.
-// Must be called before any program or erase command.
-//
-// Dependencies:
-//   - SPI_WriteByte() - command transmission
-//   - CS_Assert(), CS_Release() - chip select
-//   - Command: 0x06 (SPI flash standard WREN)
-//
-// Timing:
-//   - ~5us
-//
-// Notes:
-//   - WEL bit automatically clears after write/erase completes
-//   - Must be called for each write/erase operation
-//
-// ============================================================================
-// WriteEnable - Set Write Enable Latch (WEL) bit in status register
-// ============================================================================
-// Sends WREN command to enable write/erase operations.
-// Must be called before any program or erase command.
-// Per datasheet: WEL bit (bit 1) should be set after WREN command.
-//
-// Dependencies:
-//   - SPI_WriteByte() - command transmission
-//   - CS_Assert(), CS_Release() - chip select
-//   - Command: 0x06 (CMD_WRITE_ENABLE - per SPI flash standard)
-//   - SYSTICK_DelayUs() - CS timing delay
-//
-// Timing:
-//   - ~5us command
-//   - tCSDH: 50ns minimum CS high time (enforced by WaitWIP delay)
-//
-// Notes:
-//   - WEL bit automatically clears after write/erase completes
-//   - Must be called for each write/erase operation
-//   - Per datasheet, WEL should be verified if critical
-//
+
 static void WriteEnable()
 {
     CS_Assert();
@@ -798,76 +460,26 @@ static void WriteEnable()
 
 }
 
-// ============================================================================
-// SectorErase - Erase a 4KB sector (low-level SPI command)
-// ============================================================================
-// Sends SE (Sector Erase) command 0x20 to flash chip.
-// Erases entire 4KB sector, setting all bits to 1 (0xFF).
-//
-// Parameters:
-//   Addr: Starting address of 4KB sector
-//
-// Dependencies:
-//   - WriteEnable() - must enable writes first
-//   - WaitWIP() - must wait for previous op to complete and for erase to finish
-//   - WriteAddr() - address transmission
-//   - SPI_WriteByte(), CS_Assert(), CS_Release() - SPI control
-//   - Command: 0x20 (SPI flash standard SE)
-//
-// Timing:
-//   - Pre-erase setup: WriteEnable() ~5us + WaitWIP() ~1us
-//   - Erase command: ~10us
-//   - Erase operation: ~50-100ms (longest part)
-//   - Post-erase: WaitWIP() ~50-100ms
-//   - Total: ~100-200ms (blocking)
-//
-// Notes:
-//   - Highest power consumption during erase
-//   - Must wait for completion before next operation
-//
+
 static void SectorErase(uint32_t Addr)
 {
 #ifdef DEBUG
     printf("spi flash sector erase: %06x\n", Addr);
 #endif
-    WaitWIP();  // calypso marker CRITICAL: Wait for any previous operation to complete before issuing WriteEnable
+    WaitWIP();   
     WriteEnable();
     
     
     CS_Assert();
-    SPI_WriteByte(CMD_SECTOR_ERASE);  // FIXED: Use CMD_SECTOR_ERASE (0x20) instead of magic number
+    SPI_WriteByte(CMD_SECTOR_ERASE);   
     WriteAddr(Addr);
     CS_Release();
 
-    // Per datasheet: tSE (Sector Erase) = 40-300ms typical
-    // WaitWIP() will poll until completion, don't add extra delay
+
     WaitWIP();
 }
 
-// ============================================================================
-// SectorProgram - Program up to 4KB of data, handling page boundaries
-// ============================================================================
-// Writes data to flash by programming one 256-byte page at a time.
-// Automatically handles crossing page (256B) boundaries.
-//
-// Parameters:
-//   Addr: Starting address within erased sector
-//   Buf:  Pointer to source data
-//   Size: Bytes to program (1-4096)
-//
-// Dependencies:
-//   - PageProgram() - programs individual 256-byte pages
-//   - PAGE_SIZE (0x100) constant - 256-byte page size
-//
-// Timing:
-//   - Per 256-byte page: ~1-5ms
-//   - 4KB sector (16 pages): ~16-80ms total
-//   - Blocking; waits for each page completion
-//
-// Notes:
-//   - Flash must be erased before programming (bits only go 1→0)
-//   - Page programming is required; cannot program arbitrary sizes
-//
+
 static void SectorProgram(uint32_t Addr, const uint8_t *Buf, uint32_t Size)
 {
     uint32_t Size1 = PAGE_SIZE - (Addr % PAGE_SIZE);
@@ -889,52 +501,20 @@ static void SectorProgram(uint32_t Addr, const uint8_t *Buf, uint32_t Size)
     }
 }
 
-// ============================================================================
-// PageProgram - Program a single 256-byte page (low-level SPI command)
-// ============================================================================
-// Sends PP (Page Program) command 0x02 to write up to 256 bytes.
-// Programs within single page boundary; larger data requires SectorProgram().
-//
-// Parameters:
-//   Addr: Address within page (will wrap if exceeds page boundary)
-//   Buf:  Source data pointer
-//   Size: Bytes to program (1-256; wraps at page boundary)
-//
-// Dependencies:
-//   - WriteEnable() - enable writes before programming
-//   - WaitWIP() - wait for completion after programming
-//   - WriteAddr() - send 24-bit address
-//   - SPI_WriteBuf() or SPI_WriteByte() - data transmission
-//   - CS_Assert(), CS_Release() - chip select control
-//   - Command: 0x02 (SPI flash standard PP)
-//
-// Timing:
-//   - Setup: WriteEnable() ~5us
-//   - Command: ~10us
-//   - Data transmission: ~256us (256 bytes @ ~1us each)
-//   - Programming: ~1-5ms (typical 4ms)
-//   - Post-program: WaitWIP() ~5ms
-//   - Total: ~5-10ms (blocking)
-//
-// Notes:
-//   - Uses DMA for data if Size >= 16 bytes (SPI_WriteBuf)
-//   - Uses single-byte SPI writes if Size < 16 bytes
-//   - Wraps within 256-byte page if address+size exceeds boundary
-//   - Flash must be erased before programming
-//
+
 static void PageProgram(uint32_t Addr, const uint8_t *Buf, uint32_t Size)
 {
 #ifdef DEBUG
     printf("spi flash page program: %06x %ld\n", Addr, Size);
 #endif
 
-    WaitWIP();  // calypso marker CRITICAL: Wait for any previous operation to complete before issuing WriteEnable
+    WaitWIP();   
     WriteEnable();
 
     
     CS_Assert();
 
-    SPI_WriteByte(CMD_PAGE_PROG);  // FIXED: Use CMD_PAGE_PROG (0x02) instead of magic 0x2
+    SPI_WriteByte(CMD_PAGE_PROG);   
     WriteAddr(Addr);
 
     if (Size >= 16)
@@ -951,34 +531,11 @@ static void PageProgram(uint32_t Addr, const uint8_t *Buf, uint32_t Size)
 
     CS_Release();
 
-    // Per datasheet: tPP (Page Program) = 0.4-2.4ms typical
-    // WaitWIP() will poll until completion, don't add extra delay
+
     WaitWIP();
 }
 
-// ============================================================================
-// DMA1_Channel4_5_6_7_IRQHandler - DMA transfer complete interrupt handler
-// ============================================================================
-// Handles DMA transfer completion for SPI read/write operations.
-// Sets TC_Flag to true when DMA channel 4 (RX) finishes transfer.
-// Ensures SPI FIFOs are empty before signaling completion.
-//
-// Dependencies:
-//   - DMA1 channel 4 (SPI RX)
-//   - SPI2 peripheral
-//   - TC_Flag (volatile bool) - global flag for transfer completion
-//
-// Timing:
-//   - ISR entry: immediate on DMA TC
-//   - FIFO checks: ~1-5us
-//   - Flag set: immediate
-//   - Total: ~5-10us
-//
-// Notes:
-//   - TC_Flag is initialized to false in SPI_ReadBuf/SPI_WriteBuf
-//   - While (!TC_Flag) loop in those functions waits for this flag
-//   - Ensures all SPI data is processed before signaling done
-//
+
 void DMA1_Channel4_5_6_7_IRQHandler()
 {
     if (LL_DMA_IsActiveFlag_TC4(DMA1) && LL_DMA_IsEnabledIT_TC(DMA1, CHANNEL_RD))
@@ -986,20 +543,17 @@ void DMA1_Channel4_5_6_7_IRQHandler()
         LL_DMA_DisableIT_TC(DMA1, CHANNEL_RD);
         LL_DMA_ClearFlag_TC4(DMA1);
 
-        // CRITICAL FIX: Add timeout to all ISR while loops to prevent infinite hang
-        // If SPI FIFO is stuck or hardware stalled, ISR must exit to prevent system freeze
-        
-        // Wait for TX FIFO to empty (with safety timeout)
+
         uint32_t timeout = 100000;
         while (LL_SPI_TX_FIFO_EMPTY != LL_SPI_GetTxFIFOLevel(SPIx) && timeout--)
             ;
         
-        // Wait for SPI to not be busy (with safety timeout)
+         
         timeout = 100000;
         while (LL_SPI_IsActiveFlag_BSY(SPIx) && timeout--)
             ;
         
-        // Wait for RX FIFO to empty (with safety timeout)
+         
         timeout = 100000;
         while (LL_SPI_RX_FIFO_EMPTY != LL_SPI_GetRxFIFOLevel(SPIx) && timeout--)
             ;

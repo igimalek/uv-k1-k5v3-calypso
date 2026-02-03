@@ -1,19 +1,4 @@
-/* Copyright 2025 muzkr https://github.com/muzkr
- * Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #include "driver/backlight.h"
 #include "py32f071_ll_system.h"
@@ -42,7 +27,7 @@
 
 static uint32_t dutyCycle[DUTY_CYCLE_LEVELS];
 
-// this is decremented once every 500ms
+ 
 uint16_t gBacklightCountdown_500ms = 0;
 bool backlightOn;
 
@@ -62,7 +47,7 @@ void BACKLIGHT_InitHardware()
     LL_APB1_GRP1_ForceReset(LL_APB1_GRP1_PERIPH_TIM7);
     LL_APB1_GRP1_ReleaseReset(LL_APB1_GRP1_PERIPH_TIM7);
 
-    // 48 MHz / ((1 + PSC) * (1 + ARR)) == PWM_freq * levels
+     
     LL_TIM_SetPrescaler(TIMx, 0);
     LL_TIM_SetAutoReload(TIMx, SystemCoreClock / PWM_FREQ / DUTY_CYCLE_LEVELS - 1);
     LL_TIM_EnableARRPreload(TIMx);
@@ -72,14 +57,14 @@ void BACKLIGHT_InitHardware()
     LL_DMA_DisableChannel(DMA1, DMA_CHANNEL) ;
     LL_SYSCFG_SetDMARemap(DMA1, DMA_CHANNEL, LL_SYSCFG_DMA_MAP_TIM7_UP);
 
-    LL_DMA_ConfigTransfer(DMA1, DMA_CHANNEL,                //
-                          LL_DMA_DIRECTION_MEMORY_TO_PERIPH //
-                              | LL_DMA_MODE_CIRCULAR        //
-                              | LL_DMA_PERIPH_NOINCREMENT   //
-                              | LL_DMA_MEMORY_INCREMENT     //
-                              | LL_DMA_PDATAALIGN_WORD      //
-                              | LL_DMA_MDATAALIGN_WORD      //
-                              | LL_DMA_PRIORITY_HIGH        //
+    LL_DMA_ConfigTransfer(DMA1, DMA_CHANNEL,                 
+                          LL_DMA_DIRECTION_MEMORY_TO_PERIPH  
+                              | LL_DMA_MODE_CIRCULAR         
+                              | LL_DMA_PERIPH_NOINCREMENT    
+                              | LL_DMA_MEMORY_INCREMENT      
+                              | LL_DMA_PDATAALIGN_WORD       
+                              | LL_DMA_MDATAALIGN_WORD       
+                              | LL_DMA_PRIORITY_HIGH         
     );
 
     LL_DMA_SetMemoryAddress(DMA1, DMA_CHANNEL, (uint32_t)dutyCycle);
@@ -146,10 +131,10 @@ void BACKLIGHT_TurnOn(void)
 
     switch (gEeprom.BACKLIGHT_TIME) {
         default:
-        case 1 ... 60:  // 5 sec * value
+        case 1 ... 60:   
             gBacklightCountdown_500ms = 1 + (gEeprom.BACKLIGHT_TIME * 5) * 2;
             break;
-        case 61:    // always on
+        case 61:     
             gBacklightCountdown_500ms = 0;
             break;
     }
@@ -182,7 +167,7 @@ static uint8_t currentBrightness = 0;
 
 void BACKLIGHT_SetBrightness(uint8_t brigtness)
 {
-    // printf("BL: %d\n", brigtness);
+     
 
     if (currentBrightness == brigtness)
     {

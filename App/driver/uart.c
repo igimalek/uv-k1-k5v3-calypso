@@ -1,19 +1,4 @@
-/* Copyright 2025 muzkr https://github.com/muzkr
- * Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #include <stdbool.h>
 #include <string.h>
@@ -32,15 +17,14 @@ uint8_t UART_DMA_Buffer[256];
 
 void UART_Init(void)
 {
-    // PA9 TX
-    // PA10 RX
+
 
     LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOA);
     LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMA1);
     LL_APB1_GRP2_EnableClock(LL_APB1_GRP2_PERIPH_SYSCFG);
     LL_APB1_GRP2_EnableClock(LL_APB1_GRP2_PERIPH_USART1);
 
-    // Pins
+     
     do
     {
         LL_GPIO_InitTypeDef GPIO_InitStruct;
@@ -55,7 +39,7 @@ void UART_Init(void)
         LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     } while (0);
 
-    // DMA
+     
     do
     {
         LL_DMA_DisableChannel(DMA1, DMA_CHANNEL);
@@ -83,7 +67,7 @@ void UART_Init(void)
     LL_APB1_GRP2_ForceReset(LL_APB1_GRP2_PERIPH_USART1);
     LL_APB1_GRP2_ReleaseReset(LL_APB1_GRP2_PERIPH_USART1);
 
-    // USART
+     
     do
     {
         LL_USART_Disable(USARTx);
@@ -129,7 +113,7 @@ void UART_LogSend(const void *pBuffer, uint32_t Size)
     bool UART_IsCableConnected(void) {
         for (size_t i = 0; i < sizeof(UART_DMA_Buffer); i++) {
             if (UART_DMA_Buffer[i] == 0x55) {
-                UART_DMA_Buffer[i] = 0x00;  // Clear only the matched byte
+                UART_DMA_Buffer[i] = 0x00;   
                 return true;
             }
         }

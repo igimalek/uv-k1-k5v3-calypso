@@ -1,17 +1,4 @@
-/* Copyright 2025 muzkr https://github.com/muzkr
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #include "driver/voice.h"
 #include "driver/systick.h"
@@ -39,7 +26,7 @@ static inline void DMA_Init()
     LL_SYSCFG_SetDMARemap(DMA1, DMA_CHANNEL, LL_SYSCFG_DMA_MAP_DAC1);
 
     LL_DMA_InitTypeDef InitStruct;
-    //   LL_DMA_StructInit( &InitStruct) ;
+     
     InitStruct.PeriphOrM2MSrcAddress = (uint32_t)DAC_Buf;
     InitStruct.MemoryOrM2MDstAddress = LL_DAC_DMA_GetRegAddr(DAC1, DAC_CHANNEL, LL_DAC_DMA_REG_DATA_12BITS_RIGHT_ALIGNED);
     InitStruct.Direction = LL_DMA_DIRECTION_MEMORY_TO_PERIPH;
@@ -62,7 +49,7 @@ static inline void DMA_Init()
 
 static inline void TIM_Init()
 {
-    // Update freq = 48 MHz / 4 / 1500 == 8 KHz
+     
     LL_TIM_SetPrescaler(TIMx, 3);
     LL_TIM_SetAutoReload(TIMx, 1499);
     LL_TIM_SetTriggerOutput(TIMx, LL_TIM_TRGO_UPDATE);
@@ -72,7 +59,7 @@ void VOICE_Init()
 {
     DMA_Init();
 
-    // Channel 1: PA4
+     
     LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOA);
     LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_4, LL_GPIO_MODE_ANALOG);
 
@@ -106,9 +93,9 @@ void VOICE_Start()
     }
     if (gVoiceBufLen > 0)
     {
-        memcpy(DAC_Buf + VOICE_BUF_SIZE,      //
-               gVoiceBuf[gVoiceBufReadIndex], //
-               VOICE_BUF_SIZE                 //
+        memcpy(DAC_Buf + VOICE_BUF_SIZE,       
+               gVoiceBuf[gVoiceBufReadIndex],  
+               VOICE_BUF_SIZE                  
         );
         VOICE_BUF_ForwardReadIndex();
         gVoiceBufLen--;
@@ -118,9 +105,9 @@ void VOICE_Start()
         memset(DAC_Buf + VOICE_BUF_SIZE, 0, VOICE_BUF_SIZE);
     }
 
-    LL_DMA_ConfigAddresses(DMA1, DMA_CHANNEL, DAC_Buf,                                                         //
-                           LL_DAC_DMA_GetRegAddr(DAC1, DAC_CHANNEL, LL_DAC_DMA_REG_DATA_12BITS_RIGHT_ALIGNED), //
-                           LL_DMA_DIRECTION_MEMORY_TO_PERIPH                                                   //
+    LL_DMA_ConfigAddresses(DMA1, DMA_CHANNEL, DAC_Buf,                                                          
+                           LL_DAC_DMA_GetRegAddr(DAC1, DAC_CHANNEL, LL_DAC_DMA_REG_DATA_12BITS_RIGHT_ALIGNED),  
+                           LL_DMA_DIRECTION_MEMORY_TO_PERIPH                                                    
     );
     LL_DMA_EnableChannel(DMA1, DMA_CHANNEL);
     LL_TIM_EnableCounter(TIMx);
@@ -154,9 +141,9 @@ void DMA1_Channel2_3_IRQHandler()
         LL_DMA_ClearFlag_TC3(DMA1);
         if (gVoiceBufLen > 0)
         {
-            memcpy(DAC_Buf + VOICE_BUF_SIZE,      //
-                   gVoiceBuf[gVoiceBufReadIndex], //
-                   VOICE_BUF_SIZE                 //
+            memcpy(DAC_Buf + VOICE_BUF_SIZE,       
+                   gVoiceBuf[gVoiceBufReadIndex],  
+                   VOICE_BUF_SIZE                  
             );
             VOICE_BUF_ForwardReadIndex();
             gVoiceBufLen--;

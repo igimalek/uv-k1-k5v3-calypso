@@ -1,19 +1,4 @@
-/* Copyright 2025 muzkr https://github.com/muzkr
- * Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #ifndef BK4819_REGS_H
 #define BK4819_REGS_H
@@ -43,15 +28,15 @@ enum BK4819_REGISTER_t {
     BK4819_REG_0C = 0x0CU,
     BK4819_REG_0D = 0x0DU,
     BK4819_REG_0E = 0x0EU,
-    // RX AGC Gain Table[0]
+     
     BK4819_REG_10 = 0x10U,
-    // RX AGC Gain Table[1]
+     
     BK4819_REG_11 = 0x11U,
-    // RX AGC Gain Table[2]
+     
     BK4819_REG_12 = 0x12U,
-    // RX AGC Gain Table[3]
+     
     BK4819_REG_13 = 0x13U,
-    // RX AGC Gain Table[-1]
+     
     BK4819_REG_14 = 0x14U,
     BK4819_REG_19 = 0x19U,
     BK4819_REG_1F = 0x1FU,
@@ -79,12 +64,8 @@ enum BK4819_REGISTER_t {
     BK4819_REG_46 = 0x46U,
     BK4819_REG_47 = 0x47U,
     BK4819_REG_48 = 0x48U,
-    // REG_49<15:14> 0b00; High/Low Lo selection:
-    // 0X: Auto High/Low Lo
-    // 10: Low Lo
-    // 11: High Lo
-    // REG_49<13:7> 0x50; RF AGC high threshold, 1 dB/LSB
-    // REG_49<6:0> 0x30; RF AGC low threshold, 1 dB/LSB
+
+
     BK4819_REG_49 = 0x49U,
     BK4819_REG_4D = 0x4DU,
     BK4819_REG_4E = 0x4EU,
@@ -113,22 +94,13 @@ enum BK4819_REGISTER_t {
     BK4819_REG_78 = 0x78U,
     BK4819_REG_79 = 0x79U,
     BK4819_REG_7A = 0x7AU,
-    // REG_7B<15:0> 0xae34 RSSI table
+     
     BK4819_REG_7B = 0x7BU,
-    // REG_7C<15:0> 0x8000 RSSI table
+     
     BK4819_REG_7C = 0x7CU,
     BK4819_REG_7D = 0x7DU,
-    // REG_7E<15> 0; AGC fix mode:
-    // 1: Fix
-    // 0: Auto
-    // REG_7E<14:12> 0b011; AGC fix index:
-    // 011: Max.
-    // …
-    // 100: Min.
-    // REG_7E<5:3> 0b101; DC filter bandwidth for TX (MIC in):
-    // 000: Bypass DC filter
-    // REG_7E<2:0> 0b110; DC filter bandwidth for RX (IF in):
-    // 000: Bypass DC filter
+
+
     BK4819_REG_7E = 0x7EU,
 };
 
@@ -145,7 +117,6 @@ enum BK4819_GPIO_PIN_t {
 
 typedef enum BK4819_GPIO_PIN_t BK4819_GPIO_PIN_t;
 
-// REG 02
 
 #define BK4819_REG_02_SHIFT_FSK_TX_FINISHED     15
 #define BK4819_REG_02_SHIFT_FSK_FIFO_ALMOST_EMPTY   14
@@ -195,7 +166,6 @@ typedef enum BK4819_GPIO_PIN_t BK4819_GPIO_PIN_t;
 #define BK4819_REG_02_SQUELCH_LOST          (1U << BK4819_REG_02_SHIFT_SQUELCH_LOST)
 #define BK4819_REG_02_FSK_RX_SYNC           (1U << BK4819_REG_02_SHIFT_FSK_RX_SYNC)
 
-// REG 07
 
 #define BK4819_REG_07_SHIFT_FREQUENCY_MODE  13
 #define BK4819_REG_07_SHIFT_FREQUENCY       0
@@ -207,7 +177,6 @@ typedef enum BK4819_GPIO_PIN_t BK4819_GPIO_PIN_t;
 #define BK4819_REG_07_MODE_CTC2         (1U << BK4819_REG_07_SHIFT_FREQUENCY_MODE)
 #define BK4819_REG_07_MODE_CDCSS        (2U << BK4819_REG_07_SHIFT_FREQUENCY_MODE)
 
-// REG 24
 
 #define BK4819_REG_24_SHIFT_UNKNOWN_15   15
 #define BK4819_REG_24_SHIFT_THRESHOLD    7
@@ -226,7 +195,6 @@ typedef enum BK4819_GPIO_PIN_t BK4819_GPIO_PIN_t;
 #define BK4819_REG_24_SELECT_DTMF        (1u << BK4819_REG_24_SHIFT_SELECT)
 #define BK4819_REG_24_SELECT_SELCALL     (0u << BK4819_REG_24_SHIFT_SELECT)
 
-// REG 30
 
 #define BK4819_REG_30_SHIFT_ENABLE_VCO_CALIB    15
 #define BK4819_REG_30_SHIFT_ENABLE_UNKNOWN  14
@@ -273,7 +241,6 @@ enum {
     BK4819_REG_30_DISABLE_RX_DSP        = (0x0U << BK4819_REG_30_SHIFT_ENABLE_RX_DSP),
 };
 
-// REG 3F
 
 #define BK4819_REG_3F_SHIFT_FSK_TX_FINISHED     15
 #define BK4819_REG_3F_SHIFT_FSK_FIFO_ALMOST_EMPTY   14
@@ -323,7 +290,6 @@ enum {
 #define BK4819_REG_3F_SQUELCH_LOST          (1U << BK4819_REG_3F_SHIFT_SQUELCH_LOST)
 #define BK4819_REG_3F_FSK_RX_SYNC           (1U << BK4819_REG_3F_SHIFT_FSK_RX_SYNC)
 
-// REG 51
 
 #define BK4819_REG_51_SHIFT_ENABLE_CxCSS        15
 #define BK4819_REG_51_SHIFT_GPIO6_PIN2_INPUT    14
@@ -371,7 +337,6 @@ enum {
     BK4819_REG_51_AUTO_CTCSS_BW_ENABLE  = (0U << BK4819_REG_51_SHIFT_AUTO_CTCSS_BW),
 };
 
-// REG 70
 
 #define BK4819_REG_70_SHIFT_ENABLE_TONE1    15
 #define BK4819_REG_70_SHIFT_TONE1_TUNING_GAIN   8

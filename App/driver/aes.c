@@ -1,18 +1,4 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #include <stdbool.h>
 
@@ -24,7 +10,7 @@ static void AES_Setup_ENC_CBC(bool IsDecrypt, const void *pKey, const void *pIv)
     const uint32_t *pK = (const uint32_t *)pKey;
     const uint32_t *pI = (const uint32_t *)pIv;
 
-    (void)IsDecrypt;    // unused
+    (void)IsDecrypt;     
     
     AES_CR = (AES_CR & ~AES_CR_EN_MASK) | AES_CR_EN_BITS_DISABLE;
     AES_CR = AES_CR_CHMOD_BITS_CBC;
