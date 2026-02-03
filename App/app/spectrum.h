@@ -1,18 +1,4 @@
-/* Copyright 2023 fagci
- * https://github.com/fagci
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+  
 
 #ifndef SPECTRUM_H
 #define SPECTRUM_H
@@ -76,38 +62,37 @@ static const uint16_t scanStepValues[] = {
 };
 
 static const uint16_t scanStepBWRegValues[] = {
-    //     RX  RXw TX  BW
-    // 0b0 000 000 001 01 1000
-    // 1
-    0b0000000001011000, // 6.25
-    // 10
-    0b0000000001011000, // 6.25
-    // 50
-    0b0000000001011000, // 6.25
-    // 100
-    0b0000000001011000, // 6.25
-    // 250
-    0b0000000001011000, // 6.25
-    // 500
-    0b0010010001011000, // 6.25
-    // 625
-    0b0100100001011000, // 6.25
-    // 833
-    0b0110110001001000, // 6.25
-    // 1000
-    0b0110110001001000, // 6.25
-    // 1250
-    0b0111111100001000, // 6.25
-    // 2500
-    0b0011011000101000, // 25
-    // 10000
-    0b0011011000101000, // 25
+
+
+    0b0000000001011000,   
+      
+    0b0000000001011000,   
+      
+    0b0000000001011000,   
+      
+    0b0000000001011000,   
+      
+    0b0000000001011000,   
+      
+    0b0010010001011000,   
+      
+    0b0100100001011000,   
+      
+    0b0110110001001000,   
+      
+    0b0110110001001000,   
+      
+    0b0111111100001000,   
+      
+    0b0011011000101000,   
+      
+    0b0011011000101000,   
 };
 
 static const uint16_t listenBWRegValues[] = {
-    0b0011011000101000, // 25
-    0b0111111100001000, // 12.5
-    0b0100100001011000, // 6.25
+    0b0011011000101000,   
+    0b0111111100001000,   
+    0b0100100001011000,   
 };
 
 typedef enum State
@@ -179,6 +164,6 @@ typedef struct PeakInfo
 
 void APP_RunSpectrum(void);
 
-#endif /* ifndef SPECTRUM_H */
+#endif   
 
-// vim: ft=c
+  

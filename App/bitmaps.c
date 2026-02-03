@@ -1,8 +1,6 @@
 
 #include "bitmaps.h"
 
-// all these images are on their right sides
-// turn your monitor 90-deg anti-clockwise to see the images
 
 const uint8_t gFontPowerSave[2][6] =
 {
@@ -36,7 +34,7 @@ const uint8_t gFontF[8] =
 
 const uint8_t gFontS[6] =
 {
-    0x26, 0x49, 0x49, 0x49, 0x49, 0x32 // 'S'
+    0x26, 0x49, 0x49, 0x49, 0x49, 0x32  
 };
 
 const uint8_t gFontKeyLock[9] =
@@ -74,20 +72,20 @@ const uint8_t gFontMute[12] =
 };
 
 const uint8_t gFontXB[2][6] =
-{   // "XB"
+{    
     {0x00, 0x63, 0x14, 0x8, 0x14, 0x63},
     {0x00, 0x7f, 0x49, 0x49, 0x49, 0x36},
 };
 
 
 const uint8_t gFontMO[2][6] =
-{   // "MO"
+{    
     {0x00, 0x7f, 0x2, 0x1c, 0x2, 0x7f},
     {0x00, 0x3e, 0x41, 0x41, 0x41, 0x3e},
 };
 
 const uint8_t gFontDWR[3][6] =
-{   // "DWR"
+{    
 
     {0x00, 0x7f, 0x41, 0x41, 0x41, 0x3e},
     {0x00, 0x3f, 0x40, 0x38, 0x40, 0x3f},
@@ -96,7 +94,7 @@ const uint8_t gFontDWR[3][6] =
 
 
 const uint8_t gFontHold[2][5] =
-{   // "><" .. DW on hold
+{    
     {0x00, 0x41, 0x22, 0x14, 0x8},
     {0x00, 0x8, 0x14, 0x22, 0x41},
 };
@@ -107,7 +105,7 @@ const uint8_t BITMAP_BatteryLevel[2] =
     0b01011101
 };
 
-// Quansheng way (+ pole to the left)
+ 
 const uint8_t BITMAP_BatteryLevel1[17] =
 {
     0b00000000,
@@ -193,7 +191,7 @@ const uint8_t BITMAP_VFO_NotDefault[7] =
 };
 
 const uint8_t BITMAP_ScanList0[7] =
-{   // '0' symbol
+{    
     0b01111111,
     0b01111111,
     0b01000011,
@@ -204,7 +202,7 @@ const uint8_t BITMAP_ScanList0[7] =
 };
 
 const uint8_t BITMAP_ScanList1[7] =
-{   // '1' symbol
+{    
     0b01111111,
     0b01111111,
     0b01111011,
@@ -215,7 +213,7 @@ const uint8_t BITMAP_ScanList1[7] =
 };
 
 const uint8_t BITMAP_ScanList2[7] =
-{   // '2' symbol
+{    
     0b01111111,
     0b01111111,
     0b01001101,
@@ -226,7 +224,7 @@ const uint8_t BITMAP_ScanList2[7] =
 };
 
 const uint8_t BITMAP_ScanList3[7] =
-{   // '3' symbol
+{    
     0b01111111,
     0b01111111,
     0b01011101,
@@ -237,7 +235,7 @@ const uint8_t BITMAP_ScanList3[7] =
 };
 
 const uint8_t BITMAP_ScanListE[7] =
-{   // 'E' symbol
+{    
     0b01111111,
     0b01111111,
     0b01000001,
@@ -249,7 +247,7 @@ const uint8_t BITMAP_ScanListE[7] =
 
 const uint8_t BITMAP_ScanList123[19] =
 {
-    // '123' symbol
+     
     0b01111111,
     0b01111111,
     0b01111011,
@@ -273,7 +271,7 @@ const uint8_t BITMAP_ScanList123[19] =
 
 const uint8_t BITMAP_ScanListAll[19] =
 {
-    // 'All' symbol
+     
     0b01111111,
     0b01111111,
     0b01000011,
@@ -305,32 +303,9 @@ const uint8_t BITMAP_compand[6] =
     0b00100100
 };
 
-/*
-const uint8_t BITMAP_Ready[7] =
-{
-    0b00001000,
-    0b00010000,
-    0b00100000,
-    0b00010000,
-    0b00001000,
-    0b00000100,
-    0b00000010,
-};
-
-const uint8_t BITMAP_NotReady[7] =
-{
-    0b00000000,
-    0b01000010,
-    0b00100100,
-    0b00011000,
-    0b00100100,
-    0b01000010,
-    0b00000000,
-};
-*/
 
 const uint8_t BITMAP_PowerUser[3] =
-{   // 'arrow' symbol
+{    
     0b00111110,
     0b00011100,
     0b00001000,
@@ -338,7 +313,7 @@ const uint8_t BITMAP_PowerUser[3] =
 
 #ifdef ENABLE_NOAA
 const uint8_t BITMAP_NOAA[12] =
-{	// "WX"
+{	 
     0b00000000,
     0b01111111,
     0b00100000,

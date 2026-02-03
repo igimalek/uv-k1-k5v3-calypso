@@ -1,14 +1,9 @@
-/*
- * Copyright (c) 2022, sakumisu
- *
- * SPDX-License-Identifier: Apache-2.0
- */
+ 
 #ifndef CHERRYUSB_CONFIG_H
 #define CHERRYUSB_CONFIG_H
 
-/* ================ USB common Configuration ================ */
 
-#define CONFIG_USB_PRINTF(...) //printf(__VA_ARGS__)
+#define CONFIG_USB_PRINTF(...)  
 
 #define usb_malloc(size) malloc(size)
 #define usb_free(ptr)    free(ptr)
@@ -17,30 +12,20 @@
 #define CONFIG_USB_DBG_LEVEL USB_DBG_ERROR
 #endif
 
-/* Enable print with color */
+ 
 #define CONFIG_USB_PRINTF_COLOR_ENABLE
 
-/* data align size when use dma */
+ 
 #ifndef CONFIG_USB_ALIGN_SIZE
 #define CONFIG_USB_ALIGN_SIZE 4
 #endif
 
-/* attribute data into no cache ram */
+ 
 #define USB_NOCACHE_RAM_SECTION __attribute__((section(".noncacheable")))
 
-/* ================= USB Device Stack Configuration ================ */
 
-/* Ep0 max transfer buffer, specially for receiving data from ep0 out */
 #define CONFIG_USBDEV_REQUEST_BUFFER_LEN 256
 
-/* Setup packet log for debug */
-// #define CONFIG_USBDEV_SETUP_LOG_PRINT
-
-/* Check if the input descriptor is correct */
-// #define CONFIG_USBDEV_DESC_CHECK
-
-/* Enable test mode */
-// #define CONFIG_USBDEV_TEST_MODE
 
 #ifndef CONFIG_USBDEV_MSC_BLOCK_SIZE
 #define CONFIG_USBDEV_MSC_BLOCK_SIZE 512
@@ -58,7 +43,6 @@
 #define CONFIG_USBDEV_MSC_VERSION_STRING "0.01"
 #endif
 
-// #define CONFIG_USBDEV_MSC_THREAD
 
 #ifdef CONFIG_USBDEV_MSC_THREAD
 #ifndef CONFIG_USBDEV_MSC_STACKSIZE
@@ -79,7 +63,6 @@
 #endif
 
 
-/* ================ USB Device Port Configuration ================*/
 #include "py32f0xx.h"
 
 #define USBD_IRQn       USB_IRQn

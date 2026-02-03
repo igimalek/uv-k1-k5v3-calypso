@@ -1,18 +1,4 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+  
 
 #include <string.h>
 
@@ -47,21 +33,9 @@
 #include "ui/ui.h"
 #include <stdlib.h>
 
-/**
- * @brief Toggle the selected channel's scanlist participation or scan range settings.
- * 
- * Manages scanning behavior by:
- * - For frequency channels: sets scan range start/stop points
- * - For memory channels: cycles through scanlist participation (none/list1/list2/list3/combinations)
- * - Handles channel exclusion from scanning
- * 
- * @dependencies
- *   - SCANNER_IsScanning() - checks if scanning is active
- *   - SETTINGS_UpdateChannel() - saves updated channel settings
- *   - Global vars: gTxVfo, gEeprom, gScanRangeStart, gScanRangeStop, gMR_ChannelExclude
- */
+  
 static void toggle_chan_scanlist(void)
-{   // toggle the selected channels scanlist setting
+{     
 
     if (SCANNER_IsScanning())
         return;
@@ -76,7 +50,7 @@ static void toggle_chan_scanlist(void)
         return;
     }
     
-    // Remove exclude
+      
     if(gMR_ChannelExclude[gTxVfo->CHANNEL_SAVE] == true)
     {
         gMR_ChannelExclude[gTxVfo->CHANNEL_SAVE] = false;
@@ -97,36 +71,7 @@ static void toggle_chan_scanlist(void)
     gFlagResetVfos    = true;
 }
 
-/**
- * @brief Handle F-key (function key) combinations (F+0 through F+9, F+UP/DOWN, F+SIDE1/2).
- * 
- * Maps function keys to actions:
- * - F+0: FM radio toggle
- * - F+1: Copy channel to VFO or cycle frequency bands
- * - F+2: Switch active VFO
- * - F+3: Toggle VFO mode (simplex/duplex)
- * - F+4: Start frequency scanner
- * - F+5: Toggle NOAA/Channel or show spectrum
- * - F+6: Toggle power level
- * - F+7: Toggle VOX (voice activation)
- * - F+8: Toggle frequency reverse
- * - F+9: Jump to CHAN_1_CALL channel
- * - F+UP/DOWN: Adjust squelch level
- * - F+SIDE1/2: Adjust step frequency
- * 
- * @param Key - Key code to process
- * @param beep - If true, produce audio feedback
- * 
- * @dependencies
- *   - ACTION_FM(), ACTION_Power(), ACTION_Vox() - action handlers
- *   - COMMON_SwitchVFOs(), COMMON_SwitchVFOMode() - VFO control
- *   - SCANNER_Start() - initiate scanning
- *   - RADIO_SelectVfos(), RADIO_ApplyOffset(), RADIO_ConfigureSquelchAndOutputPower() - radio config
- *   - APP_RunSpectrum() - spectrum analyzer
- *   - FREQUENCY_GetSortedIdxFromStepIdx(), FREQUENCY_GetStepIdxFromSortedIdx() - frequency stepping
- *   - toggle_chan_scanlist() - scanlist management
- *   - Global vars: gScreenToDisplay, gTxVfo, gEeprom, gBeepToPlay, gWasFKeyPressed, etc.
- */
+  
 static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
 {
     uint8_t Vfo = gEeprom.TX_VFO;
@@ -161,7 +106,7 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
                     if (gCurrentFunction != FUNCTION_INCOMING ||
                         gRxReceptionMode == RX_MODE_NONE      ||
                         gScanPauseDelayIn_10ms == 0)
-                    {   // scan is running (not paused)
+                    {     
                         return;
                     }
                 }
@@ -169,7 +114,7 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
                 const uint8_t vfo = gEeprom.TX_VFO;
 
                 if (IS_MR_CHANNEL(gEeprom.ScreenChannel[vfo]))
-                {   // copy channel to VFO, then swap to the VFO
+                {     
 
                     gEeprom.ScreenChannel[vfo] = FREQ_CHANNEL_FIRST + gEeprom.VfoInfo[vfo].Band;
                     gEeprom.VfoInfo[vfo].CHANNEL_SAVE = gEeprom.ScreenChannel[vfo];
@@ -179,7 +124,6 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
                     RADIO_ConfigureSquelchAndOutputPower(gRxVfo);
                     RADIO_SetupRegisters(true);
 
-                    //SETTINGS_SaveChannel(channel, gEeprom.RX_VFO, gRxVfo, 1);
 
                     gRequestSaveChannel = 1;
                     gRequestSaveVFO = true;
@@ -198,10 +142,10 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
             gTxVfo->Band += 1;
 
             if (gTxVfo->Band == BAND5_350MHz && !gSetting_350EN) {
-                // skip if not enabled
+                  
                 gTxVfo->Band += 1;
             } else if (gTxVfo->Band >= BAND_N_ELEM){
-                // go arround if overflowed
+                  
                 gTxVfo->Band = BAND1_50MHz;
             }
 
@@ -282,8 +226,8 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
         case KEY_7:
 #ifdef ENABLE_VOX
             ACTION_Vox();
-//#else
-//          toggle_chan_scanlist();
+  
+  
 #endif
             break;
 
@@ -310,7 +254,7 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
                 gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
             break;
 
-#ifdef ENABLE_FEAT_F4HWN // Set Squelch F + UP or Down and Step F + SIDE1 or F + SIDE2
+#ifdef ENABLE_FEAT_F4HWN   
         case KEY_UP:
             gEeprom.SQUELCH_LEVEL = (gEeprom.SQUELCH_LEVEL < 9) ? gEeprom.SQUELCH_LEVEL + 1: 9;
             gVfoConfigureMode     = VFO_CONFIGURE;
@@ -360,19 +304,7 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
     }
 }
 
-/**
- * @brief Switch to specified memory channel and configure radio.
- * 
- * Validates and loads a memory channel, updating VFO settings and triggering
- * radio reconfiguration. Called after user enters channel number.
- * 
- * @param Channel - Memory channel number to load (0-based)
- * 
- * @dependencies
- *   - RADIO_CheckValidChannel() - validate channel exists
- *   - RADIO_ConfigureChannel() - apply channel configuration to radio
- *   - Global vars: gEeprom, gTxVfo, gBeepToPlay, gVfoConfigureMode, gAnotherVoiceID
- */
+  
 void channelMove(uint16_t Channel)
 {
     const uint8_t Vfo = gEeprom.TX_VFO;
@@ -393,7 +325,7 @@ void channelMove(uint16_t Channel)
 
     gEeprom.MrChannel[Vfo]     = (uint8_t)Channel;
     gEeprom.ScreenChannel[Vfo] = (uint8_t)Channel;
-    //gRequestSaveVFO            = true;
+      
     gVfoConfigureMode          = VFO_CONFIGURE_RELOAD;
 
     RADIO_ConfigureChannel(gEeprom.TX_VFO, gVfoConfigureMode);
@@ -401,35 +333,11 @@ void channelMove(uint16_t Channel)
     return;
 }
 
-/**
- * @brief Process accumulated digit input and switch to specified channel.
- * 
- * Converts user-entered digit sequence to channel number and executes the switch.
- * Handles 1-3 digit channel input (channels 1-999).
- * 
- * @dependencies
- *   - channelMove() - switch to target channel
- *   - SETTINGS_SaveVfoIndices() - persist VFO state
- *   - Global vars: gTxVfo, gInputBox, gInputBoxIndex, gKeyInputCountdown
- */
+  
 void channelMoveSwitch(void) {
-    if (IS_MR_CHANNEL(gTxVfo->CHANNEL_SAVE)) { // user is entering channel number
+    if (IS_MR_CHANNEL(gTxVfo->CHANNEL_SAVE)) {   
         uint16_t Channel = 0;
 
-        /*
-        switch (gInputBoxIndex)
-        {
-            case 1:
-                Channel = gInputBox[0];
-                break;
-            case 2:
-                Channel = (gInputBox[0] * 10) + gInputBox[1];
-                break;
-            case 3:
-                Channel = (gInputBox[0] * 100) + (gInputBox[1] * 10) + gInputBox[2];
-                break;
-        }
-        */
 
         for (uint8_t i = 0; i < gInputBoxIndex; i++) {
             Channel = (Channel * 10) + gInputBox[i];
@@ -453,37 +361,13 @@ void channelMoveSwitch(void) {
     }
 }
 
-/**
- * @brief Handle numeric keypad input (0-9, SIDE1/2) on main display.
- * 
- * Processes digit entry for:
- * - Channel number entry (1-3 digits, channels 1-999)
- * - Frequency entry (6-7 digits based on band)
- * - NOAA channel entry (2 digits, channels 1-10)
- * - F-key function selection when held
- * - Scan list selection during scanning (KEY_0-5)
- * - Backlight control (KEY_8-9)
- * 
- * @param Key - Key code (KEY_0 through KEY_9, KEY_SIDE1, KEY_SIDE2)
- * @param bKeyPressed - True when key is initially pressed
- * @param bKeyHeld - True if key is held down
- * 
- * @dependencies
- *   - INPUTBOX_Append(), INPUTBOX_GetAscii() - manage input buffer
- *   - channelMoveSwitch() - process digit input for channel selection
- *   - processFKeyFunction() - handle F-key functions
- *   - ACTION_BackLightOnDemand(), ACTION_BackLight() - backlight control
- *   - FREQUENCY_GetBand(), FREQUENCY_RoundToStep() - frequency validation/rounding
- *   - RADIO_ConfigureChannel() - configure radio for new frequency
- *   - BK4819_SetFrequency(), BK4819_RX_TurnOn() - radio tuning
- *   - Global vars: gInputBox, gInputBoxIndex, gKeyInputCountdown, gTxVfo, gEeprom, etc.
- */
+  
 static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 {
-    if (bKeyHeld) { // key held down
+    if (bKeyHeld) {   
         if (bKeyPressed) {
             if (gScreenToDisplay == DISPLAY_MAIN) {
-                if (gInputBoxIndex > 0) { // delete any inputted chars
+                if (gInputBoxIndex > 0) {   
                     gInputBoxIndex        = 0;
                     gRequestDisplayScreen = DISPLAY_MAIN;
                 }
@@ -498,12 +382,12 @@ static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
     }
 
     if (bKeyPressed)
-    {   // key is pressed
-        gBeepToPlay = BEEP_1KHZ_60MS_OPTIONAL;  // beep when key is pressed
-        return;                                 // don't use the key till it's released
+    {     
+        gBeepToPlay = BEEP_1KHZ_60MS_OPTIONAL;    
+        return;                                   
     }
 
-    if (!gWasFKeyPressed) { // F-key wasn't pressed
+    if (!gWasFKeyPressed) {   
 
         if (gScanStateDir != SCAN_OFF){
             switch(Key) {
@@ -527,9 +411,9 @@ static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 
         gRequestDisplayScreen = DISPLAY_MAIN;
 
-        if (IS_MR_CHANNEL(gTxVfo->CHANNEL_SAVE)) { // user is entering channel number
+        if (IS_MR_CHANNEL(gTxVfo->CHANNEL_SAVE)) {   
 
-            gKeyInputCountdown = (key_input_timeout_500ms / 4); // short time...
+            gKeyInputCountdown = (key_input_timeout_500ms / 4);   
 
             #ifdef ENABLE_VOICE
                 gAnotherVoiceID   = (VOICE_ID_t)Key;
@@ -538,22 +422,20 @@ static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
             return;
         }
 
-//      #ifdef ENABLE_NOAA
-//          if (!IS_NOAA_CHANNEL(gTxVfo->CHANNEL_SAVE))
-//      #endif
+
         if (IS_FREQ_CHANNEL(gTxVfo->CHANNEL_SAVE))
-        {   // user is entering a frequency
+        {     
 
 #ifdef ENABLE_VOICE
             gAnotherVoiceID = (VOICE_ID_t)Key;
 #endif
-            uint8_t totalDigits = 6; // by default frequency is lower than 1 GHz
+            uint8_t totalDigits = 6;   
             if (gTxVfo->pRX->Frequency >= _1GHz_in_KHz) {
-                totalDigits = 7; // if frequency is uppen than GHz
+                totalDigits = 7;   
             }
 
             if (gInputBoxIndex == 0) {
-                // do nothing
+                  
                 return;
             }
             
@@ -562,20 +444,20 @@ static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
             const char *inputStr = INPUTBOX_GetAscii();
             uint8_t inputLength = gInputBoxIndex;
 
-            // convert to int
+              
             uint32_t inputFreq = StrToUL(inputStr);
 
-            // how many zero to add
+              
             uint8_t zerosToAdd = totalDigits - inputLength;
 
-            // add missing zero
+              
             for (uint8_t i = 0; i < zerosToAdd; i++) {
                 inputFreq *= 10;
             }
 
             uint32_t Frequency = inputFreq * 100;
 
-            // clamp the frequency entered to some valid value
+              
             if (Frequency < frequencyBandTable[0].lower) {
                 Frequency = frequencyBandTable[0].lower;
             }
@@ -594,7 +476,7 @@ static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
                 gEeprom.ScreenChannel[Vfo] = band + FREQ_CHANNEL_FIRST;
                 gEeprom.FreqChannel[Vfo]   = band + FREQ_CHANNEL_FIRST;
 
-                SETTINGS_SaveVfoIndices();  // calypso marker
+                SETTINGS_SaveVfoIndices();    
 
                 RADIO_ConfigureChannel(Vfo, VFO_CONFIGURE_RELOAD);
             }
@@ -602,12 +484,12 @@ static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
             Frequency = FREQUENCY_RoundToStep(Frequency, gTxVfo->StepFrequency);
 
             if (Frequency >= BX4819_band1.upper && Frequency < BX4819_band2.lower)
-            {   // clamp the frequency to the limit
+            {     
                 const uint32_t center = (BX4819_band1.upper + BX4819_band2.lower) / 2;
                 Frequency = (Frequency < center) ? BX4819_band1.upper - gTxVfo->StepFrequency : BX4819_band2.lower;
             }
 
-            gTxVfo->freq_config_RX.Frequency = Frequency;  // calypso marker
+            gTxVfo->freq_config_RX.Frequency = Frequency;    
 
             gRequestSaveChannel = 1;
             return;
@@ -616,7 +498,7 @@ static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
         #ifdef ENABLE_NOAA
             else
             if (IS_NOAA_CHANNEL(gTxVfo->CHANNEL_SAVE))
-            {   // user is entering NOAA channel
+            {     
                 if (gInputBoxIndex != 2) {
                     #ifdef ENABLE_VOICE
                         gAnotherVoiceID   = (VOICE_ID_t)Key;
@@ -665,29 +547,15 @@ static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
     processFKeyFunction(Key, true);
 }
 
-/**
- * @brief Handle EXIT key (ESC) - cancel operations and navigate back.
- * 
- * Short press: Delete last input character or cancel current scan
- * Long press (held): Clear all input modes and DTMF state
- * 
- * @param bKeyPressed - True when key is initially pressed
- * @param bKeyHeld - True if key is held down
- * 
- * @dependencies
- *   - CHFRSCANNER_Stop() - abort frequency/channel scanner
- *   - ACTION_FM() - toggle FM radio mode
- *   - Global vars: gInputBox, gInputBoxIndex, gDTMF_InputMode, gDTMF_InputBox_Index,
- *                  gScanStateDir, gFmRadioMode, gCurrentFunction, etc.
- */
+  
 static void MAIN_Key_EXIT(bool bKeyPressed, bool bKeyHeld)
 {
-    if (!bKeyHeld && bKeyPressed) { // exit key pressed
+    if (!bKeyHeld && bKeyPressed) {   
         gBeepToPlay = BEEP_1KHZ_60MS_OPTIONAL;
 
 #ifdef ENABLE_DTMF_CALLING
         if (gDTMF_CallState != DTMF_CALL_STATE_NONE && gCurrentFunction != FUNCTION_TRANSMIT)
-        {   // clear CALL mode being displayed
+        {     
             gDTMF_CallState = DTMF_CALL_STATE_NONE;
             gUpdateDisplay  = true;
             return;
@@ -729,9 +597,9 @@ static void MAIN_Key_EXIT(bool bKeyPressed, bool bKeyHeld)
         return;
     }
 
-    if (bKeyHeld && bKeyPressed) { // exit key held down
+    if (bKeyHeld && bKeyPressed) {   
         if (gInputBoxIndex > 0 || gDTMF_InputBox_Index > 0 || gDTMF_InputMode)
-        {   // cancel key input mode (channel/frequency entry)
+        {     
             gDTMF_InputMode       = false;
             gDTMF_InputBox_Index  = 0;
             memset(gDTMF_String, 0, sizeof(gDTMF_String));
@@ -742,31 +610,17 @@ static void MAIN_Key_EXIT(bool bKeyPressed, bool bKeyHeld)
     }
 }
 
-/**
- * @brief Handle MENU key - access settings menu and channel exclusion.
- * 
- * Short press: Open settings menu
- * Long press: Exclude/include current channel from scanning (ENABLE_FEAT_F4HWN)
- * 
- * @param bKeyPressed - True when key is initially pressed
- * @param bKeyHeld - True if key is held down
- * 
- * @dependencies
- *   - ACTION_Handle() - general action handler (KEY_MENU)
- *   - CHFRSCANNER_Stop(), CHFRSCANNER_ContinueScanning() - scanner control
- *   - Global vars: gInputBoxIndex, gScreenToDisplay, gScanStateDir, gRequestDisplayScreen,
- *                  gDTMF_InputMode, gFlagRefreshSetting, gTxVfo, gMR_ChannelExclude
- */
+  
 static void MAIN_Key_MENU(bool bKeyPressed, bool bKeyHeld)
 {
-    if (bKeyPressed && !bKeyHeld) // menu key pressed
+    if (bKeyPressed && !bKeyHeld)   
         gBeepToPlay = BEEP_1KHZ_60MS_OPTIONAL;
 
-    if (bKeyHeld) { // menu key held down (long press)
-        if (bKeyPressed) { // long press MENU key
+    if (bKeyHeld) {   
+        if (bKeyPressed) {   
 
             #ifdef ENABLE_FEAT_F4HWN
-            // Exclude work with list 1, 2, 3 or all list
+              
             if(gScanStateDir != SCAN_OFF)
             {
                 if(FUNCTION_IsRx() || gScanPauseDelayIn_10ms > 9)
@@ -788,7 +642,7 @@ static void MAIN_Key_MENU(bool bKeyPressed, bool bKeyHeld)
             gWasFKeyPressed = false;
 
             if (gScreenToDisplay == DISPLAY_MAIN) {
-                if (gInputBoxIndex > 0) { // delete any inputted chars
+                if (gInputBoxIndex > 0) {   
                     gInputBoxIndex        = 0;
                     gRequestDisplayScreen = DISPLAY_MAIN;
                 }
@@ -803,7 +657,7 @@ static void MAIN_Key_MENU(bool bKeyPressed, bool bKeyHeld)
         return;
     }
 
-    if (!bKeyPressed && !gDTMF_InputMode) { // menu key released
+    if (!bKeyPressed && !gDTMF_InputMode) {   
         const bool bFlag = !gInputBoxIndex;
         gInputBoxIndex   = 0;
 
@@ -828,22 +682,7 @@ static void MAIN_Key_MENU(bool bKeyPressed, bool bKeyHeld)
     }
 }
 
-/**
- * @brief Handle STAR (*) key - DTMF entry, tone scanning, and scan control.
- * 
- * Short press: Start DTMF tone input (if not transmitting, not scanning, not NOAA/scan range)
- * Long press: Toggle frequency/tone scanning
- * With F-key: Start CTCSS/DCS code scanner
- * 
- * @param bKeyPressed - True when key is initially pressed
- * @param bKeyHeld - True if key is held down
- * 
- * @dependencies
- *   - ACTION_Scan() - toggle scanning mode
- *   - SCANNER_Start() - begin code/tone scanning
- *   - Global vars: gInputBoxIndex, gCurrentFunction, gWasFKeyPressed, gScanStateDir,
- *                  gDTMF_InputMode, gDTMF_InputBox, gDTMF_String, gTxVfo, gBeepToPlay
- */
+  
 static void MAIN_Key_STAR(bool bKeyPressed, bool bKeyHeld)
 {
 
@@ -856,36 +695,23 @@ static void MAIN_Key_STAR(bool bKeyPressed, bool bKeyHeld)
         return;
     }
 
-    if (bKeyHeld && !gWasFKeyPressed){ // long press
-        if (!bKeyPressed) // released
+    if (bKeyHeld && !gWasFKeyPressed){   
+        if (!bKeyPressed)   
             return; 
 
-        /*
-        #ifdef ENABLE_FEAT_F4HWN_RESUME_STATE
-        if(gScanRangeStart == 0) // No ScanRange
-        {
-            gEeprom.CURRENT_STATE = 1;
-        }
-        else // ScanRange
-        {
-            gEeprom.CURRENT_STATE = 2;
-        }
-        SETTINGS_WriteCurrentState();
-        #endif
-        */
-        ACTION_Scan(false);// toggle scanning
+          
+        ACTION_Scan(false);  
 
         gBeepToPlay = BEEP_1KHZ_60MS_OPTIONAL;
         return;
     }
 
-    if (bKeyPressed) { // just pressed
+    if (bKeyPressed) {   
         return;
     }
-    
-    // just released
-    
-    if (!gWasFKeyPressed) // pressed without the F-key
+
+
+    if (!gWasFKeyPressed)   
     {   
         if (gScanStateDir == SCAN_OFF 
 #ifdef ENABLE_NOAA
@@ -895,7 +721,7 @@ static void MAIN_Key_STAR(bool bKeyPressed, bool bKeyHeld)
             && gScanRangeStart == 0
 #endif      
         )
-        {   // start entering a DTMF string
+        {     
             gBeepToPlay = BEEP_1KHZ_60MS_OPTIONAL;
             memcpy(gDTMF_InputBox, gDTMF_String, MIN(sizeof(gDTMF_InputBox), sizeof(gDTMF_String) - 1));
             gDTMF_InputBox_Index  = 0;
@@ -909,7 +735,7 @@ static void MAIN_Key_STAR(bool bKeyPressed, bool bKeyHeld)
             gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
     }
     else
-    {   // with the F-key
+    {     
         gWasFKeyPressed = false;
 
 #ifdef ENABLE_NOAA
@@ -918,7 +744,7 @@ static void MAIN_Key_STAR(bool bKeyPressed, bool bKeyHeld)
             return;
         }               
 #endif
-        // scan the CTCSS/DCS code
+          
         gBackup_CROSS_BAND_RX_TX  = gEeprom.CROSS_BAND_RX_TX;
         gEeprom.CROSS_BAND_RX_TX = CROSS_BAND_OFF;
 
@@ -926,39 +752,15 @@ static void MAIN_Key_STAR(bool bKeyPressed, bool bKeyHeld)
         gRequestDisplayScreen = DISPLAY_SCANNER;
     }
     
-    //gPttWasReleased = true; Fixed issue #138
+      
     gUpdateStatus   = true;
 }
 
-/**
- * @brief Handle UP/DOWN arrow keys - channel/frequency navigation and scanning.
- * 
- * No input active:
- *   - Frequency mode: Step frequency up/down by step size
- *   - Channel mode: Jump to next valid channel (up/down)
- *   - NOAA mode: Cycle through NOAA channels (if enabled)
- *   - During scan: Continue scanning in specified direction
- * 
- * With F-key: Adjust squelch (ENABLE_FEAT_F4HWN)
- * Long press: Announce current channel number (if voice enabled)
- * 
- * @param bKeyPressed - True when key is initially pressed
- * @param bKeyHeld - True if key is held down
- * @param Direction - +1 for UP, -1 for DOWN
- * 
- * @dependencies
- *   - APP_SetFrequencyByStep() - compute next frequency
- *   - RX_freq_check() - validate frequency is allowed
- *   - RADIO_FindNextChannel() - locate next valid memory channel
- *   - CHFRSCANNER_Start() - continue channel/frequency scanning
- *   - BK4819_SetFrequency(), BK4819_RX_TurnOn() - tune radio
- *   - processFKeyFunction() - handle F-key squelch adjustment
- *   - Global vars: gInputBoxIndex, gScanStateDir, gWasFKeyPressed, gTxVfo, gEeprom, etc.
- */
+  
 static void MAIN_Key_UP_DOWN(bool bKeyPressed, bool bKeyHeld, int8_t Direction)
 {
 
-#ifdef ENABLE_FEAT_F4HWN // Set Squelch F + UP or Down
+#ifdef ENABLE_FEAT_F4HWN   
     if(gWasFKeyPressed) {
         switch(Direction)
         {
@@ -976,22 +778,22 @@ static void MAIN_Key_UP_DOWN(bool bKeyPressed, bool bKeyHeld, int8_t Direction)
 
     uint8_t Channel = gEeprom.ScreenChannel[gEeprom.TX_VFO];
 
-    if (bKeyHeld || !bKeyPressed) { // key held or released
+    if (bKeyHeld || !bKeyPressed) {   
         if (gInputBoxIndex > 0)
-            return; // leave if input box active
+            return;   
 
         if (!bKeyPressed) {
             if (!bKeyHeld || IS_FREQ_CHANNEL(Channel))
                 return;
-            // if released long button press and not in freq mode
+              
 #ifdef ENABLE_VOICE
-            AUDIO_SetDigitVoice(0, gTxVfo->CHANNEL_SAVE + 1); // say channel number
+            AUDIO_SetDigitVoice(0, gTxVfo->CHANNEL_SAVE + 1);   
             gAnotherVoiceID = (VOICE_ID_t)0xFE;
 #endif
             return;
         }
     }
-    else { // short pressed
+    else {   
         if (gInputBoxIndex > 0) {
             gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
             return;
@@ -1005,17 +807,17 @@ static void MAIN_Key_UP_DOWN(bool bKeyPressed, bool bKeyHeld, int8_t Direction)
 #endif
         {
             uint8_t Next;
-            if (IS_FREQ_CHANNEL(Channel)) { // step/down in frequency
+            if (IS_FREQ_CHANNEL(Channel)) {   
                 const uint32_t frequency = APP_SetFrequencyByStep(gTxVfo, Direction);
 
-                if (RX_freq_check(frequency) < 0) { // frequency not allowed
+                if (RX_freq_check(frequency) < 0) {   
                     gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
                     return;
                 }
                 gTxVfo->freq_config_RX.Frequency = frequency;
                 BK4819_SetFrequency(frequency); 
                 BK4819_RX_TurnOn();
-                gRequestSaveChannel = 1; // calypso marker
+                gRequestSaveChannel = 1;   
                 return;
             }
 
@@ -1047,7 +849,7 @@ static void MAIN_Key_UP_DOWN(bool bKeyPressed, bool bKeyHeld, int8_t Direction)
         return;
     }
 
-    // jump to the next channel
+      
     CHFRSCANNER_Start(false, Direction);
     gScanPauseDelayIn_10ms = 1;
     gScheduleScanListen = false;
@@ -1055,31 +857,7 @@ static void MAIN_Key_UP_DOWN(bool bKeyPressed, bool bKeyHeld, int8_t Direction)
     gPttWasReleased = true;
 }
 
-/**
- * @brief Main keyboard event dispatcher for the radio's main display.
- * 
- * Routes all key events to appropriate handler functions based on current mode:
- * - Digit keys (0-9, SIDE1/2) -> MAIN_Key_DIGITS()
- * - MENU key -> MAIN_Key_MENU()
- * - UP/DOWN arrows -> MAIN_Key_UP_DOWN()
- * - EXIT key -> MAIN_Key_EXIT()
- * - STAR key -> MAIN_Key_STAR()
- * - F key -> GENERIC_Key_F()
- * - PTT key -> GENERIC_Key_PTT()
- * 
- * Blocks most keys during FM radio mode (except PTT and EXIT)
- * Handles DTMF digit input when in DTMF mode
- * 
- * @param Key - Key code to process
- * @param bKeyPressed - True when key is initially pressed
- * @param bKeyHeld - True if key is held down
- * 
- * @dependencies
- *   - MAIN_Key_DIGITS(), MAIN_Key_MENU(), MAIN_Key_EXIT(), MAIN_Key_STAR(), MAIN_Key_UP_DOWN()
- *   - GENERIC_Key_F(), GENERIC_Key_PTT() - generic key handlers
- *   - DTMF_GetCharacter(), DTMF_Append() - DTMF tone management
- *   - Global vars: gFmRadioMode, gDTMF_InputMode, gBeepToPlay, gKeyInputCountdown, etc.
- */
+  
 void MAIN_ProcessKeys(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 {
 #ifdef ENABLE_FMRADIO
@@ -1093,7 +871,7 @@ void MAIN_ProcessKeys(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
     if (gDTMF_InputMode && bKeyPressed && !bKeyHeld) {
         const char Character = DTMF_GetCharacter(Key);
         if (Character != 0xFF)
-        {   // add key to DTMF string
+        {     
             DTMF_Append(Character);
             gKeyInputCountdown    = key_input_timeout_500ms;
             gRequestDisplayScreen = DISPLAY_MAIN;
@@ -1103,11 +881,6 @@ void MAIN_ProcessKeys(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
         }
     }
 
-    // TODO: ???
-//  if (Key > KEY_PTT)
-//  {
-//      Key = KEY_SIDE2;      // what's this doing ???
-//  }
 
     switch (Key) {
 #ifdef ENABLE_FEAT_F4HWN

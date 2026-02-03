@@ -1,18 +1,4 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #include <string.h>
 
@@ -120,7 +106,7 @@ void FUNCTION_PowerSave() {
     #ifdef ENABLE_FEAT_F4HWN_SLEEP
         if(gWakeUp)
         {
-            gPowerSave_10ms = gEeprom.BATTERY_SAVE * 200; // deep sleep now indexed on BatSav
+            gPowerSave_10ms = gEeprom.BATTERY_SAVE * 200;  
         }
         else
         {
@@ -142,21 +128,21 @@ void FUNCTION_PowerSave() {
 
     gUpdateStatus = true;
 
-    if (gScreenToDisplay != DISPLAY_MENU)     // 1of11 .. don't close the menu
+    if (gScreenToDisplay != DISPLAY_MENU)      
         GUI_SelectNextDisplay(DISPLAY_MAIN);
 }
 
 void FUNCTION_Transmit()
 {
-    // if DTMF is enabled when TX'ing, it changes the TX audio filtering !! .. 1of11
+     
     BK4819_DisableDTMF();
 
 #ifdef ENABLE_DTMF_CALLING
-    // clear the DTMF RX buffer
+     
     DTMF_clear_RX();
 #endif
 
-    // clear the DTMF RX live decoder buffer
+     
     gDTMF_RX_live_timeout = 0;
     memset(gDTMF_RX_live, 0, sizeof(gDTMF_RX_live));
 
@@ -194,7 +180,7 @@ void FUNCTION_Transmit()
 
     RADIO_SetTxParameters();
 
-    // turn the RED LED on
+     
     BK4819_ToggleGpioOut(BK4819_GPIO5_PIN1_RED, true);
 
     DTMF_Reply();
@@ -225,7 +211,7 @@ void FUNCTION_Transmit()
     }
 #endif
 
-#ifdef ENABLE_FEAT_F4HWN__ // calypso
+#ifdef ENABLE_FEAT_F4HWN__  
     BK4819_DisableScramble();
 #else
     if (gCurrentVfo->SCRAMBLING_TYPE > 0 && gSetting_ScrambleEnable)
@@ -238,7 +224,6 @@ void FUNCTION_Transmit()
         BACKLIGHT_TurnOn();
     }
 }
-
 
 
 void FUNCTION_Select(FUNCTION_Type_t Function)
@@ -254,31 +239,6 @@ void FUNCTION_Select(FUNCTION_Type_t Function)
         UI_DisplayStatus();
     }
 
-    /*
-    switch (Function) {
-        case FUNCTION_FOREGROUND:
-            FUNCTION_Foreground(PreviousFunction);
-            return;
-
-        case FUNCTION_POWER_SAVE:
-            FUNCTION_PowerSave();
-            return;
-
-        case FUNCTION_TRANSMIT:
-            FUNCTION_Transmit();
-            break;
-
-        case FUNCTION_MONITOR:
-            gMonitor = true;
-            break;
-
-        case FUNCTION_INCOMING:
-        case FUNCTION_RECEIVE:
-        case FUNCTION_BAND_SCOPE:
-        default:
-            break;
-    }
-    */
 
     if (Function == FUNCTION_FOREGROUND) {
         FUNCTION_Foreground(PreviousFunction);

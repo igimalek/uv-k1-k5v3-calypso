@@ -1,18 +1,4 @@
-/* Copyright 2023 fagci
- * https://github.com/fagci
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+  
 #include "app/spectrum.h"
 #include "am_fix.h"
 #include "audio.h"
@@ -105,7 +91,7 @@ RegisterSpec registerSpecs[] = {
     {"LNA", BK4819_REG_13, 5, 0b111, 1},
     {"VGA", BK4819_REG_13, 0, 0b111, 1},
     {"BPF", BK4819_REG_3D, 0, 0xFFFF, 0x2aaa},
-    // {"MIX", 0x13, 3, 0b11, 1}, // TODO: hidden
+      
 };
 
 #ifdef ENABLE_FEAT_F4HWN_SPECTRUM
@@ -204,14 +190,13 @@ static void SetRegMenuValue(uint8_t st, bool add)
     {
         v -= s.inc;
     }
-    // TODO: use max value for bits count in max value, or reset by additional
-    // mask in spec
+      
+      
     reg &= ~(s.mask << s.offset);
     BK4819_WriteRegister(s.num, reg | (v << s.offset));
     redrawScreen = true;
 }
 
-// GUI functions
 
 #ifndef ENABLE_FEAT_F4HWN
 static void PutPixel(uint8_t x, uint8_t y, bool fill)
@@ -266,7 +251,6 @@ static void GUI_DisplaySmallest(const char *pString, uint8_t x, uint8_t y,
 }
 #endif
 
-// Utility functions
 
 static KEY_Code_t GetKey()
 {
@@ -293,7 +277,6 @@ void SetState(State state)
     redrawStatus = true;
 }
 
-// Radio functions
 
 static void ToggleAFBit(bool on)
 {
@@ -357,7 +340,6 @@ static void SetF(uint32_t f)
     BK4819_WriteRegister(BK4819_REG_30, reg);
 }
 
-// Spectrum related
 
 bool IsPeakOverLevel() { return peak.rssi >= settings.rssiTriggerLevel; }
 
@@ -376,19 +358,19 @@ static void ResetPeak()
     static bool checkIfTailFound()
     {
       uint16_t interrupt_status_bits;
-      // if interrupt waiting to be handled
+        
       if(BK4819_ReadRegister(BK4819_REG_0C) & 1u) {
-        // reset the interrupt
+          
         BK4819_WriteRegister(BK4819_REG_02, 0);
-        // fetch the interrupt status bits
+          
         interrupt_status_bits = BK4819_ReadRegister(BK4819_REG_02);
-        // if tail found interrupt
+          
         if (interrupt_status_bits & BK4819_REG_02_CxCSS_TAIL)
         {
             listenT = 0;
-            // disable interrupts
+              
             BK4819_WriteRegister(BK4819_REG_3F, 0);
-            // reset the interrupt
+              
             BK4819_WriteRegister(BK4819_REG_02, 0);
             return true;
         }
@@ -398,7 +380,7 @@ static void ResetPeak()
 #endif
 
 bool IsCenterMode() { return settings.scanStepIndex < S_STEP_2_5kHz; }
-// scan step in 0.01khz
+  
 uint16_t GetScanStep() { return scanStepValues[settings.scanStepIndex]; }
 
 uint16_t GetStepsCount()
@@ -408,7 +390,7 @@ uint16_t GetStepsCount()
     {
         uint32_t range = gScanRangeStop - gScanRangeStart;
         uint16_t step = GetScanStep();
-        return (range / step) + 1;  // +1 to include up limit
+        return (range / step) + 1;    
     }
 #endif
     return 128 >> settings.stepsCount;
@@ -464,8 +446,8 @@ uint8_t GetBWRegValueForScan()
 
 uint16_t GetRssi()
 {
-    // SYSTICK_DelayUs(800);
-    // testing autodelay based on Glitch value
+      
+      
     while ((BK4819_ReadRegister(0x63) & 0b11111111) >= 255)
     {
         SYSTICK_DelayUs(100);
@@ -525,7 +507,6 @@ static void ToggleRX(bool on)
     }
 }
 
-// Scan info
 
 static void ResetScanStats()
 {
@@ -631,7 +612,6 @@ static void Measure()
     SetRssiHistory(scanInfo.i, rssi);
 }
 
-// Update things by keypress
 
 static uint16_t dbm2rssi(int dBm)
 {
@@ -865,14 +845,14 @@ static void UpdateFreqInput(KEY_Code_t key)
         }
     }
 
-    uint32_t base = 100000; // 1MHz in BK units
+    uint32_t base = 100000;   
     for (int i = dotIndex - 1; i >= 0; --i)
     {
         tempFreq += (freqInputArr[i] - KEY_0) * base;
         base *= 10;
     }
 
-    base = 10000; // 0.1MHz in BK units
+    base = 10000;   
     if (dotIndex < freqInputIndex)
     {
         for (int i = dotIndex + 1; i < freqInputIndex; ++i)
@@ -907,9 +887,7 @@ static bool IsBlacklisted(uint16_t idx)
 }
 #endif
 
-// Draw things
 
-// applied x2 to prevent initial rounding
 uint8_t Rssi2PX(uint16_t rssi, uint8_t pxMin, uint8_t pxMax)
 {
     const int DB_MIN = settings.dbMin << 1;
@@ -932,7 +910,7 @@ uint8_t Rssi2Y(uint16_t rssi)
     static void DrawSpectrum()
     {
         uint16_t steps = GetStepsCount();
-        // max bars at 128 to correctly draw larger numbers of samples
+          
         uint8_t bars = (steps > 128) ? 128 : steps;
 
         uint8_t ox = 0;
@@ -944,20 +922,19 @@ uint8_t Rssi2Y(uint16_t rssi)
             uint8_t x;
             if (gScanRangeStart && bars > 1)
             {
-                // Total width units = (bars - 1) full bars + 2 half bars = bars
-                // First bar: half width, middle bars: full width, last bar: half width
-                // Scale: 128 pixels / (bars - 1) = pixels per full bar
-                uint16_t fullWidth = 128 * 2 / (bars - 1);  // x2 for precision
+
+
+                uint16_t fullWidth = 128 * 2 / (bars - 1);    
                 
                 if (i == 0)
                 {
-                    x = fullWidth / 4;  // half of half (because fullWidth is x2)
+                    x = fullWidth / 4;    
                 }
                 else
                 {
-                    // Position = half + (i-1) full bars + current bar
+                      
                     x = fullWidth / 4 + (uint16_t)i * fullWidth / 2;
-                    if (i == bars - 1) x = 128;  // Last bar ends at screen edge
+                    if (i == bars - 1) x = 128;    
                 }
             }
             else
@@ -1010,8 +987,6 @@ static void DrawStatus()
 
     unsigned perc = BATTERY_VoltsToPercent(voltage);
 
-    // sprintf(String, "%d %d", voltage, perc);
-    // GUI_DisplaySmallest(String, 48, 1, true, true);
 
     gStatusLine[116] = 0b00011100;
     gStatusLine[117] = 0b00111110;
@@ -1148,7 +1123,7 @@ static void DrawTicks()
         gFrameBuffer[5][i] |= barValue;
     }
 
-    // center
+      
     if (IsCenterMode())
     {
         memset(gFrameBuffer[5] + 62, 0x80, 5);
@@ -1386,9 +1361,8 @@ void OnKeyDownStill(KEY_Code_t key)
         ToggleBacklight();
         break;
     case KEY_PTT:
-        // TODO: start transmit
-        /* BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, false);
-        BK4819_ToggleGpioOut(BK4819_GPIO5_PIN1_RED, true); */
+          
+          
         break;
     case KEY_MENU:
         if (menuState == ARRAY_SIZE(registerSpecs) - 1)
@@ -1614,7 +1588,7 @@ static void UpdateScan()
         return;
     }
 
-    if (! (scanInfo.measurementsCount >> 7)) // if (scanInfo.measurementsCount < 128)
+    if (! (scanInfo.measurementsCount >> 7))   
         memset(&rssiHistory[scanInfo.measurementsCount], 0,
                sizeof(rssiHistory) - scanInfo.measurementsCount * sizeof(rssiHistory[0]));
 
@@ -1706,9 +1680,7 @@ static void Tick()
     {
         gNextTimeslice_500ms = false;
 
-        // if a lot of steps then it takes long time
-        // we don't want to wait for whole scan
-        // listening has it's own timer
+
         if (GetStepsCount() > 128 && !isListening)
         {
             UpdatePeakInfo();
@@ -1757,7 +1729,7 @@ static void Tick()
     if (redrawScreen)
     {
         Render();
-        // For screenshot
+          
         #ifdef ENABLE_FEAT_F4HWN_SCREENSHOT
             getScreenShot(false);
         #endif
@@ -1767,12 +1739,12 @@ static void Tick()
 
 void APP_RunSpectrum()
 {
-    // TX here coz it always? set to active VFO
+      
     vfo = gEeprom.TX_VFO;
 #ifdef ENABLE_FEAT_F4HWN_SPECTRUM
     LoadSettings();
 #endif
-    // set the current frequency in the middle of the display
+      
 #ifdef ENABLE_SCAN_RANGES
     if (gScanRangeStart)
     {
@@ -1805,12 +1777,12 @@ void APP_RunSpectrum()
 
     BackupRegisters();
 
-    isListening = true; // to turn off RX later
+    isListening = true;   
     redrawStatus = true;
     redrawScreen = true;
     newScanStart = true;
 
-    ToggleRX(true), ToggleRX(false); // hack to prevent noise when squelch off
+    ToggleRX(true), ToggleRX(false);   
     RADIO_SetModulation(settings.modulationType = gTxVfo->Modulation);
 
 #ifdef ENABLE_FEAT_F4HWN_SPECTRUM

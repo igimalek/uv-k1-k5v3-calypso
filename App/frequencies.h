@@ -1,18 +1,4 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #ifndef FREQUENCIES_H
 #define FREQUENCIES_H
@@ -44,7 +30,7 @@ typedef enum  {
 extern const freq_band_table_t frequencyBandTable[];
 
 typedef enum {
-// standard steps
+ 
     STEP_2_5kHz,
     STEP_5kHz,
     STEP_6_25kHz,
@@ -52,7 +38,7 @@ typedef enum {
     STEP_12_5kHz,
     STEP_25kHz,
     STEP_8_33kHz,
-// custom steps
+ 
     STEP_0_01kHz,
     STEP_0_05kHz,
     STEP_0_1kHz,

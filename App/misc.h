@@ -1,18 +1,4 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #ifndef MISC_H
 #define MISC_H
@@ -66,9 +52,9 @@ enum AlarmState_t {
 typedef enum AlarmState_t AlarmState_t;
 
 enum ReceptionMode_t {
-    RX_MODE_NONE = 0,   // squelch close ?
-    RX_MODE_DETECTED,   // signal detected
-    RX_MODE_LISTENING   //
+    RX_MODE_NONE = 0,    
+    RX_MODE_DETECTED,    
+    RX_MODE_LISTENING    
 };
 typedef enum ReceptionMode_t ReceptionMode_t;
 
@@ -135,8 +121,6 @@ extern const uint16_t        scan_pause_delay_in_5_10ms;
 extern const uint16_t        scan_pause_delay_in_6_10ms;
 extern const uint16_t        scan_pause_delay_in_7_10ms;
 
-//extern const uint16_t        gMax_bat_v;
-//extern const uint16_t        gMin_bat_v;
 
 extern const uint8_t         gMicGain_dB2[5];
 
@@ -251,7 +235,7 @@ extern volatile bool         gTxTimeoutReached;
         extern volatile uint16_t gRxTimerCountdown_500ms;
     #endif
     #ifdef ENABLE_FEAT_F4HWN_SCREENSHOT
-        extern volatile uint8_t  gUART_LockScreenshot; // lock screenshot if Chirp is used
+        extern volatile uint8_t  gUART_LockScreenshot;  
     #endif
 #endif
 
@@ -273,11 +257,11 @@ extern bool                  gEndOfRxDetectedMaybe;
 extern int16_t               gVFO_RSSI[2];
 extern uint8_t               gVFO_RSSI_bar_level[2];
 
-// battery critical, limit functionality to minimum
+ 
 extern uint8_t               gReducedService;
 extern uint8_t               gBatteryVoltageIndex;
 
-// we are searching CTCSS/DCS inside RX ctcss/dcs menu
+ 
 extern bool         gCssBackgroundScan;
 
 
@@ -307,8 +291,8 @@ extern bool                  gRequestSaveSettings;
 extern uint8_t               gKeypadLocked;
 extern bool                  gFlagPrepareTX;
 
-extern bool                  gFlagAcceptSetting;   // accept menu setting
-extern bool                  gFlagRefreshSetting;  // refresh menu display
+extern bool                  gFlagAcceptSetting;    
+extern bool                  gFlagRefreshSetting;   
 
 #ifdef ENABLE_FMRADIO
     extern bool              gFlagSaveFM;
@@ -324,7 +308,7 @@ extern bool                  g_CxCSS_TAIL_Found;
     extern uint16_t          gVoxPauseCountdown;
 #endif
 
-// true means we are receiving signal
+ 
 extern bool                  g_SquelchLost;
 
 extern volatile uint16_t     gFlashLightBlinkCounter;
@@ -333,7 +317,7 @@ extern bool                  gFlagEndTransmission;
 extern uint8_t               gNextMrChannel;
 extern ReceptionMode_t       gRxReceptionMode;
 
- //TRUE when dual watch is momentarly suspended and RX_VFO is locked to either last TX or RX
+  
 extern bool                  gRxVfoIsActive;
 extern uint8_t               gAlarmToneCounter;
 extern uint16_t              gAlarmRunningCounter;

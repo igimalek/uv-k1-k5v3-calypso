@@ -1,18 +1,4 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #include <string.h>
 #include <stdlib.h>
@@ -44,28 +30,28 @@
 
 const t_menu_item MenuList[] =
 {
-//   text,          menu ID
+ 
     {"Step",        MENU_STEP          },
-    {"Power",       MENU_TXP           }, // was "TXP"
-    {"RxDCS",       MENU_R_DCS         }, // was "R_DCS"
-    {"RxCTCS",      MENU_R_CTCS        }, // was "R_CTCS"
-    {"TxDCS",       MENU_T_DCS         }, // was "T_DCS"
-    {"TxCTCS",      MENU_T_CTCS        }, // was "T_CTCS"
-    {"TxODir",      MENU_SFT_D         }, // was "SFT_D"
-    {"TxOffs",      MENU_OFFSET        }, // was "OFFSET"
+    {"Power",       MENU_TXP           },  
+    {"RxDCS",       MENU_R_DCS         },  
+    {"RxCTCS",      MENU_R_CTCS        },  
+    {"TxDCS",       MENU_T_DCS         },  
+    {"TxCTCS",      MENU_T_CTCS        },  
+    {"TxODir",      MENU_SFT_D         },  
+    {"TxOffs",      MENU_OFFSET        },  
     {"W/N",         MENU_W_N           },
-    {"Scramb",      MENU_SCR           }, // was "SCR"
-    {"BusyCL",      MENU_BCL           }, // was "BCL"
+    {"Scramb",      MENU_SCR           },  
+    {"BusyCL",      MENU_BCL           },  
     {"Compnd",      MENU_COMPAND       },
-    {"Mode",        MENU_AM            }, // was "AM"
+    {"Mode",        MENU_AM            },  
 #ifdef ENABLE_FEAT_F4HWN
     {"TXLock",      MENU_TX_LOCK       }, 
 #endif
     {"ScAdd1",      MENU_S_ADD1        },
     {"ScAdd2",      MENU_S_ADD2        },
     {"ScAdd3",      MENU_S_ADD3        },
-    {"ChSave",      MENU_MEM_CH        }, // was "MEM-CH"
-    {"ChDele",      MENU_DEL_CH        }, // was "DEL-CH"
+    {"ChSave",      MENU_MEM_CH        },  
+    {"ChDele",      MENU_DEL_CH        },  
     {"ChName",      MENU_MEM_NAME      },
 
     {"SList",       MENU_S_LIST        },
@@ -84,15 +70,15 @@ const t_menu_item MenuList[] =
     {"F2Long",      MENU_F2LONG        },
     {"M Long",      MENU_MLONG         },
 
-    {"KeyLck",      MENU_AUTOLK        }, // was "AUTOLk"
-    {"TxTOut",      MENU_TOT           }, // was "TOT"
-    {"BatSav",      MENU_SAVE          }, // was "SAVE"
+    {"KeyLck",      MENU_AUTOLK        },  
+    {"TxTOut",      MENU_TOT           },  
+    {"BatSav",      MENU_SAVE          },  
     {"BatTxt",      MENU_BAT_TXT       },
     {"Mic",         MENU_MIC           },
     {"MicBar",      MENU_MIC_BAR       },
-    {"ChDisp",      MENU_MDF           }, // was "MDF"
+    {"ChDisp",      MENU_MDF           },  
     {"POnMsg",      MENU_PONMSG        },
-    {"BLTime",      MENU_ABR           }, // was "ABR"
+    {"BLTime",      MENU_ABR           },  
     {"BLMin",       MENU_ABR_MIN       },
     {"BLMax",       MENU_ABR_MAX       },
     {"BLTxRx",      MENU_ABR_ON_TX_RX  },
@@ -123,12 +109,12 @@ const t_menu_item MenuList[] =
     {"D Decd",      MENU_D_DCD         },
     {"D List",      MENU_D_LIST        },
 #endif
-    {"D Live",      MENU_D_LIVE_DEC    }, // live DTMF decoder
+    {"D Live",      MENU_D_LIVE_DEC    },  
     {"VOX",         MENU_VOX           },
 #ifdef ENABLE_FEAT_F4HWN
-    {"SysInf",      MENU_VOL           }, // was "VOL"
+    {"SysInf",      MENU_VOL           },  
 #else
-    {"BatVol",      MENU_VOL           }, // was "VOL"
+    {"BatVol",      MENU_VOL           },  
 #endif
     {"RxMode",      MENU_TDR           },
     {"Sql",         MENU_SQL           },
@@ -142,7 +128,7 @@ const t_menu_item MenuList[] =
     {"SetLck",      MENU_SET_LCK       },
     {"SetMet",      MENU_SET_MET       },
     {"SetGUI",      MENU_SET_GUI       },
-#ifdef ENABLE_FEAT_F4HWN_RX_TX_TIMER    // calypso
+#ifdef ENABLE_FEAT_F4HWN_RX_TX_TIMER     
     {"SetTmr",      MENU_SET_TMR       },
 #endif    
 #ifdef ENABLE_FEAT_F4HWN_SLEEP
@@ -158,24 +144,24 @@ const t_menu_item MenuList[] =
     {"SetNWR",      MENU_NOAA_S    },
 #endif
 #endif
-    // hidden menu items from here on
-    // enabled if pressing both the PTT and upper side button at power-on
+     
+     
     {"F Lock",      MENU_F_LOCK        },
 #ifndef ENABLE_FEAT_F4HWN
-    {"Tx 200",      MENU_200TX         }, // was "200TX"
-    {"Tx 350",      MENU_350TX         }, // was "350TX"
-    {"Tx 500",      MENU_500TX         }, // was "500TX"
+    {"Tx 200",      MENU_200TX         },  
+    {"Tx 350",      MENU_350TX         },  
+    {"Tx 500",      MENU_500TX         },  
 #endif
-    {"350 En",      MENU_350EN         }, // was "350EN"
-    {"ScraEn",      MENU_SCREN         }, // was "SCREN"
+    {"350 En",      MENU_350EN         },  
+    {"ScraEn",      MENU_SCREN         },  
 #ifdef ENABLE_F_CAL_MENU
-    {"FrCali",      MENU_F_CALI        }, // reference xtal calibration
+    {"FrCali",      MENU_F_CALI        },  
 #endif
-    {"BatCal",      MENU_BATCAL        }, // battery voltage calibration
-    {"BatTyp",      MENU_BATTYP        }, // battery type 1600/2200mAh
-    {"Reset",       MENU_RESET         }, // might be better to move this to the hidden menu items ?
+    {"BatCal",      MENU_BATCAL        },  
+    {"BatTyp",      MENU_BATTYP        },  
+    {"Reset",       MENU_RESET         },  
 
-    {"",                              0xff               }  // end of list - DO NOT delete or move this this
+    {"",                              0xff               }   
 };
 
 const uint8_t FIRST_HIDDEN_MENU_ITEM = MENU_F_LOCK;
@@ -218,10 +204,10 @@ const char gSubMenu_NA[4] =
 
 const char* const gSubMenu_RXMode[] =
 {
-    "MAIN\nONLY",       // TX and RX on main only
-    "DUAL RX\nRESPOND", // Watch both and respond
-    "CROSS\nBAND",      // TX on main, RX on secondary
-    "MAIN TX\nDUAL RX"  // always TX on main, but RX on both
+    "MAIN\nONLY",        
+    "DUAL RX\nRESPOND",  
+    "CROSS\nBAND",       
+    "MAIN TX\nDUAL RX"   
 };
 
 #ifdef ENABLE_VOICE
@@ -374,7 +360,7 @@ const char gSubMenu_SCRAMBLER[][7] =
         "ONEPUSH"
     };
 
-    const char gSubMenu_SET_TOT[][7] =  // Use by SET_EOT too
+    const char gSubMenu_SET_TOT[][7] =   
     {
         "OFF",
         "SOUND",
@@ -430,16 +416,16 @@ const t_sidefunction gSubMenu_SIDEFUNCTIONS[] =
     {"VFO\nMEM",        ACTION_OPT_VFO_MR},
     {"MODE",            ACTION_OPT_SWITCH_DEMODUL},
 #ifdef ENABLE_BLMIN_TMP_OFF
-    {"BLMIN\nTMP OFF",  ACTION_OPT_BLMIN_TMP_OFF},      //BackLight Minimum Temporay OFF
+    {"BLMIN\nTMP OFF",  ACTION_OPT_BLMIN_TMP_OFF},       
 #endif
 #ifdef ENABLE_FEAT_F4HWN
     {"RX MODE",         ACTION_OPT_RXMODE},
     {"MAIN ONLY",       ACTION_OPT_MAINONLY},
     {"PTT",             ACTION_OPT_PTT},
     {"WIDE\nNARROW",    ACTION_OPT_WN},
-    //#if !defined(ENABLE_SPECTRUM) || !defined(ENABLE_FMRADIO)
+     
     {"MUTE",            ACTION_OPT_MUTE},
-    //#endif
+     
 #endif
 };
 
@@ -464,18 +450,18 @@ uint8_t UI_MENU_GetMenuIdx(uint8_t id)
 
 int32_t gSubMenuSelection;
 
-// edit box
-char    edit_original[17]; // a copy of the text before editing so that we can easily test for changes/difference
+ 
+char    edit_original[17];  
 char    edit[17];
 int     edit_index;
 
 void UI_DisplayMenu(void)
 {
-    const unsigned int menu_list_width = 6; // max no. of characters on the menu list (left side)
+    const unsigned int menu_list_width = 6;  
     const unsigned int menu_item_x1    = (8 * menu_list_width) + 2;
     const unsigned int menu_item_x2    = LCD_WIDTH - 1;
     unsigned int       i;
-    char               String[64];  // bigger cuz we can now do multi-line in one string (use '\n' char)
+    char               String[64];   
 
 #ifdef ENABLE_DTMF_CALLING
     char               Contact[16];
@@ -484,15 +470,14 @@ void UI_DisplayMenu(void)
     UI_DisplayClear();
 
 
-
 #ifndef ENABLE_CUSTOM_MENU_LAYOUT
-        // original menu layout
+         
     for (i = 0; i < 3; i++)
         if (gMenuCursor > 0 || i > 0)
             if ((gMenuListCount - 1) != gMenuCursor || i != 2)
                 UI_PrintString(MenuList[gMenuCursor + i - 1].name, 0, 0, i * 2, 8);
 
-    // invert the current menu list item pixels
+     
     for (i = 0; i < (8 * menu_list_width); i++)
     {
         gFrameBuffer[2][i] ^= 0xFF;
@@ -500,57 +485,56 @@ void UI_DisplayMenu(void)
     }
 
 
-    // draw the little sub-menu triangle marker
     if (gIsInSubMenu)
         memcpy(gFrameBuffer[0] + (8 * menu_list_width) + 1, BITMAP_CurrentIndicator, sizeof(BITMAP_CurrentIndicator));
 
-    // draw the menu index number/count
+     
     sprintf(String, "%2u.%u", 1 + gMenuCursor, gMenuListCount);
 
     UI_PrintStringSmallNormal(String, 2, 0, 6);
 
 #else
-    {   // new menu layout .. experimental & unfinished
-        const int menu_index = gMenuCursor;  // current selected menu item
+    {    
+        const int menu_index = gMenuCursor;   
         i = 1;
 
         if (!gIsInSubMenu) {
             while (i < 2)
-            {   // leading menu items - small text
+            {    
                 const int k = menu_index + i - 2;
                 if (k < 0)
-                    UI_PrintStringSmallNormal(MenuList[gMenuListCount + k].name, 0, 0, i);  // wrap-a-round
+                    UI_PrintStringSmallNormal(MenuList[gMenuListCount + k].name, 0, 0, i);   
                 else if (k >= 0 && k < (int)gMenuListCount)
                     UI_PrintStringSmallNormal(MenuList[k].name, 0, 0, i);
                 i++;
             }
 
-            // current menu item - keep big n fat
+             
             if (menu_index >= 0 && menu_index < (int)gMenuListCount)
                 UI_PrintString(MenuList[menu_index].name, 0, 0, 2, 8);
             i++;
 
             while (i < 4)
-            {   // trailing menu item - small text
+            {    
                 const int k = menu_index + i - 2;
                 if (k >= 0 && k < (int)gMenuListCount)
                     UI_PrintStringSmallNormal(MenuList[k].name, 0, 0, 1 + i);
                 else if (k >= (int)gMenuListCount)
-                    UI_PrintStringSmallNormal(MenuList[gMenuListCount - k].name, 0, 0, 1 + i);  // wrap-a-round
+                    UI_PrintStringSmallNormal(MenuList[gMenuListCount - k].name, 0, 0, 1 + i);   
                 i++;
             }
 
-            // draw the menu index number/count
+             
 #ifndef ENABLE_FEAT_F4HWN
             sprintf(String, "%2u.%u", 1 + gMenuCursor, gMenuListCount);
             UI_PrintStringSmallNormal(String, 2, 0, 6);
 #endif
         }
         else if (menu_index >= 0 && menu_index < (int)gMenuListCount)
-        {   // current menu item
-//          strcat(String, ":");
+        {    
+ 
             UI_PrintString(MenuList[menu_index].name, 0, 0, 0, 8);
-//          UI_PrintStringSmallNormal(String, 0, 0, 0);
+ 
         }
 
 #ifdef ENABLE_FEAT_F4HWN
@@ -560,23 +544,19 @@ void UI_DisplayMenu(void)
     }
 #endif
 
-    // **************
 
     memset(String, 0, sizeof(String));
 
     bool already_printed = false;
 
-    /* Brightness is set to max in some entries of this menu. Return it to the configured brightness
-       level the "next" time we enter here.I.e., when we move from one menu to another.
-       It also has to be set back to max when pressing the Exit key. */
 
     BACKLIGHT_TurnOn();
 
-    //#if !defined(ENABLE_SPECTRUM) || !defined(ENABLE_FMRADIO)
+     
         uint8_t gaugeLine = 0;
         uint8_t gaugeMin = 0;
         uint8_t gaugeMax = 0;
-    //#endif
+     
 
     switch (UI_MENU_GetCurrentMenuId())
     {
@@ -585,7 +565,7 @@ void UI_DisplayMenu(void)
             break;
 
         case MENU_MIC:
-            {   // display the mic gain in actual dB rather than just an index number
+            {    
                 const uint8_t mic = gMicGain_dB2[gSubMenuSelection];
                 sprintf(String, "+%u.%01udB", mic / 2, mic % 2);
             }
@@ -671,9 +651,8 @@ void UI_DisplayMenu(void)
                     BK4819_EnableScramble(gSubMenuSelection - 1);
                 else
                     BK4819_DisableScramble();
-            
-            //if (gRxVfo->Modulation == MODULATION_AM)
-            //    BK4819_SetFilterBandwidth(BK4819_FILTER_BW_AM, true);
+
+
             break;
 
 
@@ -693,21 +672,19 @@ void UI_DisplayMenu(void)
             else if(gSubMenuSelection < 61)
             {
                 sprintf(String, "%02dm:%02ds", (((gSubMenuSelection) * 5) / 60), (((gSubMenuSelection) * 5) % 60));
-                //#if !defined(ENABLE_SPECTRUM) || !defined(ENABLE_FMRADIO)
-                //ST7565_Gauge(4, 1, 60, gSubMenuSelection);
+                 
+                 
                 gaugeLine = 4;
                 gaugeMin = 1;
                 gaugeMax = 60;
-                //#endif
+                 
             }
             else
             {
                 strcpy(String, "ON");
             }
 
-            // Obsolete ???
-            //if(BACKLIGHT_GetBrightness() < 4)
-            //    BACKLIGHT_SetBrightness(4);
+
             break;
 
         case MENU_ABR_MIN:
@@ -715,9 +692,8 @@ void UI_DisplayMenu(void)
             sprintf(String, "%d", gSubMenuSelection);
             if(gIsInSubMenu)
                 BACKLIGHT_SetBrightness(gSubMenuSelection);
-            // Obsolete ???
-            //else if(BACKLIGHT_GetBrightness() < 4)
-            //    BACKLIGHT_SetBrightness(4);
+
+
             break;
 
         case MENU_AM:
@@ -730,12 +706,12 @@ void UI_DisplayMenu(void)
             else
             {
                 sprintf(String, "%02dm:%02ds", ((gSubMenuSelection * 15) / 60), ((gSubMenuSelection * 15) % 60));
-                //#if !defined(ENABLE_SPECTRUM) || !defined(ENABLE_FMRADIO)
-                //ST7565_Gauge(4, 1, 40, gSubMenuSelection);
+                 
+                 
                 gaugeLine = 4;
                 gaugeMin = 1;
                 gaugeMax = 40;
-                //#endif
+                 
             }
             break;
 
@@ -766,7 +742,7 @@ void UI_DisplayMenu(void)
         case MENU_SCREN:
 
 #ifdef ENABLE_FEAT_F4HWN
-        #ifdef ENABLE_FEAT_F4HWN_RX_TX_TIMER //calypso
+        #ifdef ENABLE_FEAT_F4HWN_RX_TX_TIMER  
         case MENU_SET_TMR:
         #endif
 #endif
@@ -783,7 +759,7 @@ void UI_DisplayMenu(void)
             UI_PrintString(String, menu_item_x1, menu_item_x2, 0, 8);
 
             if (valid && !gAskForConfirmation)
-            {   // show the frequency so that the user knows the channels frequency
+            {    
                 const uint32_t frequency = SETTINGS_FetchChannelFrequency(gSubMenuSelection);
                 sprintf(String, "%u.%05u", frequency / 100000, frequency % 100000);
                 UI_PrintString(String, menu_item_x1, menu_item_x2, 4, 8);
@@ -806,26 +782,26 @@ void UI_DisplayMenu(void)
             {
                 const uint32_t frequency = SETTINGS_FetchChannelFrequency(gSubMenuSelection);
 
-                //if (!gIsInSubMenu || edit_index < 0)
+                 
                 if (!gIsInSubMenu)
                     edit_index = -1;
                 if (edit_index < 0)
-                {   // show the channel name
+                {    
                     SETTINGS_FetchChannelName(String, gSubMenuSelection);
                     char *pPrintStr = String[0] ? String : "--";
                     UI_PrintString(pPrintStr, menu_item_x1, menu_item_x2, 2, 8);
                 }
                 else
-                {   // show the channel name being edited
-                    //UI_PrintString(edit, menu_item_x1, 0, 2, 8);
+                {    
+                     
                     UI_PrintString(edit, menu_item_x1, menu_item_x2, 2, 8);
                     if (edit_index < 10)
-                        //UI_PrintString("^", menu_item_x1 + (8 * edit_index), 0, 4, 8);  // show the cursor
-                        UI_PrintString("^", menu_item_x1 - 1 + (8 * edit_index),0, 4, 8); // show the cursor
+                         
+                        UI_PrintString("^", menu_item_x1 - 1 + (8 * edit_index),0, 4, 8);  
                 }
 
                 if (!gAskForConfirmation)
-                {   // show the frequency so that the user knows the channels frequency
+                {    
                     sprintf(String, "%u.%05u", frequency / 100000, frequency % 100000);
                     UI_PrintString(String, menu_item_x1, menu_item_x2, 4 + (gIsInSubMenu && edit_index >= 0), 8);
                 }
@@ -845,12 +821,12 @@ void UI_DisplayMenu(void)
 
         case MENU_TOT:
             sprintf(String, "%02dm:%02ds", (((gSubMenuSelection + 1) * 5) / 60), (((gSubMenuSelection + 1) * 5) % 60));
-            //#if !defined(ENABLE_SPECTRUM) || !defined(ENABLE_FMRADIO)
-            //ST7565_Gauge(4, 5, 179, gSubMenuSelection);
+             
+             
             gaugeLine = 4;
             gaugeMin = 5;
             gaugeMax = 179;
-            //#endif
+             
             break;
 
         #ifdef ENABLE_VOICE
@@ -867,22 +843,22 @@ void UI_DisplayMenu(void)
             else if(gSubMenuSelection < 81)
             {
                 sprintf(String, "CARRIER\n%02ds:%03dms", ((gSubMenuSelection * 250) / 1000), ((gSubMenuSelection * 250) % 1000));
-                //#if !defined(ENABLE_SPECTRUM) || !defined(ENABLE_FMRADIO)
-                //ST7565_Gauge(5, 1, 80, gSubMenuSelection);
+                 
+                 
                 gaugeLine = 5;
                 gaugeMin = 1;
                 gaugeMax = 80;
-                //#endif
+                 
             }
             else
             {
                 sprintf(String, "TIMEOUT\n%02dm:%02ds", (((gSubMenuSelection - 80) * 5) / 60), (((gSubMenuSelection - 80) * 5) % 60));
-                //#if !defined(ENABLE_SPECTRUM) || !defined(ENABLE_FMRADIO)
-                //ST7565_Gauge(5, 80, 104, gSubMenuSelection);
+                 
+                 
                 gaugeLine = 5;
                 gaugeMin = 80;
                 gaugeMax = 104;
-                //#endif
+                 
             }
             break;
 
@@ -1034,12 +1010,12 @@ void UI_DisplayMenu(void)
             else if(gSubMenuSelection < 121)
             {
                 sprintf(String, "%dh:%02dm", (gSubMenuSelection / 60), (gSubMenuSelection % 60));
-                //#if !defined(ENABLE_SPECTRUM) || !defined(ENABLE_FMRADIO)
-                //ST7565_Gauge(4, 1, 120, gSubMenuSelection);
+                 
+                 
                 gaugeLine = 4;
                 gaugeMin = 1;
                 gaugeMax = 120;
-                //#endif
+                 
             }
             break;
 #endif
@@ -1055,7 +1031,7 @@ void UI_DisplayMenu(void)
 
         case MENU_SET_TOT:
         case MENU_SET_EOT:
-            strcpy(String, gSubMenu_SET_TOT[gSubMenuSelection]); // Same as SET_TOT
+            strcpy(String, gSubMenu_SET_TOT[gSubMenuSelection]);  
             break;
 
         case MENU_SET_CTR:
@@ -1094,7 +1070,7 @@ void UI_DisplayMenu(void)
 
         case MENU_SET_MET:
         case MENU_SET_GUI:
-            strcpy(String, gSubMenu_SET_MET[gSubMenuSelection]); // Same as SET_MET
+            strcpy(String, gSubMenu_SET_MET[gSubMenuSelection]);  
             break;
 
         #ifdef ENABLE_FEAT_F4HWN_NARROWER
@@ -1112,34 +1088,34 @@ void UI_DisplayMenu(void)
                 else if(gSubMenuSelection < 64)
                 {
                     sprintf(String, "%02u", gSubMenuSelection);
-                    //#if !defined(ENABLE_SPECTRUM) || !defined(ENABLE_FMRADIO)
-                    //ST7565_Gauge(4, 1, 63, gSubMenuSelection);
+                     
+                     
                     gaugeLine = 4;
                     gaugeMin = 1;
                     gaugeMax = 63;
-                    //#endif
+                     
                 }
                 gEeprom.VOLUME_GAIN = gSubMenuSelection;
                 BK4819_WriteRegister(BK4819_REG_48,
-                    (11u << 12)                |     // ??? .. 0 ~ 15, doesn't seem to make any difference
-                    ( 0u << 10)                |     // AF Rx Gain-1
-                    (gEeprom.VOLUME_GAIN << 4) |     // AF Rx Gain-2
-                    (gEeprom.DAC_GAIN    << 0));     // AF DAC Gain (after Gain-1 and Gain-2)
+                    (11u << 12)                |      
+                    ( 0u << 10)                |      
+                    (gEeprom.VOLUME_GAIN << 4) |      
+                    (gEeprom.DAC_GAIN    << 0));      
                 break;
         #endif
 #endif
 
     }
 
-    //#if !defined(ENABLE_SPECTRUM) || !defined(ENABLE_FMRADIO)
+     
     if(gaugeLine != 0)
     {
         ST7565_Gauge(gaugeLine, gaugeMin, gaugeMax, gSubMenuSelection);
     }
-    //#endif
+     
 
     if (!already_printed)
-    {   // we now do multi-line text in a single string
+    {    
 
         unsigned int y;
         unsigned int lines = 1;
@@ -1148,34 +1124,27 @@ void UI_DisplayMenu(void)
 
         if (len > 0)
         {
-            // count number of lines
+             
             for (i = 0; i < len; i++)
             {
                 if (String[i] == '\n' && i < (len - 1))
-                {   // found new line char
+                {    
                     lines++;
-                    String[i] = 0;  // null terminate the line
+                    String[i] = 0;   
                 }
             }
 
             if (lines > 3)
-            {   // use small text
+            {    
                 small = true;
                 if (lines > 7)
                     lines = 7;
             }
 
-            // center vertically'ish
-            /*
-            if (small)
-                y = 3 - ((lines + 0) / 2);  // untested
-            else
-                y = 2 - ((lines + 0) / 2);
-            */
 
             y = (small ? 3 : 2) - (lines / 2); 
 
-            // only for SysInf
+             
             if(UI_MENU_GetCurrentMenuId() == MENU_VOL)
             {
                 sprintf(edit, "%u.%02uV %u%%",
@@ -1192,7 +1161,7 @@ void UI_DisplayMenu(void)
                 y = 2;
             }
 
-            // draw the text lines
+             
             for (i = 0; i < len && lines > 0; lines--)
             {
                 if (small)
@@ -1200,11 +1169,11 @@ void UI_DisplayMenu(void)
                 else
                     UI_PrintString(String + i, menu_item_x1, menu_item_x2, y, 8);
 
-                // look for start of next line
+                 
                 while (i < len && String[i] >= 32)
                     i++;
 
-                // hop over the null term char(s)
+                 
                 while (i < len && String[i] < 32)
                     i++;
 
@@ -1226,29 +1195,17 @@ void UI_DisplayMenu(void)
             pPrintStr = String;
         }
 
-        // channel number
+         
         UI_PrintString(pPrintStr, menu_item_x1, menu_item_x2, 0, 8);
 
         SETTINGS_FetchChannelName(String, gSubMenuSelection);
         pPrintStr = String[0] ? String : "--";
 
-        // channel name and scan-list
+         
         if (gSubMenuSelection < 0 || !gEeprom.SCAN_LIST_ENABLED[i]) {
             UI_PrintString(pPrintStr, menu_item_x1, menu_item_x2, 2, 8);
         } else {
-            /*
-            UI_PrintStringSmallNormal(pPrintStr, menu_item_x1, menu_item_x2, 2);
-
-            if (IS_MR_CHANNEL(gEeprom.SCANLIST_PRIORITY_CH1[i])) {
-                sprintf(String, "PRI%d:%u", 1, gEeprom.SCANLIST_PRIORITY_CH1[i] + 1);
-                UI_PrintString(String, menu_item_x1, menu_item_x2, 3, 8);
-            }
-
-            if (IS_MR_CHANNEL(gEeprom.SCANLIST_PRIORITY_CH2[i])) {
-                sprintf(String, "PRI%d:%u", 2, gEeprom.SCANLIST_PRIORITY_CH2[i] + 1);
-                UI_PrintString(String, menu_item_x1, menu_item_x2, 5, 8);
-            }
-            */
+             
 
             UI_PrintStringSmallNormal(pPrintStr, menu_item_x1, menu_item_x2, 2);
 
@@ -1292,33 +1249,30 @@ void UI_DisplayMenu(void)
          UI_MENU_GetCurrentMenuId() == MENU_MEM_CH   ||
          UI_MENU_GetCurrentMenuId() == MENU_MEM_NAME ||
          UI_MENU_GetCurrentMenuId() == MENU_DEL_CH) && gAskForConfirmation)
-    {   // display confirmation
+    {    
         char *pPrintStr = (gAskForConfirmation == 1) ? "SURE?" : "WAIT!";
         UI_PrintString(pPrintStr, menu_item_x1, menu_item_x2, 5, 8);
     }
 
 
-    //   НЕСКОЛЬКО КОРОТКИХ ПУНКТИРНЫХ ЛИНИЙ ГОРИЗОНТ — ПОЛНАЯ НАСТРОЙКА КАЖДОЙ!
-// ────────────────────────────────────────────────────────────────
 typedef struct {
-	uint8_t y;        // высота (0..63)
-	uint8_t x_start;  // отступ слева
-	uint8_t x_end;    // отступ справа
-	uint8_t step;     // шаг пунктира: 1 = сплошная, 2 = •◦, 3 = •◦◦, 4 = •◦◦◦ и т.д.
+	uint8_t y;         
+	uint8_t x_start;   
+	uint8_t x_end;     
+	uint8_t step;      
 } dashed_line_t;
 
-// ─────── ТУТ НАСТРАИВАЙ СКОЛЬКО УГОДНО ЛИНИЙ ───────
+ 
 static const dashed_line_t dashed_lines[] = {
-	{ 8,  0, 127, 2 },   // линия 1: частый пунктир
-	{ 52,  0, 47, 2 },   // линия 2: сплошная (step = 1)
-	// хочешь ещё? — добавляй:
-	// { 24,  15, 113, 3 },
-	// { 40,   8, 120, 5 },
+	{ 8,  0, 127, 2 },    
+	{ 52,  0, 47, 2 },    
+
+
 };
 
 const uint8_t num_lines = ARRAY_SIZE(dashed_lines);
 
-// Рисуем все линии
+ 
 for (uint8_t i = 0; i < num_lines; i++)
 {
 	const dashed_line_t *l = &dashed_lines[i];
@@ -1327,32 +1281,30 @@ for (uint8_t i = 0; i < num_lines; i++)
 	for (uint8_t x = l->x_start; x <= l->x_end; x += l->step)
 	{
 		if (y < 8)
-			gStatusLine[x] |= (1u << y);                                         // статусная строка
+			gStatusLine[x] |= (1u << y);                                          
 		else
-			gFrameBuffer[(y - 8) >> 3][x] |= (1u << ((y - 8) & 7));              // основной экран
+			gFrameBuffer[(y - 8) >> 3][x] |= (1u << ((y - 8) & 7));               
 	}
 }
-// ────────────────────────────────────────────────────────────────
-//   НЕСКОЛЬКО ВЕРТИКАЛЬНЫХ ПУНКТИРНЫХ ЛИНИЙ — ПОЛНАЯ НАСТРОЙКА КАЖДОЙ!
-// ────────────────────────────────────────────────────────────────
+
+
 typedef struct {
-	uint8_t x;        // позиция по горизонтали (0..127)
-	uint8_t y_start;  // отступ сверху
-	uint8_t y_end;    // отступ снизу
-	uint8_t step;     // шаг пунктира: 1 = сплошная, 2 = •◦, 3 = •◦◦ и т.д.
+	uint8_t x;         
+	uint8_t y_start;   
+	uint8_t y_end;     
+	uint8_t step;      
 } vertical_line_t;
 
-// ─────── НАСТРАИВАЙ СКОЛЬКО УГОДНО ВЕРТИКАЛЬНЫХ ЛИНИЙ ───────
+ 
 static const vertical_line_t vertical_lines[] = {
-	{  49,  10, 64, 2 },   // левая линия — частый пунктир
-	// добавляй свои:
-	// { 30, 15, 50, 4 },
-	// { 90, 12, 52, 1 },
+	{  49,  10, 64, 2 },    
+
+
 };
 
 const uint8_t num_vlines = ARRAY_SIZE(vertical_lines);
 
-// Рисуем все вертикальные линии
+ 
 for (uint8_t i = 0; i < num_vlines; i++)
 {
 	const vertical_line_t *l = &vertical_lines[i];
@@ -1366,7 +1318,7 @@ for (uint8_t i = 0; i < num_vlines; i++)
 			gFrameBuffer[(y - 8) >> 3][x] |= (1u << ((y - 8) & 7));
 	}
 }
-// ────────────────────────────────────────────────────────────────
+ 
 
     ST7565_BlitFullScreen();
 }

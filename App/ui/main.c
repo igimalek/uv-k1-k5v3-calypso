@@ -1,21 +1,7 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #include <string.h>
-#include <stdlib.h>  // abs()
+#include <stdlib.h>   
 
 #include "app/chFrScanner.h"
 #include "app/dtmf.h"
@@ -57,13 +43,13 @@ center_line_t center_line = CENTER_LINE_NONE;
 #endif
 
 const int8_t dBmCorrTable[7] = {
-            -15, // band 1
-            -25, // band 2
-            -20, // band 3
-            -4, // band 4
-            -7, // band 5
-            -6, // band 6
-             -1  // band 7
+            -15,  
+            -25,  
+            -20,  
+            -4,  
+            -7,  
+            -6,  
+             -1   
         };
 
 const char *VfoStateStr[] = {
@@ -76,27 +62,17 @@ const char *VfoStateStr[] = {
        [VFO_STATE_VOLTAGE_HIGH]="VOLT HIGH"
 };
 
-// ============================================================================
-// DISPLAY HELPER FUNCTIONS
-// ============================================================================
 
-/**
- * @brief Draw small antenna icon with signal strength bars
- * @param p Pointer to frame buffer line
- * @param level Signal level 0-6 (used for bar count)
- * 
- * Creates a small antenna icon followed by 0-6 signal strength bars
- */
 static void DrawSmallAntennaAndBars(uint8_t *p, unsigned int level)
 {
-    // Clamp level to valid range (0-6 bars)
+     
     if(level>6)
         level = 6;
 
-    // Copy antenna bitmap to frame buffer
+     
     memcpy(p, BITMAP_Antenna, ARRAY_SIZE(BITMAP_Antenna));
 
-    // Draw signal strength bars (1 pixel per bar level)
+     
     for(uint8_t i = 1; i <= level; i++) {
         char bar = (0xff << (6-i)) & 0x7F;
         memset(p + 2 + i*3, bar, 2);
@@ -105,16 +81,7 @@ static void DrawSmallAntennaAndBars(uint8_t *p, unsigned int level)
 
 #if defined ENABLE_AUDIO_BAR || defined ENABLE_RSSI_BAR
 
-/**
- * @brief Draw a horizontal level bar graph
- * @param xpos X coordinate of bar start
- * @param line Frame buffer line number
- * @param level Current level to display (0-bars)
- * @param bars Maximum bar count
- * 
- * Draws visual representation with filled bars for levels 0-(bars-4)
- * and hollow bars for levels (bars-4) to bars for fine detail
- */
+ 
 static void DrawLevelBar(uint8_t xpos, uint8_t line, uint8_t level, uint8_t bars)
 {
 #ifndef ENABLE_FEAT_F4HWN
@@ -186,14 +153,7 @@ static void DrawLevelBar(uint8_t xpos, uint8_t line, uint8_t level, uint8_t bars
 
 #ifdef ENABLE_AUDIO_BAR
 
-/**
- * @brief Approximate logarithmic scale using integer arithmetic
- * @param value Input value to convert
- * @return log2 approximation
- * 
- * Used for converting linear audio amplitude to logarithmic display
- * Avoids floating point and expensive operations
- */
+ 
 uint8_t log2_approx(unsigned int value) {
     uint8_t log = 0;
     while (value >>= 1) {
@@ -202,18 +162,7 @@ uint8_t log2_approx(unsigned int value) {
     return log;
 }
 
-/**
- * @brief Display microphone audio level bar during transmission
- * 
- * Shows real-time microphone input level as a visual bar graph.
- * Only active when:
- * - Microphone bar setting enabled
- * - Currently transmitting
- * - Main display is active
- * - No DTMF call in progress
- * 
- * Uses logarithmic scaling for natural audio level perception
- */
+ 
 void UI_DisplayAudioBar(void)
 {
     if (gSetting_mic_bar)
@@ -245,7 +194,7 @@ void UI_DisplayAudioBar(void)
 #endif
             )
         {
-            return;  // screen is in use
+            return;   
         }
 
 #if defined(ENABLE_ALARM) || defined(ENABLE_TX1750)
@@ -253,13 +202,13 @@ void UI_DisplayAudioBar(void)
             return;
 #endif
         static uint8_t barsOld = 0;
-        const uint8_t thresold = 18; // arbitrary thresold
-        //const uint8_t barsList[] = {0, 0, 0, 1, 2, 3, 4, 5, 6, 8, 10, 13, 16, 20, 25, 25};
+        const uint8_t thresold = 18;  
+         
         const uint8_t barsList[] = {0, 0, 0, 1, 2, 3, 5, 7, 9, 12, 15, 18, 21, 25, 25, 25};
         uint8_t logLevel;
         uint8_t bars;
 
-        unsigned int voiceLevel  = BK4819_GetVoiceAmplitudeOut();  // 15:0
+        unsigned int voiceLevel  = BK4819_GetVoiceAmplitudeOut();   
 
         voiceLevel = (voiceLevel >= thresold) ? (voiceLevel - thresold) : 0;
         logLevel = log2_approx(MIN(voiceLevel * 16, 32768u) + 1);
@@ -277,44 +226,16 @@ void UI_DisplayAudioBar(void)
 }
 #endif
 
-// ============================================================================
-// RSSI SIGNAL STRENGTH DISPLAY
-// ============================================================================
 
-/**
- * @brief Display RSSI (Received Signal Strength Indicator) bar
- * @param now Force immediate screen update
- * 
- * Shows signal strength graphically with:
- * - S-meter scale (S0-S9, then +dBm above S9)
- * - Signal strength bar graph
- * - Raw RSSI value in dBm
- * 
- * Frequency band corrections applied via dBmCorrTable
- * Only displayed when:
- * - Currently receiving
- * - Main display is active
- * - No DTMF call in progress
- */
 void DisplayRSSIBar(const bool now)
 {
 #if defined(ENABLE_RSSI_BAR)
 
-    const unsigned int txt_width    = 7 * 8;                 // 8 text chars
-    const unsigned int bar_x        = 2 + txt_width + 4;     // X coord of bar graph
+    const unsigned int txt_width    = 7 * 8;                  
+    const unsigned int bar_x        = 2 + txt_width + 4;      
 
 #ifdef ENABLE_FEAT_F4HWN
-    /*
-    const char empty[] = {
-        0b00000000,
-        0b00000000,
-        0b00000000,
-        0b00000000,
-        0b00000000,
-        0b00000000,
-        0b00000000,
-    };
-    */
+     
 
     unsigned int line;
     if (isMainOnly())
@@ -326,9 +247,6 @@ void DisplayRSSIBar(const bool now)
         line = 3;
     }
 
-    //char rx[4];
-    //sprintf(String, "%d", RxBlink);
-    //UI_PrintStringSmallBold(String, 80, 0, RxLine);
 
     if(RxLine >= 0 && center_line != CENTER_LINE_IN_USE)
     {
@@ -363,7 +281,7 @@ void DisplayRSSIBar(const bool now)
 #endif
 
     if ((gEeprom.KEY_LOCK && gKeypadLocked > 0) || center_line != CENTER_LINE_RSSI)
-        return;     // display is in use
+        return;      
 
     if (gCurrentFunction == FUNCTION_TRANSMIT ||
         gScreenToDisplay != DISPLAY_MAIN
@@ -371,7 +289,7 @@ void DisplayRSSIBar(const bool now)
         || gDTMF_CallState != DTMF_CALL_STATE_NONE
 #endif
         )
-        return;     // display is in use
+        return;      
 
     if (now)
         memset(p_line, 0, LCD_WIDTH);
@@ -400,14 +318,14 @@ void DisplayRSSIBar(const bool now)
         overS9Bars = map(overS9dBm, 0, 40, 0, 4);
     }
 #else
-    const int16_t s0_dBm   = -gEeprom.S0_LEVEL;                  // S0 .. base level
+    const int16_t s0_dBm   = -gEeprom.S0_LEVEL;                   
     const int16_t rssi_dBm =
         BK4819_GetRSSI_dBm()
 
         + dBmCorrTable[gRxVfo->Band];
 
     int s0_9 = gEeprom.S0_LEVEL - gEeprom.S9_LEVEL;
-    const uint8_t s_level = MIN(MAX((int32_t)(rssi_dBm - s0_dBm)*100 / (s0_9*100/9), 0), 9); // S0 - S9
+    const uint8_t s_level = MIN(MAX((int32_t)(rssi_dBm - s0_dBm)*100 / (s0_9*100/9), 0), 9);  
     uint8_t overS9dBm = MIN(MAX(rssi_dBm + gEeprom.S9_LEVEL, 0), 99);
     uint8_t overS9Bars = MIN(overS9dBm/10, 4);
 #endif
@@ -476,17 +394,7 @@ void DisplayRSSIBar(const bool now)
 }
 
 #ifdef ENABLE_AGC_SHOW_DATA
-/**
- * @brief Debug display for AGC internal state
- * @param now Force immediate screen update
- * 
- * Shows AGC gain configuration for troubleshooting RX levels:
- * - AGC enable flag
- * - Gain index
- * - Calculated gain in dB
- * - Signal strength
- * - RSSI raw value
- */
+ 
 void UI_MAIN_PrintAGC(bool now)
 {
     char buf[20];
@@ -525,38 +433,23 @@ void UI_MAIN_PrintAGC(bool now)
 }
 #endif
 
-// ============================================================================
-// DISPLAY UPDATE TIMESLICE
-// ============================================================================
 
-/**
- * @brief 500ms timeslice updates for main display
- * 
- * Called periodically to update display elements that change
- * at slower rates than the main loop (RSSI bar, audio bar, LEDs)
- * 
- * Handles:
- * - RSSI bar updates (every 500ms)
- * - Audio level bar updates
- * - RX LED blinking/indication
- * - End-of-transmission (EOT) visual/audio feedback
- */
 void UI_MAIN_TimeSlice500ms(void)
 {
-    // Only update if main display is active
+     
     if(gScreenToDisplay==DISPLAY_MAIN) {
 
 #ifdef ENABLE_AGC_SHOW_DATA
-        // Debug: show AGC data on center line
+         
         UI_MAIN_PrintAGC(true);
         return;
 #endif
 
-        // Update RSSI bar during reception
+         
         if(FUNCTION_IsRx()) {
             DisplayRSSIBar(true);
         }
-#ifdef ENABLE_FEAT_F4HWN // Blink Green Led for white...
+#ifdef ENABLE_FEAT_F4HWN  
         else if(gSetting_set_eot > 0 && RxBlinkLed == 2)
         {
             if(RxBlinkLedCounter <= 8)
@@ -608,59 +501,28 @@ void UI_MAIN_TimeSlice500ms(void)
     }
 }
 
-// ============================================================================
-// MAIN DISPLAY RENDERING
-// ============================================================================
 
-/**
- * @brief Render main frequency/channel display
- * 
- * This is the primary display showing:
- * - VFO A and VFO B with frequencies/channels
- * - TX/RX status and modulation
- * - Signal strength indicators
- * - TX power and offset information
- * - Scan list assignments
- * - Battery status
- * 
- * Layout (2 VFO mode):
- *  Line 0-1: VFO A frequency/channel + status
- *  Line 2-3: Center line (RSSI, DTMF, audio, etc.)
- *  Line 4-5: VFO B frequency/channel + status
- *  Line 6-7: Status bar (battery, lock, etc.)
- * 
- * Layout (Main Only mode):
- *  Line 0-3: Active VFO with large frequency display
- *  Line 4-5: Center information (RSSI, audio, etc.)
- *  Line 6: Status/VFO indicator
- */
 void UI_DisplayMain(void)
 {
-    char String[22];  // String buffer for formatted text
+    char String[22];   
 
-    center_line = CENTER_LINE_NONE;  // Center line initially available
+    center_line = CENTER_LINE_NONE;   
 
-    // Clear screen and prepare frame buffer
+     
     UI_DisplayClear();
 
-    // ================================================================
-    // CHECK FOR LOW BATTERY ALERT
-    // ================================================================
-    
+
     if(gLowBattery && !gLowBatteryConfirmed) {
-        // Display battery critical warning and block further operation
+         
         UI_DisplayPopup("LOW BATTERY");
         ST7565_BlitFullScreen();
         return;
     }
 
-    // ================================================================
-    // CHECK FOR KEYPAD LOCK ALERT
-    // ================================================================
-    
+
 #ifndef ENABLE_FEAT_F4HWN
     if (gEeprom.KEY_LOCK && gKeypadLocked > 0)
-    {   // Display keypad lock message
+    {    
         UI_PrintString("Long press #", 0, LCD_WIDTH, 1, 8);
         UI_PrintString("to unlock",    0, LCD_WIDTH, 3, 8);
         ST7565_BlitFullScreen();
@@ -668,45 +530,29 @@ void UI_DisplayMain(void)
     }
 #else
     if (gEeprom.KEY_LOCK && gKeypadLocked > 0)
-    {   // tell user how to unlock the keyboard
+    {    
         uint8_t shift = 3;
 
-        /*
-        BK4819_ToggleGpioOut(BK4819_GPIO5_PIN1_RED, true);
-        SYSTEM_DelayMs(50);
-        BK4819_ToggleGpioOut(BK4819_GPIO5_PIN1_RED, false);
-        SYSTEM_DelayMs(50);
-        */
 
         if(isMainOnly())
         {
             shift = 5;
         }
-        //memcpy(gFrameBuffer[shift] + 2, gFontKeyLock, sizeof(gFontKeyLock));
+         
         UI_PrintStringSmallBold("UNLOCK KEYBOARD", 12, 0, shift);
-        //memcpy(gFrameBuffer[shift] + 120, gFontKeyLock, sizeof(gFontKeyLock));
 
-        /*
-        for (uint8_t i = 12; i < 116; i++)
-        {
-            gFrameBuffer[shift][i] ^= 0xFF;
-        }
-        */
+
     }
 #endif
 
-    // ================================================================
-    // RENDER VFO DISPLAYS
-    // ================================================================
-    
-    // Determine which VFO is active for TX
+
     unsigned int activeTxVFO = gRxVfoIsActive ? gEeprom.RX_VFO : gEeprom.TX_VFO;
 
-    // Render both VFOs (or single VFO in main-only mode)
+     
     for (unsigned int vfo_num = 0; vfo_num < 2; vfo_num++)
     {
 #ifdef ENABLE_FEAT_F4HWN
-        const unsigned int line0 = 0;  // text screen line
+        const unsigned int line0 = 0;   
         const unsigned int line1 = 4;
         unsigned int line;
         if (isMainOnly())
@@ -722,7 +568,7 @@ void UI_DisplayMain(void)
         uint8_t           *p_line1    = gFrameBuffer[line + 1];
         enum Vfo_txtr_mode mode       = VFO_MODE_NONE;      
 #else
-        const unsigned int line0 = 0;  // text screen line
+        const unsigned int line0 = 0;   
         const unsigned int line1 = 4;
         const unsigned int line       = (vfo_num == 0) ? line0 : line1;
         const bool         isMainVFO  = (vfo_num == gEeprom.TX_VFO);
@@ -744,14 +590,14 @@ void UI_DisplayMain(void)
 #ifdef ENABLE_FEAT_F4HWN
         if (activeTxVFO != vfo_num || isMainOnly())
 #else
-        if (activeTxVFO != vfo_num) // this is not active TX VFO
+        if (activeTxVFO != vfo_num)  
 #endif
         {
 #ifdef ENABLE_SCAN_RANGES
             if(gScanRangeStart) {
 
 #ifdef ENABLE_FEAT_F4HWN
-                //if(IS_FREQ_CHANNEL(gEeprom.ScreenChannel[0]) && IS_FREQ_CHANNEL(gEeprom.ScreenChannel[1])) {
+                 
                 if(IS_FREQ_CHANNEL(gEeprom.ScreenChannel[activeTxVFO])) {
 
                     uint8_t shift = 0;
@@ -792,7 +638,7 @@ void UI_DisplayMain(void)
 #endif
             ) {
                 char *pPrintStr = "";
-                // show DTMF stuff
+                 
 #ifdef ENABLE_DTMF_CALLING
                 char Contact[16];
                 if (!gDTMF_InputMode) {
@@ -846,12 +692,12 @@ void UI_DisplayMain(void)
 #endif
             }
 
-            // highlight the selected/used VFO with a marker
+             
             if (isMainVFO)
                 memcpy(p_line0 + 0, BITMAP_VFO_Default, sizeof(BITMAP_VFO_Default));
         }
-        else // active TX VFO
-        {   // highlight the selected/used VFO with a marker
+        else  
+        {    
             if (isMainVFO)
                 memcpy(p_line0 + 0, BITMAP_VFO_Default, sizeof(BITMAP_VFO_Default));
             else
@@ -869,7 +715,7 @@ void UI_DisplayMain(void)
         }
 
         if (gCurrentFunction == FUNCTION_TRANSMIT)
-        {   // transmitting
+        {    
 
 #ifdef ENABLE_ALARM
             if (gAlarmState == ALARM_STATE_SITE_ALARM)
@@ -878,16 +724,16 @@ void UI_DisplayMain(void)
 #endif
             {
                 if (activeTxVFO == vfo_num)
-                {   // show the TX symbol
+                {    
                     mode = VFO_MODE_TX;
                     UI_PrintStringSmallBold("TX", 8, 0, line);
                 }
             }
         }
         else
-        {   // receiving .. show the RX symbol
+        {    
             mode = VFO_MODE_RX;
-            //if (FUNCTION_IsRx() && gEeprom.RX_VFO == vfo_num) {
+             
             if (FUNCTION_IsRx() && gEeprom.RX_VFO == vfo_num && VfoState[vfo_num] == VFO_STATE_NORMAL) {
 #ifdef ENABLE_FEAT_F4HWN
                 RxBlinkLed = 1;
@@ -912,7 +758,7 @@ void UI_DisplayMain(void)
                 if(RxOnVfofrequency == frequency && !isMainOnly())
                 {
                     UI_PrintStringSmallNormal(">>", 8, 0, line);
-                    //memcpy(p_line0 + 14, BITMAP_VFO_Default, sizeof(BITMAP_VFO_Default));
+                     
                 }
 
                 if(RxBlinkLed == 1)
@@ -922,18 +768,18 @@ void UI_DisplayMain(void)
         }
 
         if (IS_MR_CHANNEL(gEeprom.ScreenChannel[vfo_num]))
-        {   // channel mode
+        {    
             const unsigned int x = 2;
             const bool inputting = gInputBoxIndex != 0 && gEeprom.TX_VFO == vfo_num;
             if (!inputting)
                 sprintf(String, "M%u", gEeprom.ScreenChannel[vfo_num] + 1);
             else
-                sprintf(String, "M%.3s", INPUTBOX_GetAscii());  // show the input text
+                sprintf(String, "M%.3s", INPUTBOX_GetAscii());   
             UI_PrintStringSmallNormal(String, x, 0, line + 1);
         }
         else if (IS_FREQ_CHANNEL(gEeprom.ScreenChannel[vfo_num]))
-        {   // frequency mode
-            // show the frequency band number
+        {    
+             
             const unsigned int x = 2;
             char * buf = gEeprom.VfoInfo[vfo_num].pRX->Frequency < _1GHz_in_KHz ? "" : "+";
             sprintf(String, "F%u%s", 1 + gEeprom.ScreenChannel[vfo_num] - FREQ_CHANNEL_FIRST, buf);
@@ -943,18 +789,17 @@ void UI_DisplayMain(void)
         else
         {
             if (gInputBoxIndex == 0 || gEeprom.TX_VFO != vfo_num)
-            {   // channel number
+            {    
                 sprintf(String, "N%u", 1 + gEeprom.ScreenChannel[vfo_num] - NOAA_CHANNEL_FIRST);
             }
             else
-            {   // user entering channel number
+            {    
                 sprintf(String, "N%u%u", '0' + gInputBox[0], '0' + gInputBox[1]);
             }
             UI_PrintStringSmallNormal(String, 7, 0, line + 1);
         }
 #endif
 
-        // ************
 
         enum VfoState_t state = VfoState[vfo_num];
 
@@ -970,22 +815,22 @@ void UI_DisplayMain(void)
                 UI_PrintString(VfoStateStr[state], 31, 0, line, 8);
         }
         else if (gInputBoxIndex > 0 && IS_FREQ_CHANNEL(gEeprom.ScreenChannel[vfo_num]) && gEeprom.TX_VFO == vfo_num)
-        {   // user entering a frequency
+        {    
             const char * ascii = INPUTBOX_GetAscii();
             bool isGigaF = frequency>=_1GHz_in_KHz;
             sprintf(String, "%.*s.%.3s", 3 + isGigaF, ascii, ascii + 3 + isGigaF);
 #ifdef ENABLE_BIG_FREQ
             if(!isGigaF) {
-                // show the remaining 2 small frequency digits
+                 
                 UI_PrintStringSmallNormal(String + 7, 113, 0, line + 1);
                 String[7] = 0;
-                // show the main large frequency digits
+                 
                 UI_DisplayFrequency(String, 32, line, false);
             }
             else
 #endif
             {
-                // show the frequency in the main font
+                 
                 UI_PrintString(String, 32, 0, line, 8);
             }
 
@@ -994,20 +839,20 @@ void UI_DisplayMain(void)
         else
         {
             if (gCurrentFunction == FUNCTION_TRANSMIT)
-            {   // transmitting
+            {    
                 if (activeTxVFO == vfo_num)
                     frequency = gEeprom.VfoInfo[vfo_num].pTX->Frequency;
             }
 
             if (IS_MR_CHANNEL(gEeprom.ScreenChannel[vfo_num]))
-            {   // it's a channel
+            {    
 
                 uint8_t countList = 0;
                 uint8_t shiftList = 0;
 
                 if(gMR_ChannelExclude[gEeprom.ScreenChannel[vfo_num]] == false)
                 {
-                    // show the scan list assigment symbols
+                     
                     const ChannelAttributes_t att = gMR_ChannelAttributes[gEeprom.ScreenChannel[vfo_num]];
 
                     countList = att.scanlist1 + att.scanlist2 + att.scanlist3;
@@ -1042,47 +887,45 @@ void UI_DisplayMain(void)
                 }
 
 
-
-                // compander symbol
 #ifndef ENABLE_BIG_FREQ
                 if (att.compander)
                     memcpy(p_line0 + 120 + LCD_WIDTH, BITMAP_compand, sizeof(BITMAP_compand));
 #else
-                // TODO:  // find somewhere else to put the symbol
+                 
 #endif
 
                 switch (gEeprom.CHANNEL_DISPLAY_MODE)
                 {
-                    case MDF_FREQUENCY: // show the channel frequency
+                    case MDF_FREQUENCY:  
                         sprintf(String, "%3u.%05u", frequency / 100000, frequency % 100000);
 #ifdef ENABLE_BIG_FREQ
                         if(frequency < _1GHz_in_KHz) {
-                            // show the remaining 2 small frequency digits
+                             
                             UI_PrintStringSmallNormal(String + 7, 113, 0, line + 1);
                             String[7] = 0;
-                            // show the main large frequency digits
+                             
                             UI_DisplayFrequency(String, 32, line, false);
                         }
                         else
 #endif
                         {
-                            // show the frequency in the main font
+                             
                             UI_PrintString(String, 32, 0, line, 8);
                         }
 
                         break;
 
-                    case MDF_CHANNEL:   // show the channel number
+                    case MDF_CHANNEL:    
                         sprintf(String, "CH-%03u", gEeprom.ScreenChannel[vfo_num] + 1);
                         UI_PrintString(String, 32, 0, line, 8);
                         break;
 
-                    case MDF_NAME:      // show the channel name
-                    case MDF_NAME_FREQ: // show the channel name and frequency
+                    case MDF_NAME:       
+                    case MDF_NAME_FREQ:  
 
                         SETTINGS_FetchChannelName(String, gEeprom.ScreenChannel[vfo_num]);
                         if (String[0] == 0)
-                        {   // no channel name, show the channel number instead
+                        {    
                             sprintf(String, "CH-%03u", gEeprom.ScreenChannel[vfo_num] + 1);
                         }
 
@@ -1114,15 +957,15 @@ void UI_DisplayMain(void)
                             {
                                 sprintf(String, "%3u.%05u", frequency / 100000, frequency % 100000);
                                 if(frequency < _1GHz_in_KHz) {
-                                    // show the remaining 2 small frequency digits
+                                     
                                     UI_PrintStringSmallNormal(String + 7, 113, 0, line + 4);
                                     String[7] = 0;
-                                    // show the main large frequency digits
+                                     
                                     UI_DisplayFrequency(String, 32, line + 3, false);
                                 }
                                 else
                                 {
-                                    // show the frequency in the main font
+                                     
                                     UI_PrintString(String, 32, 0, line + 3, 8);
                                 }
                             }
@@ -1131,7 +974,7 @@ void UI_DisplayMain(void)
                                 sprintf(String, "%03u.%05u", frequency / 100000, frequency % 100000);
                                 UI_PrintStringSmallNormal(String, 32 + 4, 0, line + 1);
                             }
-#else                           // show the channel frequency below the channel number/name
+#else                            
                             sprintf(String, "%03u.%05u", frequency / 100000, frequency % 100000);
                             UI_PrintStringSmallNormal(String, 32 + 4, 0, line + 1);
 #endif
@@ -1141,25 +984,25 @@ void UI_DisplayMain(void)
                 }
             }
             else
-            {   // frequency mode
+            {    
                 sprintf(String, "%3u.%05u", frequency / 100000, frequency % 100000);
 
 #ifdef ENABLE_BIG_FREQ
                 if(frequency < _1GHz_in_KHz) {
-                    // show the remaining 2 small frequency digits
+                     
                     UI_PrintStringSmallNormal(String + 7, 113, 0, line + 1);
                     String[7] = 0;
-                    // show the main large frequency digits
+                     
                     UI_DisplayFrequency(String, 32, line, false);
                 }
                 else
 #endif
                 {
-                    // show the frequency in the main font
+                     
                     UI_PrintString(String, 32, 0, line, 8);
                 }
 
-                // show the channel symbols
+                 
                 const ChannelAttributes_t att = gMR_ChannelAttributes[gEeprom.ScreenChannel[vfo_num]];
                 if (att.compander)
 #ifdef ENABLE_BIG_FREQ
@@ -1170,40 +1013,20 @@ void UI_DisplayMain(void)
             }
         }
 
-        // ************
 
-        {   // show the TX/RX level
+        {    
             int8_t Level = -1;
 
             if (mode == VFO_MODE_TX)
-            {   // TX power level
-                /*
-                switch (gRxVfo->OUTPUT_POWER)
-                {
-                    case OUTPUT_POWER_LOW1:     Level = 2; break;
-                    case OUTPUT_POWER_LOW2:     Level = 2; break;
-                    case OUTPUT_POWER_LOW3:     Level = 2; break;
-                    case OUTPUT_POWER_LOW4:     Level = 2; break;
-                    case OUTPUT_POWER_LOW5:     Level = 2; break;
-                    case OUTPUT_POWER_MID:      Level = 4; break;
-                    case OUTPUT_POWER_HIGH:     Level = 6; break;
-                }
-
-                if (gRxVfo->OUTPUT_POWER == OUTPUT_POWER_MID) {
-                    Level = 4;
-                } else if (gRxVfo->OUTPUT_POWER == OUTPUT_POWER_HIGH) {
-                    Level = 6;
-                } else {
-                    Level = 2;
-                }
-                */
+            {    
+                 
                 Level = gRxVfo->OUTPUT_POWER - 1;
             }
             else
             if (mode == VFO_MODE_RX)
-            {   // RX signal level
+            {    
                 #ifndef ENABLE_RSSI_BAR
-                    // bar graph
+                     
                     if (gVFO_RSSI_bar_level[vfo_num] > 0)
                         Level = gVFO_RSSI_bar_level[vfo_num];
                 #endif
@@ -1212,12 +1035,11 @@ void UI_DisplayMain(void)
                 DrawSmallAntennaAndBars(p_line1 + LCD_WIDTH, Level);
         }
 
-        // ************
 
         String[0] = '\0';
         const VFO_Info_t *vfoInfo = &gEeprom.VfoInfo[vfo_num];
 
-        // show the modulation symbol
+         
         const char * s = "";
 #ifdef ENABLE_FEAT_F4HWN
         const char * t = "";
@@ -1303,15 +1125,14 @@ void UI_DisplayMain(void)
 
             GUI_DisplaySmallest(String, 68 + shift, line == 0 ? 17 : 49, false, true);
 
-            //sprintf(String, "%d.%02u", vfoInfo->StepFrequency / 100, vfoInfo->StepFrequency % 100);
-            //GUI_DisplaySmallest(String, 91, line == 0 ? 2 : 34, false, true);
+
         }
 #else
         UI_PrintStringSmallNormal(s, LCD_WIDTH + 24, 0, line + 1);
 #endif
 
         if (state == VFO_STATE_NORMAL || state == VFO_STATE_ALARM)
-        {   // show the TX power
+        {    
             uint8_t currentPower = vfoInfo->OUTPUT_POWER % 8;
             uint8_t arrowPos = 19;
             bool userPower = false;
@@ -1330,8 +1151,8 @@ void UI_DisplayMain(void)
             if (gSetting_set_gui)
             {
                 const char pwr_short[][3] = {"L1", "L2", "L3", "L4", "L5", "M", "H"};
-                //sprintf(String, "%s", pwr_short[currentPower]);
-                //UI_PrintStringSmallNormal(String, LCD_WIDTH + 42, 0, line + 1);
+                 
+                 
                 UI_PrintStringSmallNormal(pwr_short[currentPower], LCD_WIDTH + 42, 0, line + 1);
 
                 arrowPos = 38;
@@ -1339,8 +1160,8 @@ void UI_DisplayMain(void)
             else
             {
                 const char pwr_long[][5] = {"LOW1", "LOW2", "LOW3", "LOW4", "LOW5", "MID", "HIGH"};
-                //sprintf(String, "%s", pwr_long[currentPower]);
-                //GUI_DisplaySmallest(String, 24, line == 0 ? 17 : 49, false, true);
+                 
+                 
                 GUI_DisplaySmallest(pwr_long[currentPower], 24, line == 0 ? 17 : 49, false, true);
             }
 
@@ -1351,7 +1172,7 @@ void UI_DisplayMain(void)
         }
 
         if (vfoInfo->freq_config_RX.Frequency != vfoInfo->freq_config_TX.Frequency)
-        {   // show the TX offset symbol
+        {    
             int i = vfoInfo->TX_OFFSET_FREQUENCY_DIRECTION % 3;
             const char dir_list[][2] = {"", "+", "-"};
            
@@ -1370,7 +1191,7 @@ void UI_DisplayMain(void)
 #endif
         }
 
-        // show the TX/RX reverse symbol
+         
         if (vfoInfo->FrequencyReverse)
 #if ENABLE_FEAT_F4HWN
         {
@@ -1424,44 +1245,18 @@ void UI_DisplayMain(void)
 #endif
 
 #ifdef ENABLE_DTMF_CALLING
-        // show the DTMF decoding symbol
+         
         if (vfoInfo->DTMF_DECODING_ENABLE || gSetting_KILLED)
             UI_PrintStringSmallNormal("DTMF", LCD_WIDTH + 78, 0, line + 1);
 #endif
 
 
-        // show the audio scramble symbol  // calypso test
         if (vfoInfo->SCRAMBLING_TYPE > 0 && gSetting_ScrambleEnable)
-            //UI_PrintStringSmallNormal("SCR", LCD_WIDTH + 106, 0, line + 1);
+             
             UI_PrintStringSmallNormal("SCR", LCD_WIDTH + 1, 0, line + 2);
 
 #ifdef ENABLE_FEAT_F4HWN
-        /*
-        if(isMainVFO)   
-        {
-            if(gMonitor)
-            {
-                sprintf(String, "%s", "MONI");
-            }
-            
-            if (gSetting_set_gui)
-            {
-                if(!gMonitor)
-                {
-                    sprintf(String, "SQL%d", gEeprom.SQUELCH_LEVEL);
-                }
-                UI_PrintStringSmallNormal(String, LCD_WIDTH + 98, 0, line + 1);
-            }
-            else
-            {
-                if(!gMonitor)
-                {
-                    sprintf(String, "SQL%d", gEeprom.SQUELCH_LEVEL);
-                }
-                GUI_DisplaySmallest(String, 110, line == 0 ? 17 : 49, false, true);
-            }
-        }
-        */
+         
         if (isMainVFO) {
            if (gMonitor) {
                 strcpy(String, "MONI");
@@ -1484,7 +1279,7 @@ void UI_DisplayMain(void)
 #endif
 
     if (center_line == CENTER_LINE_NONE)
-    {   // we're free to use the middle line
+    {    
 
         const bool rx = FUNCTION_IsRx();
 
@@ -1524,9 +1319,9 @@ void UI_DisplayMain(void)
         {
             #if 1
                 if (gSetting_live_DTMF_decoder && gDTMF_RX_live[0] != 0)
-                {   // show live DTMF decode
+                {    
                     const unsigned int len = strlen(gDTMF_RX_live);
-                    const unsigned int idx = (len > (17 - 5)) ? len - (17 - 5) : 0;  // limit to last 'n' chars
+                    const unsigned int idx = (len > (17 - 5)) ? len - (17 - 5) : 0;   
 
                     if (gScreenToDisplay != DISPLAY_MAIN
 #ifdef ENABLE_DTMF_CALLING
@@ -1554,9 +1349,9 @@ void UI_DisplayMain(void)
                 }
             #else
                 if (gSetting_live_DTMF_decoder && gDTMF_RX_index > 0)
-                {   // show live DTMF decode
+                {    
                     const unsigned int len = gDTMF_RX_index;
-                    const unsigned int idx = (len > (17 - 5)) ? len - (17 - 5) : 0;  // limit to last 'n' chars
+                    const unsigned int idx = (len > (17 - 5)) ? len - (17 - 5) : 0;   
 
                     if (gScreenToDisplay != DISPLAY_MAIN ||
                         gDTMF_CallState != DTMF_CALL_STATE_NONE)
@@ -1571,7 +1366,7 @@ void UI_DisplayMain(void)
 
 #ifdef ENABLE_SHOW_CHARGE_LEVEL
             else if (gChargingWithTypeC)
-            {   // charging .. show the battery state
+            {    
                 if (gScreenToDisplay != DISPLAY_MAIN
 #ifdef ENABLE_DTMF_CALLING
                     || gDTMF_CallState != DTMF_CALL_STATE_NONE
@@ -1604,7 +1399,7 @@ void UI_DisplayMain(void)
 
 #endif
 
-    ST7565_BlitFullScreen();  // calypso draw now
+    ST7565_BlitFullScreen();   
 }
 
-// ***************************************************************************
+ 

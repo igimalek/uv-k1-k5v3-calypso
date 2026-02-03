@@ -1,18 +1,4 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+  
 
 #include <assert.h>
 #include <string.h>
@@ -107,11 +93,9 @@ void (*action_opt_table[])(void) = {
     [ACTION_OPT_PTT] = &ACTION_Ptt,
     [ACTION_OPT_WN] = &ACTION_Wn,
     [ACTION_OPT_BACKLIGHT] = &ACTION_BackLight,
-    //#if !defined(ENABLE_SPECTRUM) || !defined(ENABLE_FMRADIO)
+      
         [ACTION_OPT_MUTE] = &ACTION_Mute,
-    //#else
-    //    [ACTION_OPT_MUTE] = &FUNCTION_NOP,
-    //#endif
+
 
 #else
     [ACTION_OPT_RXMODE] = &FUNCTION_NOP,
@@ -137,7 +121,7 @@ void ACTION_Power(void)
 
 void ACTION_Monitor(void)
 {
-    if (gCurrentFunction != FUNCTION_MONITOR) { // enable the monitor
+    if (gCurrentFunction != FUNCTION_MONITOR) {   
         RADIO_SelectVfos();
 #ifdef ENABLE_NOAA
         if (IS_NOAA_CHANNEL(gRxVfo->CHANNEL_SAVE) && gIsNoaaMode)
@@ -190,7 +174,7 @@ void ACTION_Scan(bool bRestart)
         return;
     }
 
-    // not scanning
+      
     gMonitor = false;
 
 #ifdef ENABLE_DTMF_CALLING
@@ -210,7 +194,7 @@ void ACTION_Scan(bool bRestart)
     GUI_SelectNextDisplay(DISPLAY_MAIN);
 
     if (gScanStateDir != SCAN_OFF) {
-        // already scanning
+          
 
         if (!IS_MR_CHANNEL(gNextMrChannel)) {
             CHFRSCANNER_Stop();
@@ -220,29 +204,29 @@ void ACTION_Scan(bool bRestart)
             return;
         }
 
-        // channel mode. Keep scanning but toggle between scan lists
+          
         gEeprom.SCAN_LIST_DEFAULT = (gEeprom.SCAN_LIST_DEFAULT + 1) % 6;
         #ifdef ENABLE_FEAT_F4HWN_RESUME_STATE
             SETTINGS_WriteCurrentState();
         #endif
 
-        // jump to the next channel
+          
         CHFRSCANNER_Start(false, gScanStateDir);
         gScanPauseDelayIn_10ms = 1;
         gScheduleScanListen    = false;
     } else {
         #ifdef ENABLE_FEAT_F4HWN_RESUME_STATE
-        if(gScanRangeStart == 0) // No ScanRange
+        if(gScanRangeStart == 0)   
         {
             gEeprom.CURRENT_STATE = 1;
         }
-        else // ScanRange
+        else   
         {
             gEeprom.CURRENT_STATE = 2;
         }
         SETTINGS_WriteCurrentState();
         #endif
-        // start scanning
+          
         CHFRSCANNER_Start(true, SCAN_FWD);
 
 #ifdef ENABLE_VOICE
@@ -250,10 +234,10 @@ void ACTION_Scan(bool bRestart)
         AUDIO_PlaySingleVoice(true);
 #endif
 
-        // clear the other vfo's rssi level (to hide the antenna symbol)
+          
         gVFO_RSSI_bar_level[(gEeprom.RX_VFO + 1) & 1U] = 0;
 
-        // let the user see DW is not active
+          
         gDualWatchActive = false;
     }
 
@@ -275,7 +259,7 @@ void ACTION_SwitchDemodul(void)
 void ACTION_Handle(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 {
     if (gScreenToDisplay == DISPLAY_MAIN && gDTMF_InputMode){
-         // entering DTMF code
+           
 
         gPttWasReleased = true;
 
@@ -283,19 +267,18 @@ void ACTION_Handle(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
             return;
         }
 
-        // side1 btn pressed
 
         gBeepToPlay = BEEP_1KHZ_60MS_OPTIONAL;
         gRequestDisplayScreen = DISPLAY_MAIN;
 
         if (gDTMF_InputBox_Index <= 0) {
-            // turn off DTMF input box if no codes left
+              
             gDTMF_InputMode = false;
             return;
         }
 
-        // DTMF codes are in the input box
-        gDTMF_InputBox[--gDTMF_InputBox_Index] = '-'; // delete one code
+          
+        gDTMF_InputBox[--gDTMF_InputBox_Index] = '-';   
 
 #ifdef ENABLE_VOICE
         gAnotherVoiceID   = VOICE_ID_CANCEL;
@@ -321,25 +304,23 @@ void ACTION_Handle(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
             break;
     }
 
-    if (!bKeyHeld && bKeyPressed) // button pushed
+    if (!bKeyHeld && bKeyPressed)   
     {
         return;
     }
 
-    // held or released beyond this point
 
-    if(!(bKeyHeld && !bKeyPressed)) // don't beep on released after hold
+    if(!(bKeyHeld && !bKeyPressed))   
         gBeepToPlay = BEEP_1KHZ_60MS_OPTIONAL;
 
-    if (bKeyHeld || bKeyPressed) // held
+    if (bKeyHeld || bKeyPressed)   
     {
         funcShort = funcLong;
 
-        if (!bKeyPressed) //ignore release if held
+        if (!bKeyPressed)   
             return;
     }
 
-    // held or released after short press beyond this point
 
     action_opt_table[funcShort]();
 }
@@ -442,7 +423,7 @@ static void ACTION_AlarmOr1750(const bool b1750)
 
     gFlagPrepareTX = gAlarmState != ALARM_STATE_OFF;
 
-    if (gScreenToDisplay != DISPLAY_MENU)     // 1of11 .. don't close the menu
+    if (gScreenToDisplay != DISPLAY_MENU)       
         gRequestDisplayScreen = DISPLAY_MAIN;
 }
 
@@ -611,25 +592,25 @@ void ACTION_BackLightOnDemand(void)
     BACKLIGHT_TurnOn();
 }
 
-    //#if !defined(ENABLE_SPECTRUM) || !defined(ENABLE_FMRADIO)
+      
     void ACTION_Mute(void)
     {
-        // Toggle mute state
+          
         gMute = !gMute;
 
-        // Update the registers
+          
         #ifdef ENABLE_FMRADIO
             BK1080_WriteRegister(BK1080_REG_05_SYSTEM_CONFIGURATION2, gMute ? 0x0A10 : 0x0A1F);
         #endif
         gEeprom.VOLUME_GAIN = gMute ? 0 : gEeprom.VOLUME_GAIN_BACKUP;
         BK4819_WriteRegister(BK4819_REG_48,
-            (11u << 12)                |  // ??? .. 0 ~ 15, doesn't seem to make any difference
-            (0u << 10)                 |  // AF Rx Gain-1
-            (gEeprom.VOLUME_GAIN << 4) |  // AF Rx Gain-2
-            (gEeprom.DAC_GAIN << 0));     // AF DAC Gain (after Gain-1 and Gain-2)
+            (11u << 12)                |    
+            (0u << 10)                 |    
+            (gEeprom.VOLUME_GAIN << 4) |    
+            (gEeprom.DAC_GAIN << 0));       
 
         gUpdateStatus = true;
     }
-    //#endif
+      
 
 #endif

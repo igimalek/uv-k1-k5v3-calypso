@@ -1,18 +1,4 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #include <string.h>
 
@@ -38,11 +24,10 @@ BOOT_Mode_t BOOT_GetMode(void)
     for (i = 0; i < 2; i++)
     {
         if (!GPIO_IsPttPressed())
-            return BOOT_MODE_NORMAL;   // PTT not pressed
+            return BOOT_MODE_NORMAL;    
         Keys[i] = KEYBOARD_Poll();
         SYSTEM_DelayMs(20);
     }
-
 
 
     if (Keys[0] == Keys[1])
@@ -69,7 +54,7 @@ void BOOT_ProcessMode(BOOT_Mode_t Mode)
     if (Mode == BOOT_MODE_F_LOCK)
     {
         #ifdef ENABLE_FEAT_F4HWN_RESUME_STATE
-            gEeprom.CURRENT_STATE = 0; // Don't resume is active...
+            gEeprom.CURRENT_STATE = 0;  
         #endif 
         GUI_SelectNextDisplay(DISPLAY_MENU);
     }
@@ -90,7 +75,7 @@ void BOOT_ProcessMode(BOOT_Mode_t Mode)
             gEeprom.KEY_2_LONG_PRESS_ACTION  = ACTION_OPT_NONE;
             gEeprom.KEY_M_LONG_PRESS_ACTION  = ACTION_OPT_NONE;
 
-            RADIO_InitInfo(gRxVfo, FREQ_CHANNEL_LAST - 1, 43400000); // LPD
+            RADIO_InitInfo(gRxVfo, FREQ_CHANNEL_LAST - 1, 43400000);  
 
             gRxVfo->CHANNEL_BANDWIDTH        = BANDWIDTH_NARROW;
             gRxVfo->OUTPUT_POWER             = OUTPUT_POWER_LOW1;
@@ -109,7 +94,7 @@ void BOOT_ProcessMode(BOOT_Mode_t Mode)
             gEeprom.KEY_LOCK = 0;
 
             #ifdef ENABLE_FEAT_F4HWN_RESUME_STATE
-                gEeprom.CURRENT_STATE = 0; // Don't resume is active...
+                gEeprom.CURRENT_STATE = 0;  
             #endif 
 
             GUI_SelectNextDisplay(DISPLAY_AIRCOPY);

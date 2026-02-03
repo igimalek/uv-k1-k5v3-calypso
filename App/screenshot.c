@@ -1,33 +1,18 @@
-/* Copyright 2024 Armel F4HWN
- * https://github.com/armel
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #include "debugging.h"
 #include "driver/st7565.h"
 #include "screenshot.h"
 #include "misc.h"
 
-// RAM optimization: Only keep previousFrame static (1024 bytes)
-// Build currentFrame on-the-fly and send delta blocks immediately
+
 static uint8_t previousFrame[1024] = {0};
 static uint8_t forcedBlock = 0;
 static uint8_t keepAlive = 10;
 
 void getScreenShot(bool force)
 {
-    static uint8_t currentFrame[1024];  // Reused static buffer
+    static uint8_t currentFrame[1024];   
     uint16_t index = 0;
     uint8_t acc = 0;
     uint8_t bitCount = 0;
@@ -47,8 +32,7 @@ void getScreenShot(bool force)
         return;
     }
 
-    // ==== Build currentFrame (exact same logic as original) ====
-    // Status line: 8 bit layers × 128 columns
+
     for (uint8_t b = 0; b < 8; b++) {
         for (uint8_t i = 0; i < 128; i++) {
             uint8_t bit = (gStatusLine[i] >> b) & 0x01;
@@ -61,7 +45,7 @@ void getScreenShot(bool force)
         }
     }
 
-    // Frame buffer: 7 lines × 8 bit layers × 128 columns
+     
     for (uint8_t l = 0; l < 7; l++) {
         for (uint8_t b = 0; b < 8; b++) {
             for (uint8_t i = 0; i < 128; i++) {
@@ -80,11 +64,11 @@ void getScreenShot(bool force)
         currentFrame[index++] = acc;
 
     if (index != 1024)
-        return; // Frame size mismatch, abort
+        return;  
 
-    // ==== Generate delta frame ====
+     
     uint16_t deltaLen = 0;
-    uint8_t deltaFrame[128 * 9];  // Worst case: all 128 blocks changed
+    uint8_t deltaFrame[128 * 9];   
 
     for (uint8_t block = 0; block < 128; block++) {
         uint8_t *cur = &currentFrame[block * 8];
@@ -98,16 +82,16 @@ void getScreenShot(bool force)
             deltaFrame[deltaLen++] = block;
             memcpy(&deltaFrame[deltaLen], cur, 8);
             deltaLen += 8;
-            memcpy(prev, cur, 8); // Update stored frame
+            memcpy(prev, cur, 8);  
         }
     }
 
     forcedBlock = (forcedBlock + 1) % 128;
 
     if (deltaLen == 0)
-        return; // No update needed
+        return;  
 
-    // ==== Send frame ====
+     
     uint8_t header[5] = {
         0xAA, 0x55, 0x02,
         (uint8_t)(deltaLen >> 8),

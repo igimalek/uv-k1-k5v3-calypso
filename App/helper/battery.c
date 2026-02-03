@@ -1,18 +1,4 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #include <assert.h>
 
@@ -25,7 +11,7 @@
 #include "ui/battery.h"
 #include "ui/menu.h"
 #include "ui/ui.h"
-//#include "debugging.h"
+ 
 
 uint16_t          gBatteryCalibration[6];
 uint16_t          gBatteryCurrentVoltage;
@@ -81,37 +67,29 @@ const uint16_t Voltage2PercentageTable[][7][2] = {
         {0,   0  },
     },
 
-    // Estimated discharge curve for 1500 mAh K1 battery (improve this)
+     
     [BATTERY_TYPE_1500_MAH] = {
-        {828, 100},  // Fully charged (measured ~8.28V)
-        {813, 97 },  // Top end
-        {758, 25 },  // Mid level
-        {726, 6  },  // Almost empty
-        {630, 0  },  // Fully discharged (conservative)
+        {828, 100},   
+        {813, 97 },   
+        {758, 25 },   
+        {726, 6  },   
+        {630, 0  },   
         {0,   0  },
         {0,   0  },
     },
 
-    // Estimated discharge curve for 2500 mAh K1 battery (improve this)
+     
     [BATTERY_TYPE_2500_MAH] = {
-        {839, 100},  // Fully charged (measured ~8.39V)
-        {818, 95 },  // Top end (slightly raised vs 816)
-        {745, 55 },  // Mid range
-        {703, 25 },  // Low level
-        {668, 5  },  // Almost empty
-        {623, 0  },  // Fully discharged (between 630 and 600)
+        {839, 100},   
+        {818, 95 },   
+        {745, 55 },   
+        {703, 25 },   
+        {668, 5  },   
+        {623, 0  },   
         {0,   0  },
     },
 };
 
-/* Useless (for compilator only)
-static_assert(
-    (ARRAY_SIZE(Voltage2PercentageTable[BATTERY_TYPE_1600_MAH]) ==
-    ARRAY_SIZE(Voltage2PercentageTable[BATTERY_TYPE_2200_MAH])) &&
-    (ARRAY_SIZE(Voltage2PercentageTable[BATTERY_TYPE_2200_MAH]) ==
-    ARRAY_SIZE(Voltage2PercentageTable[BATTERY_TYPE_3500_MAH]))
-    );
-*/
 
 unsigned int BATTERY_VoltsToPercent(const unsigned int voltage_10mV)
 {
@@ -137,23 +115,20 @@ void BATTERY_GetReadings(const bool bDisplayBatteryLevel)
     gBatteryVoltageAverage = (Voltage * 760) / gBatteryCalibration[3];
 
     if(gBatteryVoltageAverage > 890)
-        gBatteryDisplayLevel = 7; // battery overvoltage
+        gBatteryDisplayLevel = 7;  
     else if(gBatteryVoltageAverage < 630 && (gEeprom.BATTERY_TYPE == BATTERY_TYPE_1600_MAH || gEeprom.BATTERY_TYPE == BATTERY_TYPE_2200_MAH))
-        gBatteryDisplayLevel = 0; // battery critical
+        gBatteryDisplayLevel = 0;  
     else if(gBatteryVoltageAverage < 600 && (gEeprom.BATTERY_TYPE == BATTERY_TYPE_3500_MAH))
-        gBatteryDisplayLevel = 0; // battery critical
+        gBatteryDisplayLevel = 0;  
     else {
         gBatteryDisplayLevel = 1;
         const uint8_t levels[] = {5,17,41,65,88};
         uint8_t perc = BATTERY_VoltsToPercent(gBatteryVoltageAverage);
-        //char str[64];
-        //LogUart("----------\n");
-        //sprintf(str, "%d %d %d %d %d %d %d\n", gBatteryVoltages[0], gBatteryVoltages[1], gBatteryVoltages[2], gBatteryVoltages[3], Voltage, gBatteryVoltageAverage, perc);
-        //LogUart(str);
+
 
         for(uint8_t i = 6; i >= 2; i--){
-            //sprintf(str, "%d %d %d\n", perc, levels[i-2], i);
-            //LogUart(str);
+             
+             
             if (perc > levels[i-2]) {
                 gBatteryDisplayLevel = i;
                 break;
@@ -224,7 +199,6 @@ void BATTERY_TimeSlice500ms(void)
         return;
     }
 
-    // not transmitting
 
     if (lowBatteryCountdown < lowBatteryPeriod) {
         if (lowBatteryCountdown == lowBatteryPeriod-1 && !gChargingWithTypeC && !gLowBatteryConfirmed) {
@@ -239,7 +213,7 @@ void BATTERY_TimeSlice500ms(void)
         return;
     }
 
-    // not on charge
+     
     if (!gLowBatteryConfirmed) {
         AUDIO_PlayBeep(BEEP_500HZ_60MS_DOUBLE_BEEP);
 #ifdef ENABLE_VOICE

@@ -1,18 +1,4 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+  
 
 #include "app/app.h"
 #include "app/dtmf.h"
@@ -30,7 +16,7 @@
 
 DCS_CodeType_t    gScanCssResultType;
 uint8_t           gScanCssResultCode;
-bool              gScanSingleFrequency; // scan CTCSS/DCS codes for current frequency
+bool              gScanSingleFrequency;   
 SCAN_SaveState_t  gScannerSaveState;
 uint8_t           gScanChannel;
 uint32_t          gScanFrequency;
@@ -78,7 +64,7 @@ static void SCANNER_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 
 static void SCANNER_Key_EXIT(bool bKeyPressed, bool bKeyHeld)
 {
-    if (!bKeyHeld && bKeyPressed) { // short pressed
+    if (!bKeyHeld && bKeyPressed) {   
         gBeepToPlay = BEEP_1KHZ_60MS_OPTIONAL;
 
         switch (gScannerSaveState) {
@@ -94,7 +80,6 @@ static void SCANNER_Key_EXIT(bool bKeyPressed, bool bKeyHeld)
                     break;
                 }
 
-                // Fallthrough
 
             case SCAN_SAVE_CHANNEL:
                 gScannerSaveState     = SCAN_SAVE_NO_PROMPT;
@@ -109,25 +94,9 @@ static void SCANNER_Key_EXIT(bool bKeyPressed, bool bKeyHeld)
 
 static void SCANNER_Key_MENU(bool bKeyPressed, bool bKeyHeld)
 {
-    if (bKeyHeld || !bKeyPressed) // ignore long press or release button events
+    if (bKeyHeld || !bKeyPressed)   
         return;
 
-    /*
-    if (gScanCssState == SCAN_CSS_STATE_OFF && !gScanSingleFrequency) {
-        gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
-        return;
-    }
-
-    if (gScanCssState == SCAN_CSS_STATE_SCANNING && gScanSingleFrequency) {
-        gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
-        return;
-    }
-
-    if (gScanCssState == SCAN_CSS_STATE_FAILED) {
-        gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
-        return;
-    }
-    */
 
     if (gScanCssState == SCAN_CSS_STATE_FAILED ||  
         (!gScanSingleFrequency && gScanCssState == SCAN_CSS_STATE_OFF) ||  
@@ -400,7 +369,7 @@ void SCANNER_TimeSlice10ms(void)
 
     switch (gScanCssState) {
         case SCAN_CSS_STATE_OFF: {
-            // must be RF frequency scanning if we're here ?
+              
             uint32_t result;
             if (!BK4819_GetFrequencyScanResult(&result))
                 break;
@@ -436,7 +405,7 @@ void SCANNER_TimeSlice10ms(void)
             }
 
             gScanDelay_10ms = scan_delay_10ms;
-            //gScanDelay_10ms = 1;   // 10ms
+              
             break;
         }
         case SCAN_CSS_STATE_SCANNING: {
@@ -477,7 +446,7 @@ void SCANNER_TimeSlice10ms(void)
                 }
             }
 
-            if (gScanCssState < SCAN_CSS_STATE_FOUND) { // scanning or off
+            if (gScanCssState < SCAN_CSS_STATE_FOUND) {   
                 BK4819_SetScanFrequency(gScanFrequency);
                 gScanDelay_10ms = scan_delay_10ms;
                 break;

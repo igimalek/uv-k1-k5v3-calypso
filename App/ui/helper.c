@@ -1,18 +1,4 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #include <string.h>
 
@@ -56,7 +42,7 @@ void UI_GenerateChannelStringEx(char *pString, const bool bShowPrefix, const uin
     }
 
     if (bShowPrefix) {
-        // BUG here? Prefixed NULLs are allowed
+         
         sprintf(pString, "CH-%03u", ChannelNumber + 1);
     } else if (ChannelNumber == 0xFF) {
         strcpy(pString, "NULL");
@@ -181,45 +167,6 @@ void UI_DisplayFrequency(const char *string, uint8_t X, uint8_t Y, bool center)
     }
 }
 
-/*
-void UI_DisplayFrequency(const char *string, uint8_t X, uint8_t Y, bool center)
-{
-    const unsigned int char_width  = 13;
-    uint8_t           *pFb0        = gFrameBuffer[Y] + X;
-    uint8_t           *pFb1        = pFb0 + 128;
-    bool               bCanDisplay = false;
-
-    if (center) {
-        uint8_t len = 0;
-        for (const char *ptr = string; *ptr; ptr++)
-            if (*ptr != ' ') len++; // Ignores spaces for centering
-
-        X -= (len * char_width) / 2; // Centering adjustment
-        pFb0 = gFrameBuffer[Y] + X;
-        pFb1 = pFb0 + 128;
-    }
-
-    for (; *string; string++) {
-        char c = *string;
-        if (c == '-') c = '9' + 1; // Remap of '-' symbol
-
-        if (bCanDisplay || c != ' ') {
-            bCanDisplay = true;
-            if (c >= '0' && c <= '9' + 1) {
-                memcpy(pFb0 + 2, gFontBigDigits[c - '0'], char_width - 3);
-                memcpy(pFb1 + 2, gFontBigDigits[c - '0'] + char_width - 3, char_width - 3);
-            } else if (c == '.') {
-                memset(pFb1, 0x60, 3); // Replaces the three assignments
-                pFb0 += 3;
-                pFb1 += 3;
-                continue;
-            }
-        }
-        pFb0 += char_width;
-        pFb1 += char_width;
-    }
-}
-*/
 
 void UI_DrawPixelBuffer(uint8_t (*buffer)[128], uint8_t x, uint8_t y, bool black)
 {
@@ -240,27 +187,7 @@ static void sort(int16_t *a, int16_t *b)
 }
 
 #ifdef ENABLE_FEAT_F4HWN
-    /*
-    void UI_DrawLineDottedBuffer(uint8_t (*buffer)[128], int16_t x1, int16_t y1, int16_t x2, int16_t y2, bool black)
-    {
-        if(x2==x1) {
-            sort(&y1, &y2);
-            for(int16_t i = y1; i <= y2; i+=2) {
-                UI_DrawPixelBuffer(buffer, x1, i, black);
-            }
-        } else {
-            const int multipl = 1000;
-            int a = (y2-y1)*multipl / (x2-x1);
-            int b = y1 - a * x1 / multipl;
-
-            sort(&x1, &x2);
-            for(int i = x1; i<= x2; i+=2)
-            {
-                UI_DrawPixelBuffer(buffer, i, i*a/multipl +b, black);
-            }
-        }
-    }
-    */
+     
 
     void PutPixel(uint8_t x, uint8_t y, bool fill) {
       UI_DrawPixelBuffer(gFrameBuffer, x, y, fill);
@@ -328,20 +255,7 @@ void UI_DisplayPopup(const char *string)
 {
     UI_DisplayClear();
 
-    // for(uint8_t i = 1; i < 5; i++) {
-    //  memset(gFrameBuffer[i]+8, 0x00, 111);
-    // }
 
-    // for(uint8_t x = 10; x < 118; x++) {
-    //  UI_DrawPixelBuffer(x, 10, true);
-    //  UI_DrawPixelBuffer(x, 46-9, true);
-    // }
-
-    // for(uint8_t y = 11; y < 37; y++) {
-    //  UI_DrawPixelBuffer(10, y, true);
-    //  UI_DrawPixelBuffer(117, y, true);
-    // }
-    // DrawRectangle(9,9, 118,38, true);
     UI_PrintString(string, 9, 118, 2, 8);
     UI_PrintStringSmallNormal("Press EXIT", 9, 118, 6);
 }

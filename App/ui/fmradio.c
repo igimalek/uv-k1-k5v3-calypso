@@ -1,18 +1,4 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #ifdef ENABLE_FMRADIO
 
@@ -45,9 +31,6 @@ void UI_DisplayFM(void)
     
     UI_PrintStringSmallNormal(String, 1, 0, 6);
 
-    //uint8_t spacings[] = {20,10,5};
-    //sprintf(String, "%d0k", spacings[gEeprom.FM_Space % 3]);
-    //UI_PrintStringSmallNormal(String, 127 - 4*7, 0, 6);
 
     if (gAskToSave) {
         pPrintStr = "SAVE?";
@@ -74,7 +57,7 @@ void UI_DisplayFM(void)
         pPrintStr = "M-SCAN";
     }
 
-    UI_PrintString(pPrintStr, 0, 127, 3, 10); // memory, vfo, scan
+    UI_PrintString(pPrintStr, 0, 127, 3, 10);  
 
     memset(String, 0, sizeof(String));
     if (gAskToSave || (gEeprom.FM_IsMrMode && gInputBoxIndex > 0)) {
@@ -89,7 +72,7 @@ void UI_DisplayFM(void)
             sprintf(String, "%.3s.%.1s",ascii, ascii + 3);
         }
 
-        UI_DisplayFrequency(String, 36, 1, gInputBoxIndex == 0);  // frequency
+        UI_DisplayFrequency(String, 36, 1, gInputBoxIndex == 0);   
         ST7565_BlitFullScreen();
         return;
     }

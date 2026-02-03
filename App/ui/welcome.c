@@ -1,18 +1,4 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #include <string.h>
 
@@ -43,7 +29,7 @@ void UI_DisplayReleaseKeys(void)
     UI_PrintString("RELEASE", 0, 127, 1, 10);
     UI_PrintString("ALL KEYS", 0, 127, 3, 10);
 
-    ST7565_BlitStatusLine();  // blank status line
+    ST7565_BlitStatusLine();   
     ST7565_BlitFullScreen();
 }
 
@@ -73,9 +59,9 @@ void UI_DisplayWelcome(void)
         memset(WelcomeString0, 0, sizeof(WelcomeString0));
         memset(WelcomeString1, 0, sizeof(WelcomeString1));
 
-        // 0x0EB0
+         
         PY25Q16_ReadBuffer(0x007020, WelcomeString0, 16);
-        // 0x0EC0
+         
         PY25Q16_ReadBuffer(0x007030, WelcomeString1, 16);
 
         sprintf(WelcomeString2, "%u.%02uV %u%%",
@@ -123,7 +109,7 @@ void UI_DisplayWelcome(void)
 #ifdef ENABLE_FEAT_F4HWN
         UI_PrintStringSmallNormal(Version, 0, 128, 4);
 
-        UI_DrawLineBuffer(gFrameBuffer, 0, 31, 127, 31, 1); // Be ware, status zone = 8 lines, the rest = 56 ->total 64
+        UI_DrawLineBuffer(gFrameBuffer, 0, 31, 127, 31, 1);  
 
         for (uint8_t i = 18; i < 110; i++)
         {
@@ -138,7 +124,7 @@ void UI_DisplayWelcome(void)
         UI_PrintStringSmallNormal(Version, 0, 127, 6);
 #endif
 
-        //ST7565_BlitStatusLine();  // blank status line : I think it's useless
+         
         ST7565_BlitFullScreen();
 
         #ifdef ENABLE_FEAT_F4HWN_SCREENSHOT

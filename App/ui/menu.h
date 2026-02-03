@@ -1,18 +1,4 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #ifndef UI_MENU_H
 #define UI_MENU_H
@@ -20,11 +6,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "audio.h"     // VOICE_ID_t
+#include "audio.h"      
 #include "settings.h"
 
 typedef struct {
-    const char  name[7];    // menu display area only has room for 6 characters
+    const char  name[7];     
     uint8_t     menu_id;
 } t_menu_item;
 
@@ -117,7 +103,7 @@ enum
     MENU_350EN,
     MENU_SCREN,
 #ifdef ENABLE_F_CAL_MENU
-    MENU_F_CALI,  // reference xtal calibration
+    MENU_F_CALI,   
 #endif
 #ifdef ENABLE_FEAT_F4HWN_SLEEP
     MENU_SET_OFF,
@@ -132,7 +118,7 @@ enum
     MENU_SET_LCK,
     MENU_SET_MET,
     MENU_SET_GUI,
-    #ifdef ENABLE_FEAT_F4HWN_RX_TX_TIMER    //calypso
+    #ifdef ENABLE_FEAT_F4HWN_RX_TX_TIMER     
     MENU_SET_TMR,
     #endif
     #ifdef ENABLE_FEAT_F4HWN_NARROWER
@@ -145,7 +131,7 @@ enum
         MENU_NOAA_S,
     #endif
 #endif
-    MENU_BATCAL,  // battery voltage calibration
+    MENU_BATCAL,   
     MENU_F1SHRT,
     MENU_F1LONG,
     MENU_F2SHRT,

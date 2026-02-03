@@ -1,18 +1,4 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+  
 
 #ifdef ENABLE_FMRADIO
 
@@ -46,7 +32,6 @@ uint8_t           gFM_ChannelPosition;
 bool              gFM_FoundFrequency;
 bool              gFM_AutoScan;
 uint16_t          gFM_RestoreCountdown_10ms;
-
 
 
 const uint8_t BUTTON_STATE_PRESSED = 1 << 0;
@@ -110,7 +95,7 @@ void FM_TurnOff(void)
 
     BK1080_Init0();
 
-    // Enable relevant LNA based on VFO frequency
+      
     BK4819_PickRXFilterPathBasedOnFrequency(gRxVfo->freq_config_RX.Frequency);
 
 
@@ -154,7 +139,7 @@ void FM_Tune(uint16_t Frequency, int8_t Step, bool bFlag)
 
     gFM_ScanState = Step;
 
-    BK1080_SetFrequency(gEeprom.FM_FrequencyPlaying, gEeprom.FM_Band/*, gEeprom.FM_Space*/);
+    BK1080_SetFrequency(gEeprom.FM_FrequencyPlaying, gEeprom.FM_Band  );
 }
 
 void FM_PlayAndUpdate(void)
@@ -167,7 +152,7 @@ void FM_PlayAndUpdate(void)
     }
 
     FM_ConfigureChannelState();
-    BK1080_SetFrequency(gEeprom.FM_FrequencyPlaying, gEeprom.FM_Band/*, gEeprom.FM_Space*/);
+    BK1080_SetFrequency(gEeprom.FM_FrequencyPlaying, gEeprom.FM_Band  );
     SETTINGS_SaveFM();
 
     gFmPlayCountdown_10ms = 0;
@@ -185,7 +170,7 @@ int FM_CheckFrequencyLock(uint16_t Frequency, uint16_t LowerLimit)
 
     const uint16_t Test2 = BK1080_ReadRegister(BK1080_REG_07);
 
-    // This is supposed to be a signed value, but above function is unsigned
+      
     const uint16_t Deviation = BK1080_REG_07_GET_FREQD(Test2);
 
     if (BK1080_REG_07_GET_SNR(Test2) <= 2) {
@@ -204,7 +189,7 @@ int FM_CheckFrequencyLock(uint16_t Frequency, uint16_t LowerLimit)
         return ret;
     }
 
-    //if (Deviation > -281 && Deviation < 280)
+      
     if (Deviation >= 280 && Deviation <= 3815) {
         BK1080_FrequencyDeviation = Deviation;
         BK1080_BaseFrequency      = Frequency;
@@ -212,7 +197,7 @@ int FM_CheckFrequencyLock(uint16_t Frequency, uint16_t LowerLimit)
         return ret;
     }
 
-    // not BLE(less than or equal)
+      
     if (Frequency > LowerLimit && (Frequency - BK1080_BaseFrequency) == 1) {
         if (BK1080_FrequencyDeviation & 0x800 || (BK1080_FrequencyDeviation < 20))
         {
@@ -223,7 +208,6 @@ int FM_CheckFrequencyLock(uint16_t Frequency, uint16_t LowerLimit)
         }
     }
 
-    // not BLT(less than)
 
     if (Frequency >= LowerLimit && (BK1080_BaseFrequency - Frequency) == 1) {
         if ((BK1080_FrequencyDeviation & 0x800) == 0 || (BK1080_FrequencyDeviation > 4075))
@@ -295,7 +279,7 @@ static void Key_DIGITS(KEY_Code_t Key, uint8_t state)
                 gAnotherVoiceID = (VOICE_ID_t)Key;
 #endif
                 gEeprom.FM_FrequencyPlaying = gEeprom.FM_SelectedFrequency;
-                BK1080_SetFrequency(gEeprom.FM_FrequencyPlaying, gEeprom.FM_Band/*, gEeprom.FM_Space*/);
+                BK1080_SetFrequency(gEeprom.FM_FrequencyPlaying, gEeprom.FM_Band  );
                 gRequestSaveFM = true;
                 return;
             }
@@ -313,7 +297,7 @@ static void Key_DIGITS(KEY_Code_t Key, uint8_t state)
 #endif
                     gEeprom.FM_SelectedChannel = Channel;
                     gEeprom.FM_FrequencyPlaying = gFM_Channels[Channel];
-                    BK1080_SetFrequency(gEeprom.FM_FrequencyPlaying, gEeprom.FM_Band/*, gEeprom.FM_Space*/);
+                    BK1080_SetFrequency(gEeprom.FM_FrequencyPlaying, gEeprom.FM_Band  );
                     gRequestSaveFM = true;
                     return;
                 }
@@ -360,16 +344,12 @@ static void Key_FUNC(KEY_Code_t Key, uint8_t state)
                 gRequestSaveFM = true;
                 break;
 
-            // case KEY_2:
-            //  gEeprom.FM_Space = (gEeprom.FM_Space + 1) % 3;
-            //  gRequestSaveFM = true;
-            //  break;
 
             case KEY_3:
                 gEeprom.FM_IsMrMode = !gEeprom.FM_IsMrMode;
 
                 if (!FM_ConfigureChannelState()) {
-                    BK1080_SetFrequency(gEeprom.FM_FrequencyPlaying, gEeprom.FM_Band/*, gEeprom.FM_Space*/);
+                    BK1080_SetFrequency(gEeprom.FM_FrequencyPlaying, gEeprom.FM_Band  );
                     gRequestSaveFM = true;
                 }
                 else
@@ -457,7 +437,7 @@ static void Key_MENU(uint8_t state)
                 gFM_Channels[gEeprom.FM_SelectedChannel] = 0xFFFF;
 
                 FM_ConfigureChannelState();
-                BK1080_SetFrequency(gEeprom.FM_FrequencyPlaying, gEeprom.FM_Band/*, gEeprom.FM_Space*/);
+                BK1080_SetFrequency(gEeprom.FM_FrequencyPlaying, gEeprom.FM_Band  );
 
                 gRequestSaveFM = true;
             }
@@ -532,7 +512,7 @@ static void Key_UP_DOWN(uint8_t state, int8_t Step)
     gRequestSaveFM = true;
 
 Bail:
-    BK1080_SetFrequency(gEeprom.FM_FrequencyPlaying, gEeprom.FM_Band/*, gEeprom.FM_Space*/);
+    BK1080_SetFrequency(gEeprom.FM_FrequencyPlaying, gEeprom.FM_Band  );
 
     gRequestDisplayScreen = DISPLAY_FM;
 }
@@ -623,9 +603,9 @@ void FM_Start(void)
     gFM_ScanState             = FM_SCAN_OFF;
     gFM_RestoreCountdown_10ms = 0;
 
-    BK1080_Init(gEeprom.FM_FrequencyPlaying, gEeprom.FM_Band/*, gEeprom.FM_Space*/);
-    // Disable UHF LNA, enable VHF LNA
-    BK4819_PickRXFilterPathBasedOnFrequency(10320000); // 103.2 MHz < 280 MHz
+    BK1080_Init(gEeprom.FM_FrequencyPlaying, gEeprom.FM_Band  );
+      
+    BK4819_PickRXFilterPathBasedOnFrequency(10320000);   
 
     AUDIO_AudioPathOn();
 

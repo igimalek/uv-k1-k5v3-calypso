@@ -1,18 +1,4 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #ifndef SETTINGS_H
 #define SETTINGS_H
@@ -39,7 +25,7 @@ enum POWER_OnDisplayMode_t {
 typedef enum POWER_OnDisplayMode_t POWER_OnDisplayMode_t;
 
 enum TxLockModes_t {
-    F_LOCK_DEF, //all default frequencies + configurable
+    F_LOCK_DEF,  
     F_LOCK_FCC,
 #ifdef ENABLE_FEAT_F4HWN_CA
     F_LOCK_CA,
@@ -54,18 +40,11 @@ enum TxLockModes_t {
 #ifdef ENABLE_FEAT_F4HWN_GMRS_FRS_MURS
     F_LOCK_GMRS_FRS_MURS,
 #endif
-    F_LOCK_ALL, // disable TX on all frequencies
-    F_LOCK_NONE, // enable TX on all frequencies
+    F_LOCK_ALL,  
+    F_LOCK_NONE,  
     F_LOCK_LEN
 };
 
-/*
-enum {
-    SCAN_RESUME_TO = 0,
-    SCAN_RESUME_CO,
-    SCAN_RESUME_SE
-};
-*/
 
 enum {
     CROSS_BAND_OFF = 0,
@@ -110,7 +89,7 @@ enum ACTION_OPT_t {
     ACTION_OPT_A_B,
     ACTION_OPT_VFO_MR,
     ACTION_OPT_SWITCH_DEMODUL,
-    ACTION_OPT_BLMIN_TMP_OFF, //BackLight Minimum Temporay OFF
+    ACTION_OPT_BLMIN_TMP_OFF,  
 #ifdef ENABLE_FEAT_F4HWN
     ACTION_OPT_RXMODE,
     ACTION_OPT_MAINONLY,
@@ -154,19 +133,17 @@ enum CHANNEL_DisplayMode_t {
 typedef enum CHANNEL_DisplayMode_t CHANNEL_DisplayMode_t;
 
 typedef struct {
-    uint8_t               ScreenChannel[2]; // current channels set in the radio (memory or frequency channels)
-    uint8_t               FreqChannel[2]; // last frequency channels used
-    uint8_t               MrChannel[2]; // last memory channels used
+    uint8_t               ScreenChannel[2];  
+    uint8_t               FreqChannel[2];  
+    uint8_t               MrChannel[2];  
 #ifdef ENABLE_NOAA
     uint8_t           NoaaChannel[2];
 #endif
 
-    // The actual VFO index (0-upper/1-lower) that is now used for RX, 
-    // It is being alternated by dual watch, and flipped by crossband
+
     uint8_t               RX_VFO;
 
-    // The main VFO index (0-upper/1-lower) selected by the user
-    // 
+
     uint8_t               TX_VFO;
 
     uint8_t               field7_0xa;
@@ -178,7 +155,7 @@ typedef struct {
     bool              FM_IsMrMode;
     uint16_t          FM_FrequencyPlaying;
     uint8_t           FM_Band  : 2;
-    //uint8_t         FM_Space : 2;
+     
 #endif
 
     uint8_t               SQUELCH_LEVEL;
@@ -206,10 +183,10 @@ typedef struct {
     bool                  SCAN_LIST_ENABLED[3];
     uint8_t               SCANLIST_PRIORITY_CH1[3];
     uint8_t               SCANLIST_PRIORITY_CH2[3];
-//#ifdef ENABLE_FEAT_F4HWN_RESUME_STATE // Fix me !!! What the hell is this?
+ 
     uint8_t               CURRENT_STATE;
     uint8_t               CURRENT_LIST;
-//#endif                                // Fix me !!! What the hell is this?
+ 
 
     uint8_t               field29_0x26;
     uint8_t               field30_0x27;

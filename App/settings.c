@@ -1,19 +1,4 @@
-/* Copyright 2025 muzkr https://github.com/muzkr
- * Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #include <string.h>
 
@@ -31,44 +16,21 @@
 #ifdef ENABLE_FEAT_F4HWN_RESET_CHANNEL
 static const uint32_t gDefaultFrequencyTable[] =
 {
-    14500000,    //
-    14550000,    //
-    43300000,    //
-    43320000,    //
-    43350000     //
+    14500000,     
+    14550000,     
+    43300000,     
+    43320000,     
+    43350000      
 };
 #endif
 
 EEPROM_Config_t gEeprom = { 0 };
 
-// ============================================================================
-// SETTINGS_InitEEPROM - Initialize radio settings from EEPROM flash memory
-// ============================================================================
-// Reads configuration data from external SPI flash (PY25Q16) and populates
-// the global gEeprom structure with validated settings. This is called during
-// radio initialization to restore user preferences and calibration data.
-//
-// Initialization Flow:
-//   1. Reads basic settings (squelch, timeout, VOX, mic sensitivity)
-//   2. Reads display and battery settings (backlight, dual watch, battery save)
-//   3. Reads channel/VFO information (current channels, screen channels)
-//   4. Reads FM radio settings (if ENABLE_FMRADIO defined)
-//   5. Reads key action assignments (programmable buttons)
-//   6. Reads DTMF, alarm, and advanced features
-//   7. Reads feature flags (scan lists, TX restrictions)
-//   8. Reads F4HWN-specific settings (if ENABLE_FEAT_F4HWN defined)
-//
-// Validation Strategy: All settings range-checked, invalid=fallback to defaults
-// Timing: ~20-50ms total (multiple 8-byte flash reads)
-//
-// Related Functions:
-//   - SETTINGS_LoadCalibration() - loads calibration after init
-//   - SETTINGS_SaveSettings() - saves modified settings back to flash
-//
+
 void SETTINGS_InitEEPROM(void)
 {
     uint8_t Data[16] = {0};
-    // 0E70..0E77
+     
     PY25Q16_ReadBuffer(0x004000, Data, 8);
     gEeprom.CHAN_1_CALL          = IS_MR_CHANNEL(Data[0]) ? Data[0] : MR_CHANNEL_FIRST;
     gEeprom.SQUELCH_LEVEL        = (Data[1] < 10) ? Data[1] : 1;
@@ -85,14 +47,14 @@ void SETTINGS_InitEEPROM(void)
     #endif
     gEeprom.MIC_SENSITIVITY      = (Data[7] <  5) ? Data[7] : 4;
 
-    // 0E78..0E7F
+     
     PY25Q16_ReadBuffer(0x004008, Data, 8);
     gEeprom.BACKLIGHT_MAX         = (Data[0] & 0xF) <= 10 ? (Data[0] & 0xF) : 10;
     gEeprom.BACKLIGHT_MIN         = (Data[0] >> 4) < gEeprom.BACKLIGHT_MAX ? (Data[0] >> 4) : 0;
 #ifdef ENABLE_BLMIN_TMP_OFF
     gEeprom.BACKLIGHT_MIN_STAT    = BLMIN_STAT_ON;
 #endif
-    gEeprom.CHANNEL_DISPLAY_MODE  = (Data[1] < 4) ? Data[1] : MDF_FREQUENCY;    // 4 instead of 3 - extra display mode
+    gEeprom.CHANNEL_DISPLAY_MODE  = (Data[1] < 4) ? Data[1] : MDF_FREQUENCY;     
     gEeprom.CROSS_BAND_RX_TX      = (Data[2] < 3) ? Data[2] : CROSS_BAND_OFF;
     gEeprom.BATTERY_SAVE          = (Data[3] < 6) ? Data[3] : 4;
     gEeprom.DUAL_WATCH            = (Data[4] < 3) ? Data[4] : DUAL_WATCH_CHAN_A;
@@ -112,7 +74,7 @@ void SETTINGS_InitEEPROM(void)
         gEeprom.VFO_OPEN              = (Data[7] < 2) ? Data[7] : true;
     #endif
 
-    // 0E80..0E87
+     
     PY25Q16_ReadBuffer(0x005000, Data, 8);
     gEeprom.ScreenChannel[0]   = IS_VALID_CHANNEL(Data[0]) ? Data[0] : (FREQ_CHANNEL_FIRST + BAND6_400MHz);
     gEeprom.ScreenChannel[1]   = IS_VALID_CHANNEL(Data[3]) ? Data[3] : (FREQ_CHANNEL_FIRST + BAND6_400MHz);
@@ -126,19 +88,19 @@ void SETTINGS_InitEEPROM(void)
 #endif
 
 #ifdef ENABLE_FMRADIO
-    {   // 0E88..0E8F
+    {    
         struct
         {
             uint16_t selFreq;
             uint8_t  selChn;
             uint8_t  isMrMode:1;
             uint8_t  band:2;
-            //uint8_t  space:2;
+             
         } __attribute__((packed)) fmCfg;
         PY25Q16_ReadBuffer(0x006000, &fmCfg, 4);
 
         gEeprom.FM_Band = fmCfg.band;
-        //gEeprom.FM_Space = fmCfg.space;
+         
         gEeprom.FM_SelectedFrequency = 
             (fmCfg.selFreq >= BK1080_GetFreqLoLimit(gEeprom.FM_Band) && fmCfg.selFreq <= BK1080_GetFreqHiLimit(gEeprom.FM_Band)) ? 
                 fmCfg.selFreq : BK1080_GetFreqLoLimit(gEeprom.FM_Band);
@@ -147,12 +109,12 @@ void SETTINGS_InitEEPROM(void)
         gEeprom.FM_IsMrMode        = fmCfg.isMrMode;
     }
 
-    // 0E40..0E67
+     
     PY25Q16_ReadBuffer(0x003000, gFM_Channels, sizeof(gFM_Channels));
     FM_ConfigureChannelState();
 #endif
 
-    // 0E90..0E97
+     
     PY25Q16_ReadBuffer(0x007000, Data, 8);
     gEeprom.BEEP_CONTROL                 = Data[0] & 1;
     gEeprom.KEY_M_LONG_PRESS_ACTION      = ((Data[0] >> 1) < ACTION_OPT_LEN) ? (Data[0] >> 1) : ACTION_OPT_NONE;
@@ -168,13 +130,13 @@ void SETTINGS_InitEEPROM(void)
     gEeprom.POWER_ON_DISPLAY_MODE        = (Data[7] < 4)              ? Data[7] : POWER_ON_DISPLAY_MODE_VOLTAGE;
 #endif
 
-    // 0E98..0E9F
+     
     #ifdef ENABLE_PWRON_PASSWORD
         PY25Q16_ReadBuffer(0x007000 + 0x8, Data, 8);
         memcpy(&gEeprom.POWER_ON_PASSWORD, Data, 4);
     #endif
 
-    // 0EA0..0EA7
+     
     PY25Q16_ReadBuffer(0x007000 + 0x10, Data, 8);
     #ifdef ENABLE_VOICE
     gEeprom.VOICE_PROMPT = (Data[0] < 3) ? Data[0] : VOICE_PROMPT_ENGLISH;
@@ -190,7 +152,7 @@ void SETTINGS_InitEEPROM(void)
         }
     #endif
 
-    // 0EA8..0EAF
+     
     PY25Q16_ReadBuffer(0x007000 + 0x18, Data, 8);
     #ifdef ENABLE_ALARM
         gEeprom.ALARM_MODE                 = (Data[0] <  2) ? Data[0] : true;
@@ -200,7 +162,7 @@ void SETTINGS_InitEEPROM(void)
     gEeprom.TX_VFO                         = (Data[3] <  2) ? Data[3] : 0;
     gEeprom.BATTERY_TYPE                   = (Data[4] < BATTERY_TYPE_UNKNOWN) ? Data[4] : BATTERY_TYPE_1600_MAH;
 
-    // 0ED0..0ED7
+     
     PY25Q16_ReadBuffer(0x007000 + 0x40, Data, 8);
     gEeprom.DTMF_SIDE_TONE               = (Data[0] <   2) ? Data[0] : true;
 
@@ -214,14 +176,13 @@ void SETTINGS_InitEEPROM(void)
     gEeprom.DTMF_FIRST_CODE_PERSIST_TIME = (Data[6] < 101) ? Data[6] * 10 : 100;
     gEeprom.DTMF_HASH_CODE_PERSIST_TIME  = (Data[7] < 101) ? Data[7] * 10 : 100;
 
-    // 0ED8..0EDF
+     
     PY25Q16_ReadBuffer(0x007000 + 0x48, Data, 8);
     gEeprom.DTMF_CODE_PERSIST_TIME  = (Data[0] < 101) ? Data[0] * 10 : 100;
     gEeprom.DTMF_CODE_INTERVAL_TIME = (Data[1] < 101) ? Data[1] * 10 : 100;
 #ifdef ENABLE_DTMF_CALLING
     gEeprom.PERMIT_REMOTE_KILL      = (Data[2] <   2) ? Data[2] : true;
 
-    // 0EE0..0EE7
 
     PY25Q16_ReadBuffer(0x008000, Data, sizeof(gEeprom.ANI_DTMF_ID));
     if (DTMF_ValidateCodes((char *)Data, sizeof(gEeprom.ANI_DTMF_ID))) {
@@ -231,7 +192,6 @@ void SETTINGS_InitEEPROM(void)
     }
 
 
-    // 0EE8..0EEF
     PY25Q16_ReadBuffer(0x008000 + 0x8, Data, sizeof(gEeprom.KILL_CODE));
     if (DTMF_ValidateCodes((char *)Data, sizeof(gEeprom.KILL_CODE))) {
         memcpy(gEeprom.KILL_CODE, Data, sizeof(gEeprom.KILL_CODE));
@@ -239,7 +199,7 @@ void SETTINGS_InitEEPROM(void)
         strcpy(gEeprom.KILL_CODE, "ABCD9");
     }
 
-    // 0EF0..0EF7
+     
     PY25Q16_ReadBuffer(0x008000 + 0x10, Data, sizeof(gEeprom.REVIVE_CODE));
     if (DTMF_ValidateCodes((char *)Data, sizeof(gEeprom.REVIVE_CODE))) {
         memcpy(gEeprom.REVIVE_CODE, Data, sizeof(gEeprom.REVIVE_CODE));
@@ -248,7 +208,7 @@ void SETTINGS_InitEEPROM(void)
     }
 #endif
 
-    // 0EF8..0F07
+     
     PY25Q16_ReadBuffer(0x008000 + 0x18, Data, sizeof(gEeprom.DTMF_UP_CODE));
     if (DTMF_ValidateCodes((char *)Data, sizeof(gEeprom.DTMF_UP_CODE))) {
         memcpy(gEeprom.DTMF_UP_CODE, Data, sizeof(gEeprom.DTMF_UP_CODE));
@@ -256,7 +216,7 @@ void SETTINGS_InitEEPROM(void)
         strcpy(gEeprom.DTMF_UP_CODE, "12345");
     }
 
-    // 0F08..0F17
+     
     PY25Q16_ReadBuffer(0x008000 + 0x28, Data, sizeof(gEeprom.DTMF_DOWN_CODE));
     if (DTMF_ValidateCodes((char *)Data, sizeof(gEeprom.DTMF_DOWN_CODE))) {
         memcpy(gEeprom.DTMF_DOWN_CODE, Data, sizeof(gEeprom.DTMF_DOWN_CODE));
@@ -264,27 +224,11 @@ void SETTINGS_InitEEPROM(void)
         strcpy(gEeprom.DTMF_DOWN_CODE, "54321");
     }
 
-    // 0F18..0F1F
+     
     PY25Q16_ReadBuffer(0x009000, Data, 8);
-    gEeprom.SCAN_LIST_DEFAULT = (Data[0] < 6) ? Data[0] : 0;  // we now have 'all' channel scan option
+    gEeprom.SCAN_LIST_DEFAULT = (Data[0] < 6) ? Data[0] : 0;   
 
-    // Fake data
-    /*
-    gEeprom.SCAN_LIST_ENABLED[0] = 0;
-    gEeprom.SCAN_LIST_ENABLED[1] = 0;
-    gEeprom.SCAN_LIST_ENABLED[2] = 0;
 
-    gEeprom.SCANLIST_PRIORITY_CH1[0] =  0;
-    gEeprom.SCANLIST_PRIORITY_CH2[0] =  2;
-
-    gEeprom.SCANLIST_PRIORITY_CH1[1] =  14;
-    gEeprom.SCANLIST_PRIORITY_CH2[1] =  15;
-
-    gEeprom.SCANLIST_PRIORITY_CH1[2] =  40;
-    gEeprom.SCANLIST_PRIORITY_CH2[2] =  41;
-    */
-
-    // Fix me probably after Chirp update...
     for (unsigned int i = 0; i < 3; i++)
     {
         gEeprom.SCAN_LIST_ENABLED[i] = (Data[1] >> i) & 1;
@@ -297,11 +241,11 @@ void SETTINGS_InitEEPROM(void)
         gEeprom.SCANLIST_PRIORITY_CH2[i] =  Data[j + 2];
     }
 
-    // 0F40..0F47
+     
     PY25Q16_ReadBuffer(0x00b000, Data, 8);
     gSetting_F_LOCK            = (Data[0] < F_LOCK_LEN) ? Data[0] : F_LOCK_DEF;
 #ifndef ENABLE_FEAT_F4HWN
-    gSetting_350TX             = (Data[1] < 2) ? Data[1] : false;  // was true
+    gSetting_350TX             = (Data[1] < 2) ? Data[1] : false;   
 #endif
 #ifdef ENABLE_DTMF_CALLING
     gSetting_KILLED            = (Data[2] < 2) ? Data[2] : false;
@@ -311,13 +255,13 @@ void SETTINGS_InitEEPROM(void)
     gSetting_500TX             = (Data[4] < 2) ? Data[4] : false;
 #endif
     gSetting_350EN             = (Data[5] < 2) ? Data[5] : true;
-#ifdef ENABLE_FEAT_F4HWN__ // calypso
+#ifdef ENABLE_FEAT_F4HWN__  
     gSetting_ScrambleEnable    = false;
 #else
     gSetting_ScrambleEnable    = (Data[6] < 2) ? Data[6] : true;
 #endif
 
-    //gSetting_TX_EN             = (Data[7] & (1u << 0)) ? true : false;
+     
     gSetting_live_DTMF_decoder = !!(Data[7] & (1u << 1));
     gSetting_battery_text      = (((Data[7] >> 2) & 3u) <= 2) ? (Data[7] >> 2) & 3 : 2;
     #ifdef ENABLE_AUDIO_BAR
@@ -332,7 +276,7 @@ void SETTINGS_InitEEPROM(void)
         gEeprom.ScreenChannel[1] = gEeprom.MrChannel[1];
     }
 
-    // 0D60..0E27
+     
     PY25Q16_ReadBuffer(0x002000, gMR_ChannelAttributes, sizeof(gMR_ChannelAttributes));
     for(uint16_t i = 0; i < sizeof(gMR_ChannelAttributes); i++) {
         ChannelAttributes_t *att = &gMR_ChannelAttributes[i];
@@ -343,7 +287,7 @@ void SETTINGS_InitEEPROM(void)
         gMR_ChannelExclude[i] = false;
     }
 
-        // 0F30..0F3F
+         
         PY25Q16_ReadBuffer(0x00a000, gCustomAesKey, sizeof(gCustomAesKey));
         bHasCustomAesKey = false;
         #ifndef ENABLE_FEAT_F4HWN
@@ -358,8 +302,8 @@ void SETTINGS_InitEEPROM(void)
         #endif
 
     #ifdef ENABLE_FEAT_F4HWN
-        // 1FF0..0x1FF7
-        // TODO: address TBD
+         
+         
         PY25Q16_ReadBuffer(0x00c000, Data, 8);
         gSetting_set_pwr = (((Data[7] & 0xF0) >> 4) < 7) ? ((Data[7] & 0xF0) >> 4) : 0;
         gSetting_set_ptt = (((Data[7] & 0x0F)) < 2) ? ((Data[7] & 0x0F)) : 0;
@@ -367,17 +311,6 @@ void SETTINGS_InitEEPROM(void)
         gSetting_set_tot = (((Data[6] & 0xF0) >> 4) < 4) ? ((Data[6] & 0xF0) >> 4) : 0;
         gSetting_set_eot = (((Data[6] & 0x0F)) < 4) ? ((Data[6] & 0x0F)) : 0;
 
-        /*
-        int tmp = ((Data[5] & 0xF0) >> 4);
-
-        gSetting_set_inv = (((tmp >> 0) & 0x01) < 2) ? ((tmp >> 0) & 0x01): 0;
-        gSetting_set_lck = (((tmp >> 1) & 0x01) < 2) ? ((tmp >> 1) & 0x01): 0;
-        gSetting_set_met = (((tmp >> 2) & 0x01) < 2) ? ((tmp >> 2) & 0x01): 0;
-        gSetting_set_gui = (((tmp >> 3) & 0x01) < 2) ? ((tmp >> 3) & 0x01): 0;
-        gSetting_set_ctr = (((Data[5] & 0x0F)) > 00 && ((Data[5] & 0x0F)) < 16) ? ((Data[5] & 0x0F)) : 10;
-
-        gSetting_set_tmr = ((Data[4] & 1) < 2) ? (Data[4] & 1): 0;
-        */
 
         int tmp = (Data[5] & 0xF0) >> 4;
 
@@ -402,54 +335,28 @@ void SETTINGS_InitEEPROM(void)
         gSetting_set_off = (Data[4] >> 1) > 120 ? 60 : (Data[4] >> 1); 
 #endif
 
-        // Warning
-        // Be aware, Data[3] is use by Spectrum
-        // Warning
 
-        // And set special session settings for actions
         gSetting_set_ptt_session = gSetting_set_ptt;
         gEeprom.KEY_LOCK_PTT = gSetting_set_lck;
     #endif
 }
 
-// ============================================================================
-// SETTINGS_LoadCalibration - Load hardware calibration values from flash
-// ============================================================================
-// Reads RSSI, battery, VOX threshold, and crystal frequency calibration data.
-// These values are factory-calibrated and stored in protected flash sectors.
-// Called after SETTINGS_InitEEPROM() to complete hardware initialization.
-//
-// Calibration Data Loaded:
-//   - RSSI (signal strength) calibration for 7 bands (HF, VHF, UHF, etc)
-//   - Battery voltage-to-percentage lookup table
-//   - VOX voice activation thresholds (if ENABLE_VOX)
-//   - Crystal oscillator frequency trim (BK4819_XTAL_FREQ_LOW)
-//   - Volume and DAC gain settings
-//   - Microphone sensitivity frequency response correction
-//
-// Timing: ~10-20ms total / BK4819 register update: <1ms
-// Dependencies: PY25Q16_ReadBuffer(), BK4819_WriteRegister(), gMicGain_dB2[]
-//
-// Related Functions:
-//   - SETTINGS_InitEEPROM() - must call first
-//   - SETTINGS_SaveBatteryCalibration() - updates battery calibration
-//
+
 void SETTINGS_LoadCalibration(void)
 {
-//  uint8_t Mic;
 
-    // 0x1EC0
+
     PY25Q16_ReadBuffer(0x010000 + 0xc0, gEEPROM_RSSI_CALIB[3], 8);
     memcpy(gEEPROM_RSSI_CALIB[4], gEEPROM_RSSI_CALIB[3], 8);
     memcpy(gEEPROM_RSSI_CALIB[5], gEEPROM_RSSI_CALIB[3], 8);
     memcpy(gEEPROM_RSSI_CALIB[6], gEEPROM_RSSI_CALIB[3], 8);
 
-    // 0x1EC8
+     
     PY25Q16_ReadBuffer(0x010000 + 0xc8, gEEPROM_RSSI_CALIB[0], 8);
     memcpy(gEEPROM_RSSI_CALIB[1], gEEPROM_RSSI_CALIB[0], 8);
     memcpy(gEEPROM_RSSI_CALIB[2], gEEPROM_RSSI_CALIB[0], 8);
 
-    // 0x1F40
+     
     PY25Q16_ReadBuffer(0x010000 + 0x140, gBatteryCalibration, 12);
     if (gBatteryCalibration[0] >= 5000)
     {
@@ -459,14 +366,13 @@ void SETTINGS_LoadCalibration(void)
     gBatteryCalibration[5] = 2300;
 
     #ifdef ENABLE_VOX
-        // 0x1F50
+         
         PY25Q16_ReadBuffer(0x010000 + 0x150 + (gEeprom.VOX_LEVEL * 2), &gEeprom.VOX1_THRESHOLD, 2);
-        // 0x1F68
+         
         PY25Q16_ReadBuffer(0x010000 + 0x168 + (gEeprom.VOX_LEVEL * 2), &gEeprom.VOX0_THRESHOLD, 2);
     #endif
 
-    //PY25Q16_ReadBuffer(0x1F80 + gEeprom.MIC_SENSITIVITY, &Mic, 1);
-    //gEeprom.MIC_SENSITIVITY_TUNING = (Mic < 32) ? Mic : 15;
+
     gEeprom.MIC_SENSITIVITY_TUNING = gMicGain_dB2[gEeprom.MIC_SENSITIVITY];
 
     {
@@ -479,9 +385,7 @@ void SETTINGS_LoadCalibration(void)
             uint8_t  DAC_GAIN;
         } __attribute__((packed)) Misc;
 
-        // radio 1 .. 04 00 46 00 50 00 2C 0E
-        // radio 2 .. 05 00 46 00 50 00 2C 0E
-        // 0x1F88
+
         PY25Q16_ReadBuffer(0x010000 + 0x188, &Misc, 8);
 
         gEeprom.BK4819_XTAL_FREQ_LOW = (Misc.BK4819_XtalFreqLow >= -1000 && Misc.BK4819_XtalFreqLow <= 1000) ? Misc.BK4819_XtalFreqLow : 0;
@@ -495,30 +399,11 @@ void SETTINGS_LoadCalibration(void)
         #endif
 
         BK4819_WriteRegister(BK4819_REG_3B, 22656 + gEeprom.BK4819_XTAL_FREQ_LOW);
-//      BK4819_WriteRegister(BK4819_REG_3C, gEeprom.BK4819_XTAL_FREQ_HIGH);
+ 
     }
 }
 
-// ============================================================================
-// SETTINGS_FetchChannelFrequency - Read channel frequency from flash
-// ============================================================================
-// Retrieves operating frequency for a channel (0-199=MR, 200+=VFO).
-// Frequency stored at base of 16-byte channel config block in flash.
-//
-// Parameters:
-//   channel: Channel number (0-199 for memory, 200+ for VFO)
-//
-// Returns:
-//   uint32_t: Frequency in Hz (e.g., 146000000 for 146.000 MHz)
-//
-// Flash Layout:
-//   Memory Channels: 0x0000 + (channel * 16)
-//   VFO Channels: 0x1000 + (channel * 16)
-//
-// Timing: ~1-2ms flash read (4+ bytes)
-// Dependencies: PY25Q16_ReadBuffer() - reads from external flash
-// Note: Does not validate channel - caller should validate first
-//
+
 uint32_t SETTINGS_FetchChannelFrequency(const int channel)
 {
     struct
@@ -532,26 +417,7 @@ uint32_t SETTINGS_FetchChannelFrequency(const int channel)
     return info.frequency;
 }
 
-// ============================================================================
-// SETTINGS_FetchChannelName - Read channel name from flash (max 10 chars)
-// ============================================================================
-// Retrieves null-terminated name for a channel from flash memory.
-// Names stored at 0x00E000, 16 bytes per channel (10 chars + 6 padding).
-// Automatically trims invalid chars and trailing spaces.
-//
-// Parameters:
-//   s: Buffer for name (must be ≥11 bytes for 10 chars + null terminator)
-//   channel: Channel number to fetch name for
-//
-// Validation:
-//   - Checks NULL pointer and negative channels
-//   - Validates channel with RADIO_CheckValidChannel()
-//   - Only accepts printable ASCII (32-127)
-//   - Trims trailing spaces automatically
-//
-// Timing: ~1-2ms flash read + <1ms string processing
-// Dependencies: PY25Q16_ReadBuffer(), RADIO_CheckValidChannel()
-//
+
 void SETTINGS_FetchChannelName(char *s, const int channel)
 {
     if (s == NULL)
@@ -565,112 +431,77 @@ void SETTINGS_FetchChannelName(char *s, const int channel)
     if (!RADIO_CheckValidChannel(channel, false, 0))
         return;
 
-    // 0x0F50
+     
     PY25Q16_ReadBuffer(0x00e000 + (channel * 16), s, 10);
 
     int i;
     for (i = 0; i < 10; i++)
         if (s[i] < 32 || s[i] > 127)
-            break;                // invalid char
+            break;                 
 
-    s[i--] = 0;                   // null term
+    s[i--] = 0;                    
 
-    while (i >= 0 && s[i] == 32)  // trim trailing spaces
-        s[i--] = 0;               // null term
+    while (i >= 0 && s[i] == 32)   
+        s[i--] = 0;                
 }
 
-// ============================================================================
-// SETTINGS_FactoryReset - Erase flash sectors to factory defaults
-// ============================================================================
-// Selectively erases sections of flash memory to reset configurations.
-// Can perform partial (basic settings) or full reset (all user data).
-//
-// Parameters:
-//   bIsAll: true=full reset (erases channels, names, FM data)
-//           false=partial reset (keeps some user data)
-//
-// Sectors Erased (Always):
-//   - 0x000000-0x001FFF: Memory channel data (0-199)
-//   - 0x004000-0x004FFF: Basic settings (squelch, VOX, timeouts)
-//   - 0x005000-0x005FFF: Current channel indices
-//   - 0x007000-0x007FFF: Key actions, voice, alarm (preserves DTMF codes)
-//
-// Sectors Erased (if bIsAll=true):
-//   - 0x002000: Channel attributes (band, scan lists)
-//   - 0x003000: FM channels
-//   - 0x006000: FM config
-//   - 0x009000: Scan list defaults
-//   - 0x00E000: Channel names
-//
-// Preserved (Never Erased):
-//   - 0x008000: DTMF codes, calibration data
-//   - 0x00B000: TX restrictions, feature flags
-//   - 0x00C000: F4HWN-specific settings
-//   - 0x010000+: Hardware calibration (RSSI, battery, crystal)
-//
-// Timing: 50-100ms (partial) or 150-200ms (full)
-//
-// Related Functions:
-//   - SETTINGS_InitEEPROM() - loads settings after reset
-//   - SETTINGS_SaveSettings() - applies new defaults
-//
+
 void SETTINGS_FactoryReset(bool bIsAll)
 {
-    // 0000 - 0c80
+     
     PY25Q16_SectorErase(0);
-    // 0c80 - 0d60
+     
     PY25Q16_SectorErase(0x001000);
-    // 0d60 - 0e30
+     
     if (bIsAll)
     {
         PY25Q16_SectorErase(0x002000);
     }
-    // 0e40 - 0e68
+     
     if (bIsAll)
     {
         PY25Q16_SectorErase(0x003000);
     }
-    // 0e70 - 0e80
+     
     PY25Q16_SectorErase(0x004000);
-    // 0e80 - 0e88
+     
     PY25Q16_SectorErase(0x005000);
-    // 0e88 - 0e90
+     
     if (bIsAll)
     {
         PY25Q16_SectorErase(0x006000);
     }
-    // 0e90 - 0ee0
+     
     do
     {
         uint8_t Buf[0x50];
         memset(Buf, 0xff, 0x50);
-        // 0EA0 - 0EA8 : keep
+         
         PY25Q16_ReadBuffer(0x007000 + 0x10, Buf + 0x10, 8);
-        // 0EB0 - 0ED0 : keep
+         
         PY25Q16_ReadBuffer(0x007000 + 0x20, Buf + 0x20, 0x20);
         PY25Q16_WriteBuffer(0x007000, Buf, 0x50, true);
     } while (0);
-    // 0ee0 - 0f18 : keep
-    // 0f18 - 0f20
+     
+     
     if (bIsAll)
     {
         PY25Q16_SectorErase(0x009000);
     }
-    // 0f30 - 0f40 : keep
-    // 0f40 - 0f48 : keep
-    // 0f50 - 1bd0
+
+
     if (bIsAll)
     {
         PY25Q16_SectorErase(0x00e000);
     }
-    // 1c00 - 1d00 : keep
+     
 
     if (bIsAll)
     {
         RADIO_InitInfo(gRxVfo, FREQ_CHANNEL_FIRST + BAND6_400MHz, 43350000);
 
         #ifdef ENABLE_FEAT_F4HWN_RESET_CHANNEL
-            // set the first few memory channels
+             
             for (uint8_t i = 0; i < ARRAY_SIZE(gDefaultFrequencyTable); i++)
             {
                 const uint32_t Frequency   = gDefaultFrequencyTable[i];
@@ -698,7 +529,7 @@ void SETTINGS_SaveFM(void)
                 uint8_t  selChn;
                 uint8_t  isMrMode:1;
                 uint8_t  band:2;
-                //uint8_t  space:2;
+                 
             };
             uint8_t __raw[8];
         } __attribute__((packed)) fmCfg;
@@ -708,42 +539,22 @@ void SETTINGS_SaveFM(void)
         fmCfg.selFreq  = gEeprom.FM_SelectedFrequency;
         fmCfg.isMrMode = gEeprom.FM_IsMrMode;
         fmCfg.band     = gEeprom.FM_Band;
-        // fmCfg.space    = gEeprom.FM_Space;
-        // 0E88
+         
+         
         PY25Q16_WriteBuffer(0x006000, fmCfg.__raw, 8, true);
 
-        // 0E40
+         
         PY25Q16_WriteBuffer(0x003000, gFM_Channels, sizeof(gFM_Channels), true);
     }
 #endif
 
 
-// ============================================================================
-// SETTINGS_SaveVfoIndices - Save current VFO/channel selections to flash
-// ============================================================================
-// Persists which channel/VFO is currently selected in each VFO.
-// Allows radio to resume at last channel selection after power-off.
-// Called when user switches between channels/VFOs.
-//
-// State Saved (8 bytes at 0x005000):
-//   [0]: ScreenChannel[0] - displayed channel in VFO A
-//   [1]: MrChannel[0] - selected memory channel in VFO A
-//   [2]: FreqChannel[0] - selected VFO frequency channel in VFO A
-//   [3]: ScreenChannel[1] - displayed channel in VFO B
-//   [4]: MrChannel[1] - selected memory channel in VFO B
-//   [5]: FreqChannel[1] - selected VFO frequency channel in VFO B
-//   [6]: NoaaChannel[0] - NOAA channel (if ENABLE_NOAA)
-//   [7]: NoaaChannel[1] - NOAA channel (if ENABLE_NOAA)
-//
-// Timing: ~2-5ms flash write (8 bytes)
-// Related Functions: SETTINGS_InitEEPROM() loads these on startup
-//
 void SETTINGS_SaveVfoIndices(void)
 {
     uint8_t State[8];
 
     #ifndef ENABLE_NOAA
-        // 0x0E80
+         
         PY25Q16_ReadBuffer(0x005000, State, sizeof(State));
     #endif
 
@@ -758,70 +569,21 @@ void SETTINGS_SaveVfoIndices(void)
         State[7] = gEeprom.NoaaChannel[1];
     #endif
 
-    // 0x0E80
+     
     PY25Q16_WriteBuffer(0x005000, State, 8, true);
 }
 
 
-
-// ============================================================================
-// SETTINGS_SaveSettings - Save all radio settings to flash memory
-// ============================================================================
-// Master settings save function. Writes entire configuration to multiple
-// flash blocks (0x004000 to 0x00C000). Called after user setting changes.
-// Uses sector caching and smart writes to minimize flash wear.
-//
-// Settings Blocks Saved:
-//
-//   Block 1 (0x004000, 16 bytes): Basic Settings
-//     - Squelch level, TX timeout, NOAA auto-scan, key lock
-//     - VOX switch/level, mic sensitivity, backlight min/max
-//     - Channel display mode, cross-band RX/TX, battery save mode
-//     - Dual watch, backlight time, tail tone elimination, VFO open state
-//
-//   Block 2 (0x007000, 80 bytes): Key Actions & Advanced
-//     - Key bindings (1-key, 2-key, M-key short/long press)
-//     - Power-on password, voice prompt, RSSI bar settings
-//     - Alarm, roger mode, repeater tail tone elimination
-//     - DTMF side tone, separate/group call codes, DTMF timings
-//
-//   Block 3 (0x009000, 8 bytes): Scan Lists
-//     - Default scan list selection, enabled scanlists
-//     - Priority channels for scanlists 1, 2, 3
-//
-//   Block 4 (0x00B000, 8 bytes): TX Restrictions & Flags
-//     - Frequency lock, TX enables (350/200/500 MHz)
-//     - DTMF kill status, scramble enable, DTMF decoder
-//     - Battery text mode, microphone bar, backlight on TX/RX
-//
-//   Block 5 (0x00C000, 8 bytes): F4HWN Features (if enabled)
-//     - Sleep timeout, timer, inverted, lock, compander, GUI
-//     - CTR value, TOT, EOT, TX power, PTT settings
-//
-// Optimization: Reads existing flash data to preserve unrelated bytes
-// Timing: ~30-60ms total (multiple writes with optimizations)
-//
-// Dependencies: gEeprom.* global, PY25Q16_ReadBuffer/WriteBuffer, ENABLE_* macros
-//
-// Related Functions:
-//   - SETTINGS_InitEEPROM() - loads these settings on startup
-//   - SETTINGS_SaveChannel() - saves individual channel
-//   - SETTINGS_SaveVfoIndices() - saves current selections
-//   - SETTINGS_WriteBuildOptions() - saves feature flags
-//   - Menu system calls this after user confirms changes
-//
 void SETTINGS_SaveSettings(void)
 {
     uint8_t *State;
     uint8_t tmp = 0;
     uint8_t SecBuf[0x50];
 
-    // ----------------------
-    // 0e70 - 0e80
 
     memset(SecBuf, 0xff, 0x10);
 
-    // 0x0E70
+     
     State = SecBuf;
     State[0] = gEeprom.CHAN_1_CALL;
     State[1] = gEeprom.SQUELCH_LEVEL;
@@ -845,7 +607,7 @@ void SETTINGS_SaveSettings(void)
     #endif
     State[7] = gEeprom.MIC_SENSITIVITY;
 
-    // 0x0E78
+     
     State = SecBuf + 0x8;
     State[0] = (gEeprom.BACKLIGHT_MIN << 4) + gEeprom.BACKLIGHT_MAX;
     State[1] = gEeprom.CHANNEL_DISPLAY_MODE;
@@ -885,13 +647,10 @@ void SETTINGS_SaveSettings(void)
 
     PY25Q16_WriteBuffer(0x004000, SecBuf, 0x10, true);
 
-    // -------------------------
-    //  0e90 - 0ee0
 
-    // memset(SecBuf, 0xff, 0x50);
     PY25Q16_ReadBuffer(0x007000, SecBuf, 0x50);
 
-    // 0x0E90
+     
     State = SecBuf;
     State[0] = gEeprom.BEEP_CONTROL;
     State[0] |= gEeprom.KEY_M_LONG_PRESS_ACTION << 1;
@@ -903,13 +662,13 @@ void SETTINGS_SaveSettings(void)
     State[6] = gEeprom.AUTO_KEYPAD_LOCK;
     State[7] = gEeprom.POWER_ON_DISPLAY_MODE;
 
-    // 0x0E98
+     
     #ifdef ENABLE_PWRON_PASSWORD
         State = SecBuf + 0x8;
         State[0] = gEeprom.POWER_ON_PASSWORD;
     #endif
 
-    // 0x0EA0
+     
     State = SecBuf + 0x10;
 #ifdef ENABLE_VOICE
     State[0] = gEeprom.VOICE_PROMPT;
@@ -919,7 +678,7 @@ void SETTINGS_SaveSettings(void)
     State[2] = gEeprom.S9_LEVEL;
 #endif
 
-    // 0x0EA8
+     
     State = SecBuf + 0x18;
     #if defined(ENABLE_ALARM) || defined(ENABLE_TX1750)
         State[0] = gEeprom.ALARM_MODE;
@@ -931,7 +690,7 @@ void SETTINGS_SaveSettings(void)
     State[3] = gEeprom.TX_VFO;
     State[4] = gEeprom.BATTERY_TYPE;
 
-    // 0x0ED0
+     
     State = SecBuf + 0x40;
     State[0] = gEeprom.DTMF_SIDE_TONE;
 #ifdef ENABLE_DTMF_CALLING
@@ -944,7 +703,7 @@ void SETTINGS_SaveSettings(void)
     State[6] = gEeprom.DTMF_FIRST_CODE_PERSIST_TIME / 10U;
     State[7] = gEeprom.DTMF_HASH_CODE_PERSIST_TIME / 10U;
 
-    // 0x0ED8
+     
     State = SecBuf + 0x48;
     State[0] = gEeprom.DTMF_CODE_PERSIST_TIME / 10U;
     State[1] = gEeprom.DTMF_CODE_INTERVAL_TIME / 10U;
@@ -954,12 +713,10 @@ void SETTINGS_SaveSettings(void)
 
     PY25Q16_WriteBuffer(0x007000, SecBuf, 0x50, true);
 
-    // -------------------------
-    // 0f18 - 0f20
 
     memset(SecBuf, 0xff, 0x8);
 
-    // 0x0F18
+     
     State = SecBuf;
     State[0] = gEeprom.SCAN_LIST_DEFAULT;
 
@@ -982,12 +739,10 @@ void SETTINGS_SaveSettings(void)
 
     PY25Q16_WriteBuffer(0x009000, SecBuf, 8, true);
 
-    // ---------------------
-    // 0f40 - 0f48
 
     memset(SecBuf, 0xff, 8);
 
-    // 0x0F40
+     
     State = SecBuf;
     State[0]  = gSetting_F_LOCK;
 #ifndef ENABLE_FEAT_F4HWN
@@ -1001,13 +756,13 @@ void SETTINGS_SaveSettings(void)
     State[4]  = gSetting_500TX;
 #endif
     State[5]  = gSetting_350EN;
-#ifdef ENABLE_FEAT_F4HWN__ // calypso
+#ifdef ENABLE_FEAT_F4HWN__  
     State[6]  = false;
 #else
     State[6]  = gSetting_ScrambleEnable;
 #endif
 
-    //if (!gSetting_TX_EN)             State[7] &= ~(1u << 0);
+     
     if (!gSetting_live_DTMF_decoder) State[7] &= ~(1u << 1);
     State[7] = (State[7] & ~(3u << 2)) | ((gSetting_battery_text & 3u) << 2);
     #ifdef ENABLE_AUDIO_BAR
@@ -1018,35 +773,13 @@ void SETTINGS_SaveSettings(void)
 
     PY25Q16_WriteBuffer(0x00b000, SecBuf, 8, true);
 
-    // ------------------
 
 #ifdef ENABLE_FEAT_F4HWN
-    // 0x1FF0
+     
     State = SecBuf;
-    // TODO: TBD
+     
     PY25Q16_ReadBuffer(0x00c000, State, 8);
 
-    //memset(State, 0xFF, sizeof(State));
-
-    /*
-    tmp = 0;
-
-    if(gSetting_set_tmr == 1)
-        tmp = tmp | (1 << 0);
-
-    State[4] = tmp;
-
-    tmp = 0;
-
-    if(gSetting_set_inv == 1)
-        tmp = tmp | (1 << 0);
-    if (gSetting_set_lck == 1)
-        tmp = tmp | (1 << 1);
-    if (gSetting_set_met == 1)
-        tmp = tmp | (1 << 2);
-    if (gSetting_set_gui == 1)
-        tmp = tmp | (1 << 3);
-    */
 
 #ifdef ENABLE_FEAT_F4HWN_SLEEP 
     State[4] = (gSetting_set_off << 1) | (gSetting_set_tmr & 0x01);
@@ -1073,36 +806,7 @@ void SETTINGS_SaveSettings(void)
 #endif
 }
 
-// ============================================================================
-// SETTINGS_SaveChannel - Save channel or VFO configuration to flash
-// ============================================================================
-// Writes 16 bytes of VFO/channel data to flash memory with attribute updates.
-// Handles both memory channels (MR) and frequency channels (VFO).
-//
-// Parameters:
-//   Channel: Channel number (0-199=MR, 200+=VFO)
-//   VFO:     VFO index (0 or 1) for frequency channels
-//   pVFO:    Pointer to VFO_Info_t structure with frequency, codes, modulation
-//   Mode:    Save mode (0=normal, 2+=copy VFO to channel, affects name handling)
-//
-// Dependencies:
-//   - PY25Q16_WriteBuffer() - writes 16 bytes to flash
-//   - SETTINGS_UpdateChannel() - updates band/scanlist attributes
-//   - SETTINGS_SaveChannelName() - saves channel name (conditional)
-//   - IS_FREQ_CHANNEL(), IS_MR_CHANNEL() - channel type identification
-//   - Various ENABLE_* macros for conditional compilation
-//
-// Timing:
-//   - Flash write: ~5-10ms (16 bytes)
-//   - Attribute update: ~1-10ms
-//   - Name save: ~1-5ms (optional)
-//   - Total: ~7-25ms (blocking)
-//
-// Notes:
-//   - Stores frequency, TX offset, codes (CTCSS/CDCSS), modulation type
-//   - Updates sector cache to avoid redundant erases
-//   - Different offsets for MR channels (0x0000+) vs VFO (0x1000+)
-//
+
 void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, uint8_t Mode)  
 {
 #ifdef ENABLE_NOAA
@@ -1110,16 +814,16 @@ void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, 
         return;
 #endif
 
-    // 0
+     
     uint16_t OffsetVFO = 0 + Channel * 16;
 
-    if (IS_FREQ_CHANNEL(Channel)) { // it's a VFO, not a channel
-        // 0x0C80
+    if (IS_FREQ_CHANNEL(Channel)) {  
+         
         OffsetVFO  = (VFO == 0) ? 0x001000 : 0x001010;
         OffsetVFO += (Channel - FREQ_CHANNEL_FIRST) * 32;
     }
 
-    if (Mode >= 2 || IS_FREQ_CHANNEL(Channel)) { // copy VFO to a channel
+    if (Mode >= 2 || IS_FREQ_CHANNEL(Channel)) {  
         typedef union {
             uint8_t _8[8];
             uint32_t _32[2];
@@ -1127,7 +831,7 @@ void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, 
         
         State_t *State;
 
-        uint8_t Buf[0x10] __attribute__((aligned(4))) = {0};  // Force 4-byte alignment for uint32_t access
+        uint8_t Buf[0x10] __attribute__((aligned(4))) = {0};   
 
         State = (State_t *)Buf;
         State -> _32[0] = pVFO->freq_config_RX.Frequency;
@@ -1155,14 +859,14 @@ void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, 
 #else
         State -> _8[7] =  pVFO->SCRAMBLING_TYPE;
 #endif
-        // PY25Q16_WriteBuffer(uint32_t Address, const void *pBuffer, uint32_t Size, bool Append)
+         
         PY25Q16_WriteBuffer(OffsetVFO, Buf, 0x10, false); 
 
         SETTINGS_UpdateChannel(Channel, pVFO, true, true, true); 
 
         if (IS_MR_CHANNEL(Channel)) {
 #ifndef ENABLE_KEEP_MEM_NAME
-            // clear/reset the channel name
+             
             SETTINGS_SaveChannelName(Channel, "");
 #else
             if (Mode >= 3) {
@@ -1174,135 +878,24 @@ void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, 
 
 }
 
-// ============================================================================
-// SETTINGS_SaveBatteryCalibration - Save battery ADC calibration values
-// ============================================================================
-// Writes 12 bytes (3 x uint16_t) of battery calibration data to flash.
-// Used for accurate battery level reporting.
-//
-// Parameters:
-//   batteryCalibration: Pointer to 12-byte calibration data (3 ADC values)
-//
-// Dependencies:
-//   - PY25Q16_WriteBuffer() - writes to flash at 0x010140
-//
-// Timing:
-//   - Flash write: ~1-5ms (12 bytes)
-//
-// Storage:
-//   - Address: 0x010000 + 0x140 = 0x010140
-//
-// ============================================================================
-// SETTINGS_SaveBatteryCalibration - Save battery ADC calibration values
-// ============================================================================
-// Writes 12 bytes of battery calibration ADC values to protected flash.
-// These values map battery voltage to percentage for display accuracy.
-// Factory-calibrated per unit during manufacturing.
-//
-// Parameters:
-//   batteryCalibration: Pointer to 12-byte array (3 x uint16_t or 6 x uint16_t)
-//                       Maps voltage levels for battery percentage display
-//
-// Flash Layout:
-//   Address: 0x010000 + 0x140 = 0x010140
-//   Protected sector (calibration data zone)
-//   12 bytes = 6 x uint16_t values (voltage->percentage mapping)
-//
-// Timing: ~1-5ms flash write (12 bytes)
-//
-// Dependencies:
-//   - PY25Q16_WriteBuffer() - writes to flash
-//   - gBatteryCalibration[] - global battery calibration table
-//
-// Related Functions:
-//   - SETTINGS_LoadCalibration() - reads these values on startup
-//   - Battery display code uses these for voltage-to-percentage mapping
-//
-// Note:
-//   - Factory defaults loaded if values are clearly invalid (>= 5000)
-//   - Should only be updated during factory calibration or special reset
-//
+
 void SETTINGS_SaveBatteryCalibration(const uint16_t * batteryCalibration)
 {
-    // 0x1F40
+     
     PY25Q16_WriteBuffer(0x010000 + 0x140, batteryCalibration, 12, false);
 }
 
-// ============================================================================
-// SETTINGS_SaveChannelName - Save channel name to flash (10 char max)
-// ============================================================================
-// Writes up to 10 characters of name to flash with 16-byte block (padded).
-// Called when user edits a memory channel name via the menu.
-// Each channel allocated 16 bytes for name + padding.
-//
-// Parameters:
-//   channel: Channel number (0-199 for memory channels)
-//   name:    Pointer to null-terminated string (max 10 printable characters)
-//            If NULL or empty, clears the channel name
-//
-// Flash Layout:
-//   Address: 0x00E000 + (channel * 16)
-//   Format: [Name(10)|Padding(6)] - null-terminated name
-//   Unused bytes: zero-padded
-//
-// Timing: ~1-5ms flash write (16 bytes)
-//
-// Dependencies:
-//   - PY25Q16_WriteBuffer() - writes 16 bytes to flash
-//   - strlen(), memcpy() - string handling
-//   - MIN() macro - bounds string length to 10 chars
-//
-// Related Functions:
-//   - SETTINGS_FetchChannelName() - reads channel name from flash
-//   - Called from: Channel name editor in menu system
-//   - SETTINGS_SaveChannel() - optionally clears name when copying VFO
-//
-// Notes:
-//   - Names limited to 10 characters (ASCII 32-127)
-//   - Padding bytes set to 0x00 (not 0xFF like other settings)
-//   - Non-existent channels should not be named (validation in menu)
-//
+
 void SETTINGS_SaveChannelName(uint8_t channel, const char * name)
 {
     uint16_t offset = channel * 16;
     uint8_t buf[16] = {0};
     memcpy(buf, name, MIN(strlen(name), 10u));
-    // 0x0F50
+     
     PY25Q16_WriteBuffer(0x00e000 + offset, buf, 0x10, false);
 }
 
-// ============================================================================
-// SETTINGS_UpdateChannel - Update channel attributes (band, scanlists, compander)
-// ============================================================================
-// Reads 224-byte attributes block, updates one channel's attributes, writes back.
-// Attributes include band, scan list participation, compander settings.
-// Uses caching to avoid writing if no changes detected.
-//
-// Parameters:
-//   channel: Channel number (0-199)
-//   pVFO:    Pointer to VFO with attribute values
-//   keep:    true=preserve/update attributes, false=reset to defaults
-//   check:   true=skip write if no change (optimization), false=always write
-//   save:    true=write to flash, false=update cache only
-//
-// Dependencies:
-//   - PY25Q16_ReadBuffer() - reads 224-byte attribute block
-//   - PY25Q16_WriteBuffer() - writes attributes back
-//   - gMR_ChannelAttributes[] - static cache for attributes
-//   - ENABLE_NOAA, ENABLE_FEAT_F4HWN - conditional behavior
-//   - SETTINGS_SaveChannelName() - clear name if not keeping attributes
-//
-// Timing:
-//   - Read: ~1ms (224 bytes)
-//   - Write: ~5-10ms (224 bytes, if needed)
-//   - Can skip write if check=true and no changes (~saves 10ms)
-//   - Total: ~1-11ms (blocking)
-//
-// Notes:
-//   - Attribute block at 0x002000: one byte per channel (0-223)
-//   - Attributes packed: band(3 bits)|compander(2)|scanlist1(1)|scanlist2(1)|scanlist3(1)
-//   - Optimization: memcmp() detects unchanged attributes to skip write
-//
+
 void SETTINGS_UpdateChannel(uint8_t channel, const VFO_Info_t *pVFO, bool keep, bool check, bool save)
 {
 #ifdef ENABLE_NOAA
@@ -1316,9 +909,9 @@ void SETTINGS_UpdateChannel(uint8_t channel, const VFO_Info_t *pVFO, bool keep, 
             .scanlist1 = 0,
             .scanlist2 = 0,
             .scanlist3 = 0,
-            };        // default attributes
+            };         
 
-        // 0x0D60
+         
         PY25Q16_ReadBuffer(0x002000 + channel, &state, 1);
 
         if (keep) {
@@ -1328,7 +921,7 @@ void SETTINGS_UpdateChannel(uint8_t channel, const VFO_Info_t *pVFO, bool keep, 
             att.scanlist3 = pVFO->SCANLIST3_PARTICIPATION;
             att.compander = pVFO->Compander;
             if (check && state.__val == att.__val)
-                return; // no change in the attributes
+                return;  
         }
 
         state.__val = att.__val;
@@ -1346,74 +939,22 @@ void SETTINGS_UpdateChannel(uint8_t channel, const VFO_Info_t *pVFO, bool keep, 
 
         gMR_ChannelAttributes[channel] = att;
 
-        if (IS_MR_CHANNEL(channel)) {   // it's a memory channel
+        if (IS_MR_CHANNEL(channel)) {    
             if (!keep) {
-                // clear/reset the channel name
+                 
                 SETTINGS_SaveChannelName(channel, "");
             }
         }
     }
 }
 
-// ============================================================================
-// SETTINGS_WriteBuildOptions - Write firmware capability flags to flash
-// ============================================================================
-// Encodes compile-time ENABLE_* preprocessor flags into bytes [0-1] of
-// feature flags area at 0x00C000. Used at runtime to detect firmware features.
-// Called during initialization to record which optional features are compiled in.
-//
-// Feature Flags Saved:
-//
-// Byte 0 - Main Features:
-//   Bit 0: ENABLE_FMRADIO - FM radio receiver
-//   Bit 1: ENABLE_NOAA - NOAA weather radio
-//   Bit 2: ENABLE_VOICE - Voice prompts/announcements
-//   Bit 3: ENABLE_VOX - Voice activation (PTT)
-//   Bit 4: ENABLE_ALARM - Alarm functionality
-//   Bit 5: ENABLE_TX1750 - 1750 Hz tone transmit
-//   Bit 6: ENABLE_PWRON_PASSWORD - Power-on password protection
-//   Bit 7: ENABLE_DTMF_CALLING - DTMF remote control
-//
-// Byte 1 - Advanced Features:
-//   Bit 0: ENABLE_FLASHLIGHT - LED flashlight mode
-//   Bit 1: ENABLE_WIDE_RX - Wide band RX (e.g., 50-900 MHz)
-//   Bit 2: ENABLE_BYP_RAW_DEMODULATORS - Bypass raw demodulation
-//   Bit 3: ENABLE_FEAT_F4HWN_GAME - Game features (Breakout, etc)
-//   Bit 5: ENABLE_SPECTRUM - Spectrum analyzer
-//   (Bits 4,6,7 unused/reserved)
-//
-// Bytes [2-7]: Reserved (preserved from flash if ENABLE_FEAT_F4HWN)
-//
-// Flash Layout:
-//   Address: 0x00C000 (feature flags area)
-//   If ENABLE_FEAT_F4HWN: reads existing bytes 2-7 to preserve F4HWN data
-//   Otherwise: only updates bytes 0-1
-//
-// Timing:
-//   - Read: ~1ms (if ENABLE_FEAT_F4HWN)
-//   - Write: ~1-5ms (8 bytes)
-//   - Total: ~1-6ms (blocking)
-//
-// Dependencies:
-//   - PY25Q16_ReadBuffer() - reads existing data (conditional)
-//   - PY25Q16_WriteBuffer() - writes 8 bytes
-//   - ENABLE_* compile-time macros from build configuration
-//
-// Related Functions:
-//   - Called from: initialization to record firmware features
-//   - SETTINGS_SaveSettings() - may modify same flash area for F4HWN
-//
-// Notes:
-//   - Used by bootloader/external tools to detect features
-//   - Non-destructive write: preserves bytes 2-7 if enabled
-//   - Allows detecting firmware features from stored configuration
-//
+
 void SETTINGS_WriteBuildOptions(void)
 {
     uint8_t State[8];
 
 #ifdef ENABLE_FEAT_F4HWN
-    // 0x1FF0
+     
     PY25Q16_ReadBuffer(0x00c000, State, sizeof(State));
 #endif
     
@@ -1467,80 +1008,26 @@ State[1] = 0
 }
 
 #ifdef ENABLE_FEAT_F4HWN_RESUME_STATE
-// ============================================================================
-// SETTINGS_WriteCurrentState - Save radio resume state to flash
-// ============================================================================
-// Reads 16-byte state block, updates byte 15 with resume information, writes back.
-// Allows radio to resume to last VFO/channel and scan list on power-on.
-// Only compiled if ENABLE_FEAT_F4HWN_RESUME_STATE is enabled.
-//
-// State Information Saved (Byte 15):
-//   Bits [0]:     VFO_OPEN - which VFO was last active (0 or 1)
-//   Bits [3:1]:   CURRENT_STATE - last state (3 bits, values 0-7)
-//   Bits [7:4]:   SCAN_LIST_DEFAULT - last scan list (3 bits, values 0-7)
-//
-// Flash Layout:
-//   Address: 0x004000 (16-byte state block)
-//   Byte 15 is modified, rest of block preserved
-//
-// Timing:
-//   - Read: ~1ms (16 bytes)
-//   - Write: ~1-5ms (16 bytes, append mode)
-//   - Total: ~2-6ms (blocking)
-//
-// Dependencies:
-//   - PY25Q16_ReadBuffer() - reads 16 bytes from flash
-//   - PY25Q16_WriteBuffer() - writes 16 bytes to flash
-//   - gEeprom.VFO_OPEN - last open VFO (0 or 1)
-//   - gEeprom.CURRENT_STATE - last state (3 bits)
-//   - gEeprom.SCAN_LIST_DEFAULT - last scan list (3 bits)\n//
-// Notes:
-//   - Saves last selection for quick resume on boot
-//   - Only compiled if ENABLE_FEAT_F4HWN_RESUME_STATE is enabled
-//   - Related to SETTINGS_InitEEPROM() which loads these values
-//
+
+
     void SETTINGS_WriteCurrentState(void)
     {
         uint8_t State[0x10];
-        // 0x0E78
+         
         PY25Q16_ReadBuffer(0x004000, State, sizeof(State));
-        //State[11] = (gEeprom.CURRENT_STATE << 4) | (gEeprom.BATTERY_SAVE & 0x0F);
+         
         State[15] = (gEeprom.VFO_OPEN & 0x01) | ((gEeprom.CURRENT_STATE & 0x07) << 1) | ((gEeprom.SCAN_LIST_DEFAULT & 0x07) << 4);
         PY25Q16_WriteBuffer(0x004000, State, sizeof(State), true);
     }
 #endif
 
 #ifdef ENABLE_FEAT_F4HWN_VOL
-// ============================================================================
-// SETTINGS_WriteCurrentVol - Save current volume level to flash
-// ============================================================================
-// Reads 8-byte calibration block, updates byte 6 with current volume, writes back.
-// Allows radio to resume at last volume level after power-off (if enabled).\n//
-// Parameters: None (uses global gEeprom.VOLUME_GAIN)
-//
-// Flash Layout:
-//   Address: 0x010000 + 0x188 (8-byte calibration block)
-//   Byte 6: VOLUME_GAIN (0-63, typically 0-58 valid range)
-//
-// Timing:
-//   - Read: ~1ms (8 bytes)
-//   - Write: ~1-2ms (8 bytes, no erase needed)
-//   - Total: ~2-3ms (blocking)
-//
-// Dependencies:
-//   - PY25Q16_ReadBuffer() - reads calibration block
-//   - PY25Q16_WriteBuffer() - writes modified block
-//   - gEeprom.VOLUME_GAIN - current volume level (0-63)
-//
-// Notes:
-//   - Only compiled if ENABLE_FEAT_F4HWN_VOL is enabled
-//   - Preserves other calibration data in same block
-//   - Called from: SETTINGS_SaveSettings() if volume changes
-//
+
+
     void SETTINGS_WriteCurrentVol(void)
     {
         uint8_t State[8];
-        // 0x1F88
+         
         PY25Q16_ReadBuffer(0x010000 + 0x188, State, sizeof(State));
         State[6] = gEeprom.VOLUME_GAIN;
         PY25Q16_WriteBuffer(0x010000 + 0x188, State, sizeof(State), false);
@@ -1548,39 +1035,11 @@ State[1] = 0
 #endif
 
 #ifdef ENABLE_FEAT_F4HWN
-// ============================================================================
-// SETTINGS_ResetTxLock - Clear TX lock flags from all memory channels
-// ============================================================================
-// Clears TX lock/restriction flags from all 200 memory channels in flash.
-// Expensive operation: reads/writes memory channel data in 10 batches.
-// Used when exiting \"killed\" state (remote disable) or factory reset.
-//
-// Parameters: None
-//
-// Operation:
-//   - Batches channel data: 200 channels / 10 batches = 20 channels per batch
-//   - Each batch is ~3200 bytes (20 * 16-byte channels)
-//   - Reads batch, sets bit 6 of offset field (TX lock flag)
-//   - Writes modified batch back to flash (appending)\n//   - Repeats 10 times until all channels processed
-//
-// Flash Layout:
-//   Channels 0-199: 0x0000 + (ch * 16), 16 bytes each
-//   Per channel: [Freq(4)|Offset(4)|Tone(3)|Mode(1)|...]\n//   TX lock flag: Bit 6 of offset field (Byte 4, bit 6)
-//
-// Timing: EXPENSIVE!\n//   - Per batch: ~20-40ms (read + write, no erase for append)\n//   - Total: ~200-400ms (10 batches, blocking I/O)\n//   - Should only be called during special operations or factory reset
-//
-// Dependencies:
-//   - PY25Q16_ReadBuffer() - reads batch data
-//   - PY25Q16_WriteBuffer() - writes modified data (append mode)\n//
-// Related Functions:
-//   - Called from: Kill/revive code operations, factory reset (F4HWN only)
-//
-// Notes:
-//   - Modifies bit 6 (TX_LOCK) of byte 4 in each channel entry\n//   - Blocking operation: radio unresponsive during execution\n//   - Should have user warning before calling
-//
+
+
 void SETTINGS_ResetTxLock(void)
 {
-    // TODO: This is expensive operation!
+     
 
 #define SETTINGS_ResetTxLock_BATCH 10
 

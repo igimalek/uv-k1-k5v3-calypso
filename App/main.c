@@ -1,22 +1,8 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #include <stdint.h>
 #include <string.h>
-#include <stdio.h>     // NULL
+#include <stdio.h>      
 #include "audio.h"
 #include "board.h"
 #include "misc.h"
@@ -73,7 +59,7 @@ void Main(void)
     SYSTICK_Init();
     BOARD_Init();
 
-    boot_counter_10ms = 250;   // 2.5 sec
+    boot_counter_10ms = 250;    
 
 #ifdef ENABLE_UART
     UART_Init();
@@ -89,7 +75,7 @@ void Main(void)
     memset(gStatusLine,  0, sizeof(gStatusLine));
     memset(gStatusLineOld,  1, sizeof(gStatusLineOld));
 
-    // Not implementing authentic device checks
+     
     memset(gDTMF_String, '-', sizeof(gDTMF_String));
     gDTMF_String[sizeof(gDTMF_String) - 1] = 0;
 
@@ -123,46 +109,41 @@ void Main(void)
     BOOT_Mode_t  BootMode = BOOT_GetMode();
 
 
-
     if (BootMode == BOOT_MODE_F_LOCK)
     {
 
-        gF_LOCK = true;            // flag to say include the hidden menu items
+        gF_LOCK = true;             
         #ifdef ENABLE_FEAT_F4HWN
             gEeprom.KEY_LOCK = 0;
             SETTINGS_SaveSettings();
             #ifndef ENABLE_VOX
-                gMenuCursor = 67; // move to hidden section, fix me if change... !!! Remove VOX and Mic Bar
+                gMenuCursor = 67;  
             #else
-                gMenuCursor = 68; // move to hidden section, fix me if change... !!!
+                gMenuCursor = 68;  
             #endif
 
             #ifdef ENABLE_NOAA
-                gMenuCursor += 1; // move to hidden section, fix me if change... !!!
+                gMenuCursor += 1;  
             #endif
   
             gSubMenuSelection = gSetting_F_LOCK;
         #endif
     }
 
-    // count the number of menu items
     gMenuListCount = 0;
     while (MenuList[gMenuListCount].name[0] != '\0') {
-        if(!gF_LOCK && MenuList[gMenuListCount].menu_id == FIRST_HIDDEN_MENU_ITEM)
-            break;
-
-        gMenuListCount++;
+        gMenuListCount++;  
     }
 
-    // wait for user to release all butts before moving on
+     
     if (GPIO_IsPttPressed() ||
          KEYBOARD_Poll() != KEY_INVALID ||
          BootMode != BOOT_MODE_NORMAL)
-    {   // keys are pressed
+    {    
         UI_DisplayReleaseKeys();
         BACKLIGHT_TurnOn();
 
-        // 500ms
+         
         for (int i = 0; i < 50;)
         {
             i = (!GPIO_IsPttPressed() && KEYBOARD_Poll() == KEY_INVALID) ? i + 1 : 0;
@@ -177,10 +158,10 @@ void Main(void)
     {
         FUNCTION_Select(FUNCTION_POWER_SAVE);
 
-        if (gEeprom.BACKLIGHT_TIME < 61) // backlight is not set to be always on
-            BACKLIGHT_TurnOff();    // turn the backlight OFF
+        if (gEeprom.BACKLIGHT_TIME < 61)  
+            BACKLIGHT_TurnOff();     
         else
-            BACKLIGHT_TurnOn();     // turn the backlight ON
+            BACKLIGHT_TurnOn();      
 
         gReducedService = true;
     }
@@ -195,11 +176,11 @@ void Main(void)
 #else
         if (gEeprom.POWER_ON_DISPLAY_MODE != POWER_ON_DISPLAY_MODE_NONE)
 #endif
-        {   // 2.55 second boot-up screen
+        {    
             while (boot_counter_10ms > 0)
             {
                 if (KEYBOARD_Poll() != KEY_INVALID)
-                {   // halt boot beeps
+                {    
                     boot_counter_10ms = 0;
                     break;
                 }
@@ -214,7 +195,7 @@ void Main(void)
             UI_DisplayLock();
             bIsInLockScreen = false;
 
-            // 500ms
+             
             for (int i = 0; i < 50;)
             {
                 i = (GPIO_CheckBit(&GPIOC->DATA, GPIOC_PIN_PTT) && KEYBOARD_Poll() == KEY_INVALID) ? i + 1 : 0;
@@ -228,7 +209,6 @@ void Main(void)
 
         BOOT_ProcessMode(BootMode);
 
-        // GPIO_ClearBit(&GPIOA->DATA, GPIOA_PIN_VOICE_0);
 
         gUpdateStatus = true;
 
@@ -256,49 +236,6 @@ void Main(void)
 #endif
     }
 
-    /*
-    #ifdef ENABLE_FEAT_F4HWN_RESUME_STATE
-    if(gEeprom.CURRENT_STATE == 2 || gEeprom.CURRENT_STATE == 5)
-    {
-            gScanRangeStart = gScanRangeStart ? 0 : gTxVfo->pRX->Frequency;
-            gScanRangeStop = gEeprom.VfoInfo[!gEeprom.TX_VFO].freq_config_RX.Frequency;
-            if(gScanRangeStart > gScanRangeStop)
-            {
-                SWAP(gScanRangeStart, gScanRangeStop);
-            }
-    }
-    switch (gEeprom.CURRENT_STATE) {
-        case 1:
-            gEeprom.SCAN_LIST_DEFAULT = gEeprom.CURRENT_LIST;
-            CHFRSCANNER_Start(true, SCAN_FWD);
-            break;
-
-        case 2:
-            CHFRSCANNER_Start(true, SCAN_FWD);
-            break;
-
-        #ifdef ENABLE_FMRADIO
-        case 3:
-            ACTION_FM();
-            GUI_SelectNextDisplay(gRequestDisplayScreen);
-            break;
-        #endif
-
-        #ifdef ENABLE_SPECTRUM
-        case 4:
-            APP_RunSpectrum();
-            break;
-        case 5:
-            APP_RunSpectrum();
-            break;
-        #endif
-
-        default:
-            // No action for CURRENT_STATE == 0 or other unexpected values
-            break;
-    }
-    #endif
-    */
 
     #ifdef ENABLE_FEAT_F4HWN_RESUME_STATE
         if (gEeprom.CURRENT_STATE == 2 || gEeprom.CURRENT_STATE == 5) {
@@ -328,27 +265,20 @@ void Main(void)
         }
         #endif
     #endif
-        
-    // ============================================================================
-    // MAIN EVENT LOOP - Timeslice-based architecture
-    // ============================================================================
-    // The radio operates on a timeslice system:
-    // - gNextTimeslice: 10ms tick (base timeslice)
-    // - gNextTimeslice_500ms: 500ms tick (occurs every 50 x 10ms)
-    // This allows efficient multitasking without blocking interrupts
-    // ============================================================================
+
+
     while (true)
     {
-        // Process continuous updates (e.g., display refresh, status checks)
+         
         APP_Update();
 
-        // Handle 10ms timeslice events
+         
         if (gNextTimeslice)
         {
-            // Execute all 10ms-based operations (button polling, state machines, etc.)
+             
             APP_TimeSlice10ms();
 
-            // Execute 500ms operations (battery monitoring, UI updates, etc.)
+             
             if (gNextTimeslice_500ms)
             {
                 APP_TimeSlice500ms();

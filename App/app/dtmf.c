@@ -1,21 +1,7 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+  
 
 #include <string.h>
-#include <stdio.h>   // NULL
+#include <stdio.h>     
 
 #include "app/chFrScanner.h"
 #ifdef ENABLE_FMRADIO
@@ -87,7 +73,7 @@ void DTMF_SendEndOfTransmission(void)
 #ifdef ENABLE_DTMF_CALLING
         && gDTMF_CallState == DTMF_CALL_STATE_NONE
 #endif
-    ) { // end-of-tx
+    ) {   
         if (gEeprom.DTMF_SIDE_TONE) {
             AUDIO_AudioPathOn();
             gEnableSpeaker = true;
@@ -142,7 +128,7 @@ bool DTMF_GetContact(const int Index, char *pContact)
 
     EEPROM_ReadBuffer(0x1C00 + (Index * 16), pContact, 16);
 
-    // check whether the first character is printable or not
+      
     return (pContact[0] >= ' ' && pContact[0] < 127);
 }
 
@@ -233,22 +219,22 @@ void DTMF_Append(const char code)
 
 #ifdef ENABLE_DTMF_CALLING
 void DTMF_HandleRequest(void)
-{   // proccess the RX'ed DTMF characters
+{     
 
     char         String[21];
     unsigned int Offset;
 
     if (!gDTMF_RX_pending)
-        return;   // nothing new received
+        return;     
 
     if (gScanStateDir != SCAN_OFF || gCssBackgroundScan)
-    {   // we're busy scanning
+    {     
         DTMF_clear_RX();
         return;
     }
 
     if (!gRxVfo->DTMF_DECODING_ENABLE && !gSetting_KILLED)
-    {   // D-DCD is disabled or we're alive
+    {     
         DTMF_clear_RX();
         return;
     }
@@ -256,18 +242,18 @@ void DTMF_HandleRequest(void)
     gDTMF_RX_pending = false;
 
     if (gDTMF_RX_index >= 9)
-    {   // look for the KILL code
+    {     
 
         sprintf(String, "%s%c%s", gEeprom.ANI_DTMF_ID, gEeprom.DTMF_SEPARATE_CODE, gEeprom.KILL_CODE);
 
         Offset = gDTMF_RX_index - strlen(String);
 
         if (CompareMessage(gDTMF_RX + Offset, String, strlen(String), true))
-        {   // bugger
+        {     
 
             if (gEeprom.PERMIT_REMOTE_KILL)
             {
-                gSetting_KILLED = true;      // oooerr !
+                gSetting_KILLED = true;        
 
                 DTMF_clear_RX();
 
@@ -297,14 +283,14 @@ void DTMF_HandleRequest(void)
     }
 
     if (gDTMF_RX_index >= 9)
-    {   // look for the REVIVE code
+    {     
 
         sprintf(String, "%s%c%s", gEeprom.ANI_DTMF_ID, gEeprom.DTMF_SEPARATE_CODE, gEeprom.REVIVE_CODE);
 
         Offset = gDTMF_RX_index - strlen(String);
 
         if (CompareMessage(gDTMF_RX + Offset, String, strlen(String), true))
-        {   // shit, we're back !
+        {     
 
             gSetting_KILLED  = false;
 
@@ -322,17 +308,17 @@ void DTMF_HandleRequest(void)
     }
 
     if (gDTMF_RX_index >= 2)
-    {   // look for ACK reply
+    {     
         char *pPrintStr = "AB";
 
         Offset = gDTMF_RX_index - strlen(pPrintStr);
 
         if (CompareMessage(gDTMF_RX + Offset, pPrintStr, strlen(pPrintStr), true)) {
-            // ends with "AB"
+              
 
-            if (gDTMF_ReplyState != DTMF_REPLY_NONE)          // 1of11
-//          if (gDTMF_CallState != DTMF_CALL_STATE_NONE)      // 1of11
-//          if (gDTMF_CallState == DTMF_CALL_STATE_CALL_OUT)  // 1of11
+            if (gDTMF_ReplyState != DTMF_REPLY_NONE)            
+  
+  
             {
                 gDTMF_State = DTMF_STATE_TX_SUCC;
                 DTMF_clear_RX();
@@ -345,14 +331,14 @@ void DTMF_HandleRequest(void)
     if (gDTMF_CallState == DTMF_CALL_STATE_CALL_OUT &&
         gDTMF_CallMode  == DTMF_CALL_MODE_NOT_GROUP &&
         gDTMF_RX_index >= 9)
-    {   // waiting for a reply
+    {     
 
         sprintf(String, "%s%c%s", gDTMF_String, gEeprom.DTMF_SEPARATE_CODE, "AAAAA");
 
         Offset = gDTMF_RX_index - strlen(String);
 
         if (CompareMessage(gDTMF_RX + Offset, String, strlen(String), false))
-        {   // we got a response
+        {     
             gDTMF_State    = DTMF_STATE_CALL_OUT_RSP;
             DTMF_clear_RX();
             gUpdateDisplay = true;
@@ -360,12 +346,12 @@ void DTMF_HandleRequest(void)
     }
 
     if (gSetting_KILLED || gDTMF_CallState != DTMF_CALL_STATE_NONE)
-    {   // we've been killed or expecting a reply
+    {     
         return;
     }
 
     if (gDTMF_RX_index >= 7)
-    {   // see if we're being called
+    {     
 
         gDTMF_IsGroupCall = false;
 
@@ -374,7 +360,7 @@ void DTMF_HandleRequest(void)
         Offset = gDTMF_RX_index - strlen(String) - 3;
 
         if (CompareMessage(gDTMF_RX + Offset, String, strlen(String), true))
-        {   // it's for us !
+        {     
 
             gDTMF_CallState = DTMF_CALL_STATE_RECEIVED;
 
@@ -425,7 +411,7 @@ void DTMF_Reply(void)
         case DTMF_REPLY_ANI:
 #ifdef ENABLE_DTMF_CALLING
             if (gDTMF_CallMode != DTMF_CALL_MODE_DTMF)
-            {   // append our ID code onto the end of the DTMF code to send
+            {     
                 sprintf(String, "%s%c%s", gDTMF_String, gEeprom.DTMF_SEPARATE_CODE, gEeprom.ANI_DTMF_ID);
                 pString = String;
             }
@@ -460,7 +446,7 @@ void DTMF_Reply(void)
                 return;
             }
 
-            // send TX-UP DTMF
+              
             pString = gEeprom.DTMF_UP_CODE;
             break;
     }
@@ -473,7 +459,7 @@ void DTMF_Reply(void)
     Delay = (gEeprom.DTMF_PRELOAD_TIME < 200) ? 200 : gEeprom.DTMF_PRELOAD_TIME;
 
     if (gEeprom.DTMF_SIDE_TONE)
-    {   // the user will also hear the transmitted tones
+    {     
         AUDIO_AudioPathOn();
         gEnableSpeaker = true;
     }

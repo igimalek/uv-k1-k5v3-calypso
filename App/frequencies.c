@@ -1,25 +1,10 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #include "frequencies.h"
 #include "misc.h"
 #include "settings.h"
 #include <assert.h>
 
-// the BK4819 has 2 bands it covers, 18MHz ~ 630MHz and 760MHz ~ 1300MHz
 
 #define BX4819_band1_lower 1800000
 #define BX4819_band2_upper 130000000
@@ -30,11 +15,11 @@ const freq_band_table_t BX4819_band2 = {84000000, BX4819_band2_upper};
 const freq_band_table_t frequencyBandTable[] =
 {
     #ifndef ENABLE_WIDE_RX
-        // QS original
+         
         [BAND1_50MHz ]={.lower =  5000000,  .upper =  7600000},
         [BAND7_470MHz]={.lower = 47000000,  .upper = 60000000},
     #else
-        // extended range
+         
         [BAND1_50MHz ]={.lower =  BX4819_band1_lower, .upper =  10800000},
         [BAND7_470MHz]={.lower = 47000000, .upper = BX4819_band2_upper},
     #endif
@@ -62,9 +47,8 @@ const freq_band_table_t frequencyBandTable[] =
 #endif
 
 
-// this order of steps has to be preserved for backwards compatibility with other/stock firmwares
 const uint16_t gStepFrequencyTable[] = {
-// standard steps
+ 
     [STEP_2_5kHz]   = 250,
     [STEP_5kHz]     = 500,
     [STEP_6_25kHz]  = 625,
@@ -72,7 +56,7 @@ const uint16_t gStepFrequencyTable[] = {
     [STEP_12_5kHz]  = 1250,
     [STEP_25kHz]    = 2500,
     [STEP_8_33kHz]  = 833,
-// custom steps
+ 
     [STEP_0_01kHz]  = 1,
     [STEP_0_05kHz]  = 5,
     [STEP_0_1kHz]   = 10,
@@ -148,7 +132,7 @@ uint32_t FREQUENCY_RoundToStep(uint32_t freq, uint16_t step)
 {
     if(step == 833) {
         uint32_t base = freq/2500*2500;
-        int chno = (freq - base) / 700;    // convert entered aviation 8.33Khz channel number scheme to actual frequency. 
+        int chno = (freq - base) / 700;     
         return base + (chno * 833) + (chno == 3);
     }
 
@@ -160,14 +144,14 @@ uint32_t FREQUENCY_RoundToStep(uint32_t freq, uint16_t step)
 }
 
 int32_t TX_freq_check(const uint32_t Frequency)
-{   // return '0' if TX frequency is allowed
-    // otherwise return '-1'
+{    
+     
 
     if (Frequency < frequencyBandTable[0].lower || Frequency > frequencyBandTable[BAND_N_ELEM - 1].upper)
-        return -1;  // not allowed outside this range
+        return -1;   
 
     if (Frequency >= BX4819_band1.upper && Frequency < BX4819_band2.lower)
-        return -1;  // BX chip does not work in this range
+        return -1;   
 
     switch (gSetting_F_LOCK)
     {
@@ -239,15 +223,15 @@ int32_t TX_freq_check(const uint32_t Frequency)
 
 #ifdef ENABLE_FEAT_F4HWN_GMRS_FRS_MURS
         case F_LOCK_GMRS_FRS_MURS:
-            // https://forums.radioreference.com/threads/the-great-unofficial-radioreference-frs-gmrs-murs-fact-sheet.275370/
+             
             if ((Frequency >= 46255000 && Frequency <= 46272500) ||
-                (Frequency >= 46755000 && Frequency <= 46772500)) // FRS/GMRS
+                (Frequency >= 46755000 && Frequency <= 46772500))  
                 return 0;
             if (Frequency == 15182000 || 
                 Frequency == 15188000 || 
                 Frequency == 15194000 || 
                 Frequency == 15457000 || 
-                Frequency == 15460000) // MURS
+                Frequency == 15460000)  
                 return 0;
             break;
 #endif
@@ -271,13 +255,13 @@ int32_t TX_freq_check(const uint32_t Frequency)
             break;
     }
 
-    // dis-allowed TX frequency
+     
     return -1;
 }
 
 int32_t RX_freq_check(const uint32_t Frequency)
-{   // return '0' if RX frequency is allowed
-    // otherwise return '-1'
+{    
+     
 
     if (Frequency < frequencyBandTable[0].lower || Frequency > frequencyBandTable[BAND_N_ELEM - 1].upper)
         return -1;
@@ -285,5 +269,5 @@ int32_t RX_freq_check(const uint32_t Frequency)
     if (Frequency >= BX4819_band1.upper && Frequency < BX4819_band2.lower)
         return -1;
 
-    return 0;   // OK frequency
+    return 0;    
 }

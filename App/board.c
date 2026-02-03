@@ -1,19 +1,4 @@
-/* Copyright 2025 muzkr https://github.com/muzkr
- * Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #include <string.h>
 
@@ -62,10 +47,10 @@
 void BOARD_GPIO_Init(void)
 {
     LL_IOP_GRP1_EnableClock(
-        LL_IOP_GRP1_PERIPH_GPIOA   //
-        | LL_IOP_GRP1_PERIPH_GPIOB //
-        | LL_IOP_GRP1_PERIPH_GPIOC //
-        | LL_IOP_GRP1_PERIPH_GPIOF //
+        LL_IOP_GRP1_PERIPH_GPIOA    
+        | LL_IOP_GRP1_PERIPH_GPIOB  
+        | LL_IOP_GRP1_PERIPH_GPIOC  
+        | LL_IOP_GRP1_PERIPH_GPIOF  
     );
 
     LL_GPIO_InitTypeDef InitStruct;
@@ -74,65 +59,55 @@ void BOARD_GPIO_Init(void)
     InitStruct.Pull = LL_GPIO_PULL_UP;
     InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
 
-    // ---------------------
-    // Input pins
 
     InitStruct.Mode = LL_GPIO_MODE_INPUT;
 
-    // Keypad rows: PB15:12
+     
     InitStruct.Pin = LL_GPIO_PIN_15 | LL_GPIO_PIN_14 | LL_GPIO_PIN_13 | LL_GPIO_PIN_12;
     LL_GPIO_Init(GPIOB, &InitStruct);
 
-    // PTT: PB10
+     
     InitStruct.Pin = LL_GPIO_PIN_10;
     LL_GPIO_Init(GPIOB, &InitStruct);
 
-    // -----------------------
-    //  Output pins
 
-    LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_6); // LCD A0
-    LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_2); // LCD CS
+    LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_6);  
+    LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_2);  
 
     InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
 
-    // Keypad cols: PB6:3
+     
     InitStruct.Pin = LL_GPIO_PIN_6 | LL_GPIO_PIN_5 | LL_GPIO_PIN_4 | LL_GPIO_PIN_3;
     LL_GPIO_Init(GPIOB, &InitStruct);
 
-    // Audio PA: PA8
-    // LCD A0: PA6
-    // SPI flash CS: PA3
+
     InitStruct.Pin = LL_GPIO_PIN_8 | LL_GPIO_PIN_6 | LL_GPIO_PIN_3;
     LL_GPIO_Init(GPIOA, &InitStruct);
 
-    // BK4819 SCK: B8
-    // BK4819 SDA: B9
-    // LCD CS: PB2
+
     InitStruct.Pin = LL_GPIO_PIN_9 | LL_GPIO_PIN_8 | LL_GPIO_PIN_2;
     LL_GPIO_Init(GPIOB, &InitStruct);
 
-    // TODO: conditional compile per ENABLE_FLASHLIGHT
-    // Flashlight: PC13
+
     InitStruct.Pin = LL_GPIO_PIN_13;
     LL_GPIO_Init(GPIOC, &InitStruct);
 
 #ifdef ENABLE_FMRADIO
-    // BK1080 SCK: PF5
-    // BK1080 SDA: PF6
+     
+     
     InitStruct.Pin = LL_GPIO_PIN_6 | LL_GPIO_PIN_5;
     LL_GPIO_Init(GPIOF, &InitStruct);
 #endif
 
-    // Backlight: PF8
-    // BK4819 CS: PF9
+
     InitStruct.Pin = LL_GPIO_PIN_9 | LL_GPIO_PIN_8  ;
     LL_GPIO_Init(GPIOF, &InitStruct);
 
 #ifndef ENABLE_SWD
-    // A14:13
+     
     InitStruct.Pin = LL_GPIO_PIN_14 | LL_GPIO_PIN_13;
     LL_GPIO_Init(GPIOA, &InitStruct);
-#endif // ENABLE_SWD
+#endif  
 }
 
 void BOARD_ADC_Init(void)

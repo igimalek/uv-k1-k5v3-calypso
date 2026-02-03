@@ -1,18 +1,4 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
+ 
 
 #include "dcs.h"
 
@@ -20,7 +6,7 @@
     #define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
 #endif
 
-// CTCSS Hz * 10
+ 
 const uint16_t CTCSS_Options[50] = {
      670,  693,  719,  744,  770,  797,  825,  854,  885,  915,
      948,  974, 1000, 1035, 1072, 1109, 1148, 1188, 1230, 1273,
