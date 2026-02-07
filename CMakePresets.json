@@ -65,16 +65,16 @@
                 "ENABLE_UART_RW_BK_REGS": false,
                 "ENABLE_NAVIG_LEFT_RIGHT": true,
                 "ENABLE_SWD": false,
-                "VERSION_STRING_1": "v1.3.1",
-                "VERSION_STRING_2": "v4.3.2"
+                "VERSION_STRING_1": "",
+                "VERSION_STRING_2": ""
             }
         },
         {
             "name": "Calypso",
             "inherits": "default",
             "cacheVariables": {
-                "EDITION_STRING": "Calypso",
-                "TARGET": "f4hwn.calypso"
+                "EDITION_STRING": "",
+                "TARGET": "ouro.calypso"
             }
         }
         

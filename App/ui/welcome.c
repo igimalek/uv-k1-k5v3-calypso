@@ -1,4 +1,4 @@
- 
+
 
 #include <string.h>
 
@@ -29,7 +29,7 @@ void UI_DisplayReleaseKeys(void)
     UI_PrintString("RELEASE", 0, 127, 1, 10);
     UI_PrintString("ALL KEYS", 0, 127, 3, 10);
 
-    ST7565_BlitStatusLine();   
+    ST7565_BlitStatusLine();  
     ST7565_BlitFullScreen();
 }
 
@@ -59,9 +59,9 @@ void UI_DisplayWelcome(void)
         memset(WelcomeString0, 0, sizeof(WelcomeString0));
         memset(WelcomeString1, 0, sizeof(WelcomeString1));
 
-         
+        
         PY25Q16_ReadBuffer(0x007020, WelcomeString0, 16);
-         
+        
         PY25Q16_ReadBuffer(0x007030, WelcomeString1, 16);
 
         sprintf(WelcomeString2, "%u.%02uV %u%%",
@@ -107,24 +107,45 @@ void UI_DisplayWelcome(void)
         UI_PrintString(WelcomeString1, 0, 127, 2, 10);
 
 #ifdef ENABLE_FEAT_F4HWN
-        UI_PrintStringSmallNormal(Version, 0, 128, 4);
+      //  UI_PrintStringSmallNormal(Edition, 0, 128, 4);
+        UI_PrintString(Edition, 0, 127, 4, 10);
 
-        UI_DrawLineBuffer(gFrameBuffer, 0, 31, 127, 31, 1);  
+        //*******************ЛИНИИ-LINES***************** */
 
-        for (uint8_t i = 18; i < 110; i++)
-        {
-            gFrameBuffer[4][i] ^= 0xFF;
+
+        for (uint8_t y = 47; y <= 57; y += 2) {
+            UI_DrawLineBuffer(gFrameBuffer, 30, y, 30, y, 1); // Левая вертикальная пунктирная(X = 30)
+        }
+        for (uint8_t y = 47; y <= 57; y += 2) {
+            UI_DrawLineBuffer(gFrameBuffer, 94, y, 94, y, 1);  // Правая вертикальная пунктирная (X = 90)
+        }
+        // Горизонтальные у тебя уже были правильные, 
+        // for (uint8_t i = 105; i <= 127; i += 2) {
+        //     UI_DrawLineBuffer(gFrameBuffer, i, 38, i, 38, 1); // Hory X
+        // }
+        // for (uint8_t i = 0; i <= 22; i += 2) {
+        //     UI_DrawLineBuffer(gFrameBuffer, i, 38, i, 38, 1); // Hory X
+        // }
+        for (uint8_t i = 0; i <= 127; i += 2) {
+            UI_DrawLineBuffer(gFrameBuffer, i, 15, i, 15, 1); // Hory X
+        }
+                for (uint8_t i = 0; i <= 127; i += 2) {
+            UI_DrawLineBuffer(gFrameBuffer, i, 30, i, 30, 1); // Hory X
         }
 
-        sprintf(WelcomeString3, "%s Edition", Edition);
-        UI_PrintStringSmallNormal(WelcomeString3, 0, 127, 6);
+ GUI_DisplaySmallest("BETA", 5, 46, false, true);
+ GUI_DisplaySmallest("TEST", 108, 46, false, true);
 
+
+
+        sprintf(WelcomeString3, "%s", Version);
+        UI_PrintStringSmallBold(WelcomeString3, 0, 127, 6);
 
 #else
         UI_PrintStringSmallNormal(Version, 0, 127, 6);
 #endif
 
-         
+        
         ST7565_BlitFullScreen();
 
         #ifdef ENABLE_FEAT_F4HWN_SCREENSHOT
