@@ -16,8 +16,10 @@ changes according to my personal favorisation:
 
 * improving AM reception by disabling AM_FIX and AM AGC adjustement plus adapting audio filter for AM acording to stock fw
 * enabling scrambler feature again (Armel forgive me)
+* new IU status symbols and fonts (many thanks to @imouroboros)
 
 
+![K1](https://github.com/user-attachments/assets/3eef14cf-26cc-41f5-a06a-31bdbd7b96a7)
 
 
 # A note for developers who intend to fork this project
