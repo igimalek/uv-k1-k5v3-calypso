@@ -69,13 +69,11 @@ void Main(void)
     VCP_Init();
 #endif
 
-
     memset(gFrameBuffer, 0, sizeof(gFrameBuffer));
     memset(gFrameBufferOld, 1, sizeof(gFrameBufferOld));
     memset(gStatusLine,  0, sizeof(gStatusLine));
     memset(gStatusLineOld,  1, sizeof(gStatusLineOld));
 
-     
     memset(gDTMF_String, '-', sizeof(gDTMF_String));
     gDTMF_String[sizeof(gDTMF_String) - 1] = 0;
 
@@ -105,9 +103,7 @@ void Main(void)
 
     BATTERY_GetReadings(false);
 
-
     BOOT_Mode_t  BootMode = BOOT_GetMode();
-
 
     if (BootMode == BOOT_MODE_F_LOCK)
     {
@@ -135,7 +131,6 @@ void Main(void)
         gMenuListCount++;  
     }
 
-     
     if (GPIO_IsPttPressed() ||
          KEYBOARD_Poll() != KEY_INVALID ||
          BootMode != BOOT_MODE_NORMAL)
@@ -143,7 +138,6 @@ void Main(void)
         UI_DisplayReleaseKeys();
         BACKLIGHT_TurnOn();
 
-         
         for (int i = 0; i < 50;)
         {
             i = (!GPIO_IsPttPressed() && KEYBOARD_Poll() == KEY_INVALID) ? i + 1 : 0;
@@ -195,7 +189,6 @@ void Main(void)
             UI_DisplayLock();
             bIsInLockScreen = false;
 
-             
             for (int i = 0; i < 50;)
             {
                 i = (GPIO_CheckBit(&GPIOC->DATA, GPIOC_PIN_PTT) && KEYBOARD_Poll() == KEY_INVALID) ? i + 1 : 0;
@@ -208,7 +201,6 @@ void Main(void)
 #endif
 
         BOOT_ProcessMode(BootMode);
-
 
         gUpdateStatus = true;
 
@@ -235,7 +227,6 @@ void Main(void)
         RADIO_ConfigureNOAA();
 #endif
     }
-
 
     #ifdef ENABLE_FEAT_F4HWN_RESUME_STATE
         if (gEeprom.CURRENT_STATE == 2 || gEeprom.CURRENT_STATE == 5) {
@@ -266,19 +257,16 @@ void Main(void)
         #endif
     #endif
 
-
     while (true)
     {
          
         APP_Update();
 
-         
         if (gNextTimeslice)
         {
              
             APP_TimeSlice10ms();
 
-             
             if (gNextTimeslice_500ms)
             {
                 APP_TimeSlice500ms();

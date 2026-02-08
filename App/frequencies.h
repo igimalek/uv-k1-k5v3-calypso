@@ -1,4 +1,4 @@
- 
+
 
 #ifndef FREQUENCIES_H
 #define FREQUENCIES_H
@@ -30,7 +30,7 @@ typedef enum  {
 extern const freq_band_table_t frequencyBandTable[];
 
 typedef enum {
- 
+
     STEP_2_5kHz,
     STEP_5kHz,
     STEP_6_25kHz,
@@ -38,7 +38,7 @@ typedef enum {
     STEP_12_5kHz,
     STEP_25kHz,
     STEP_8_33kHz,
- 
+
     STEP_0_01kHz,
     STEP_0_05kHz,
     STEP_0_1kHz,
@@ -58,7 +58,6 @@ typedef enum {
     STEP_500kHz,
     STEP_N_ELEM
 } STEP_Setting_t;
-
 
 extern const uint16_t gStepFrequencyTable[];
 

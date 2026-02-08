@@ -1,4 +1,19 @@
-  
+/* Copyright 2025 muzkr https://github.com/muzkr
+ * Copyright 2023 Dual Tachyon
+ * https://github.com/DualTachyon
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *     Unless required by applicable law or agreed to in writing, software
+ *     distributed under the License is distributed on an "AS IS" BASIS,
+ *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *     See the License for the specific language governing permissions and
+ *     limitations under the License.
+ */
 
 #include <string.h>
 
@@ -42,7 +57,7 @@
     #define DMA_CHANNEL LL_DMA_CHANNEL_2
 #endif
 
-  
+// !! Make sure this is correct!
 #define MAX_REPLY_SIZE 144
 
 typedef struct {
@@ -137,7 +152,6 @@ typedef struct {
     } Data;
 } REPLY_052D_t;
 
-
 #ifdef ENABLE_EXTRA_UART_CMD
 typedef struct {
     Header_t Header;
@@ -160,7 +174,6 @@ typedef union
     };
 } UART_Command_t __attribute__ ((aligned (4)));
 
-
 #if defined(ENABLE_UART)
     static uint32_t UART_Timestamp;
     static UART_Command_t UART_Command;
@@ -172,7 +185,7 @@ typedef union
     static uint16_t VCP_ReadIndex;
 #endif
 
-  
+// static bool     bIsEncrypted = true;
 #define bIsEncrypted true
 
 #ifdef ENABLE_USB
@@ -180,7 +193,7 @@ static void SendReply_VCP(void *pReply, uint16_t Size)
 {
     static uint8_t VCP_ReplyBuf[MAX_REPLY_SIZE + sizeof(Header_t) + sizeof(Footer_t)];
 
-      
+    // !!
     if (Size > MAX_REPLY_SIZE)
     {
         return;
@@ -203,7 +216,9 @@ static void SendReply_VCP(void *pReply, uint16_t Size)
     pHeader->ID = 0xCDAB;
     pHeader->Size = Size;
 
-
+    // VCP_Send((uint8_t *)&Header, sizeof(Header));
+    // VCP_Send(pReply, Size);
+   
     if (bIsEncrypted)
     {
         pFooter->Padding[0] = Obfuscation[(Size + 0) % 16] ^ 0xFF;
@@ -216,10 +231,11 @@ static void SendReply_VCP(void *pReply, uint16_t Size)
     }
     pFooter->ID = 0xBADC;
 
+    // VCP_Send((uint8_t *)&Footer, sizeof(Footer));
 
     VCP_SendAsync(VCP_ReplyBuf, sizeof(Header_t) + Size + sizeof(Footer_t));
 }
-#endif   
+#endif // ENABLE_USB
 
 static void SendReply(uint32_t Port, void *pReply, uint16_t Size)
 {
@@ -283,13 +299,29 @@ static void SendVersion(uint32_t Port)
 #ifndef ENABLE_FEAT_F4HWN
 static bool IsBadChallenge(const uint32_t *pKey, const uint32_t *pIn, const uint32_t *pResponse)
 {
+    // PY32 has no AES hardware
+    /*
+    unsigned int i;
+    uint32_t     IV[4];
 
+    IV[0] = 0;
+    IV[1] = 0;
+    IV[2] = 0;
+    IV[3] = 0;
+
+    AES_Encrypt(pKey, IV, pIn, IV, true);
+
+    for (i = 0; i < 4; i++)
+        if (IV[i] != pResponse[i])
+            return true;
+    */
 
     return false;
 }
 #endif
 
-
+// session init, sends back version info and state
+// timestamp is a session id really
 static void CMD_0514(uint32_t Port, const uint8_t *pBuffer)
 {
     const CMD_0514_t *pCmd = (const CMD_0514_t *)pBuffer;
@@ -312,15 +344,15 @@ static void CMD_0514(uint32_t Port, const uint8_t *pBuffer)
     gFmRadioCountdown_500ms = fm_radio_countdown_500ms;
 #endif
 
-    gSerialConfigCountDown_500ms = 12;   
+    gSerialConfigCountDown_500ms = 12; // 6 sec
     
-      
+    // turn the LCD backlight off
     BACKLIGHT_TurnOff();
 
     SendVersion(Port);
 }
 
-  
+// read eeprom
 static void CMD_051B(uint32_t Port, const uint8_t *pBuffer)
 {
     const CMD_051B_t *pCmd = (const CMD_051B_t *)pBuffer;
@@ -350,7 +382,7 @@ static void CMD_051B(uint32_t Port, const uint8_t *pBuffer)
     if (pCmd->Timestamp != Timestamp)
         return;
 
-    gSerialConfigCountDown_500ms = 12;   
+    gSerialConfigCountDown_500ms = 12; // 6 sec
 
     #ifdef ENABLE_FMRADIO
         gFmRadioCountdown_500ms = fm_radio_countdown_500ms;
@@ -373,7 +405,7 @@ static void CMD_051B(uint32_t Port, const uint8_t *pBuffer)
     SendReply(Port, &Reply, pCmd->Size + 8);
 }
 
-  
+// write eeprom
 static void CMD_051D(uint32_t Port, const uint8_t *pBuffer)
 {
     const CMD_051D_t *pCmd = (const CMD_051D_t *)pBuffer;
@@ -404,7 +436,7 @@ static void CMD_051D(uint32_t Port, const uint8_t *pBuffer)
     if (pCmd->Timestamp != Timestamp)
         return;
 
-    gSerialConfigCountDown_500ms = 12;   
+    gSerialConfigCountDown_500ms = 12; // 6 sec
     
     bReloadEeprom = false;
 
@@ -443,7 +475,7 @@ static void CMD_051D(uint32_t Port, const uint8_t *pBuffer)
 }
 
 #ifdef ENABLE_EXTRA_UART_CMD
-  
+// read RSSI
 static void CMD_0527(uint32_t Port)
 {
     REPLY_0527_t Reply;
@@ -457,7 +489,7 @@ static void CMD_0527(uint32_t Port)
     SendReply(Port, &Reply, sizeof(Reply));
 }
 
-  
+// read ADC
 static void CMD_0529(uint32_t Port)
 {
     REPLY_0529_t Reply;
@@ -465,7 +497,7 @@ static void CMD_0529(uint32_t Port)
     Reply.Header.ID   = 0x52A;
     Reply.Header.Size = sizeof(Reply.Data);
 
-      
+    // Original doesn't actually send current!
     BOARD_ADC_GetBatteryInfo(&Reply.Data.Voltage, &Reply.Data.Current);
 
     SendReply(Port, &Reply, sizeof(Reply));
@@ -514,7 +546,11 @@ static void CMD_052D(uint32_t Port, const uint8_t *pBuffer)
 }
 #endif
 
-
+// session init, sends back version info and state
+// timestamp is a session id really
+// this command also disables dual watch, crossband, 
+// DTMF side tones, freq reverse, PTT ID, DTMF decoding, frequency offset
+// exits power save, sets main VFO to upper,
 static void CMD_052F(uint32_t Port, const uint8_t *pBuffer)
 {
     const CMD_052F_t *pCmd = (const CMD_052F_t *)pBuffer;
@@ -539,7 +575,7 @@ static void CMD_052F(uint32_t Port, const uint8_t *pBuffer)
     if (gCurrentFunction == FUNCTION_POWER_SAVE)
         FUNCTION_Select(FUNCTION_FOREGROUND);
 
-    gSerialConfigCountDown_500ms = 12;   
+    gSerialConfigCountDown_500ms = 12; // 6 sec
 
     if(0) {}
 #if defined(ENABLE_UART)
@@ -555,7 +591,7 @@ static void CMD_052F(uint32_t Port, const uint8_t *pBuffer)
     }
 #endif
 
-      
+    // turn the LCD backlight off
     BACKLIGHT_TurnOff();
 
     SendVersion(Port);
@@ -705,6 +741,13 @@ bool UART_IsCommandAvailable(uint32_t Port)
 
     *pReadPointer = TailIndex;
 
+    /* --
+    if (pUART_Command->Header.ID == 0x0514)
+        bIsEncrypted = false;
+
+    if (pUART_Command->Header.ID == 0x6902)
+        bIsEncrypted = true;
+    -- */
 
     if (bIsEncrypted)
     {
@@ -754,10 +797,10 @@ void UART_HandleCommand(uint32_t Port)
             CMD_051D(Port, pUART_Command->Buffer);
             break;
 
-        case 0x051F:      
+        case 0x051F:    // Not implementing non-authentic command
             break;
 
-        case 0x0521:      
+        case 0x0521:    // Not implementing non-authentic command
             break;
 
 #ifdef ENABLE_EXTRA_UART_CMD
@@ -780,7 +823,7 @@ void UART_HandleCommand(uint32_t Port)
             break;
 #endif
 
-        case 0x05DD:   
+        case 0x05DD: // reset
             #if defined(ENABLE_OVERLAY)
                 overlay_FLASH_RebootToBootloader();
             #else
@@ -797,9 +840,9 @@ void UART_HandleCommand(uint32_t Port)
             CMD_0602_WriteBK4819Reg(pUART_Command->Buffer);
             break;
 #endif
-    }   
+    } // switch
 
     #ifdef ENABLE_FEAT_F4HWN_SCREENSHOT
-        gUART_LockScreenshot = 20;   
+        gUART_LockScreenshot = 20; // lock screenshot
     #endif
 }

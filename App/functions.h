@@ -1,4 +1,4 @@
- 
+
 
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
@@ -7,13 +7,13 @@
 
 enum FUNCTION_Type_t
 {
-    FUNCTION_FOREGROUND = 0,   
-    FUNCTION_TRANSMIT,         
-    FUNCTION_MONITOR,          
-    FUNCTION_INCOMING,         
-    FUNCTION_RECEIVE,          
-    FUNCTION_POWER_SAVE,       
-    FUNCTION_BAND_SCOPE,       
+    FUNCTION_FOREGROUND = 0,  
+    FUNCTION_TRANSMIT,        
+    FUNCTION_MONITOR,         
+    FUNCTION_INCOMING,        
+    FUNCTION_RECEIVE,         
+    FUNCTION_POWER_SAVE,      
+    FUNCTION_BAND_SCOPE,      
     FUNCTION_N_ELEM
 };
 

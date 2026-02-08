@@ -1,4 +1,4 @@
- 
+
 
 #ifndef UI_SCANNER_H
 #define UI_SCANNER_H

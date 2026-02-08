@@ -1,4 +1,4 @@
- 
+  
 
 #ifdef ENABLE_PWRON_PASSWORD
 
@@ -46,7 +46,6 @@ void UI_DisplayLock(void)
     {
         while (!gNextTimeslice) {}
 
-
         gNextTimeslice = false;
 
         Key = KEYBOARD_Poll();
@@ -77,7 +76,7 @@ void UI_DisplayLock(void)
                         case KEY_9:
                             INPUTBOX_Append(Key - KEY_0);
 
-                            if (gInputBoxIndex < 6)    
+                            if (gInputBoxIndex < 6)     
                             {
                                 Beep = BEEP_1KHZ_60MS_OPTIONAL;
                             }

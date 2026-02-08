@@ -142,7 +142,6 @@ void FUNCTION_Transmit()
     DTMF_clear_RX();
 #endif
 
-     
     gDTMF_RX_live_timeout = 0;
     memset(gDTMF_RX_live, 0, sizeof(gDTMF_RX_live));
 
@@ -180,7 +179,6 @@ void FUNCTION_Transmit()
 
     RADIO_SetTxParameters();
 
-     
     BK4819_ToggleGpioOut(BK4819_GPIO5_PIN1_RED, true);
 
     DTMF_Reply();
@@ -225,7 +223,6 @@ void FUNCTION_Transmit()
     }
 }
 
-
 void FUNCTION_Select(FUNCTION_Type_t Function)
 {
     const FUNCTION_Type_t PreviousFunction = gCurrentFunction;
@@ -238,7 +235,6 @@ void FUNCTION_Select(FUNCTION_Type_t Function)
         gRxIdleMode = false;
         UI_DisplayStatus();
     }
-
 
     if (Function == FUNCTION_FOREGROUND) {
         FUNCTION_Foreground(PreviousFunction);

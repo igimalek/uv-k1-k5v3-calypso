@@ -1,4 +1,4 @@
- 
+
 
 #ifndef UI_UI_H
 #define UI_UI_H
@@ -19,7 +19,7 @@ void UI_DisplayPopup(const char *string);
 
 void UI_DrawPixelBuffer(uint8_t (*buffer)[128], uint8_t x, uint8_t y, bool black);
 #ifdef ENABLE_FEAT_F4HWN
-     
+    
     void PutPixel(uint8_t x, uint8_t y, bool fill);
     void PutPixelStatus(uint8_t x, uint8_t y, bool fill);
     void GUI_DisplaySmallest(const char *pString, uint8_t x, uint8_t y, bool statusbar, bool fill);

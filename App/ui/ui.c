@@ -23,21 +23,15 @@
 #include "ui/ui.h"
 #include "../misc.h"
 
-
 GUI_DisplayType_t gScreenToDisplay;
 
- 
 GUI_DisplayType_t gRequestDisplayScreen = DISPLAY_INVALID;
 
- 
 uint8_t           gAskForConfirmation;
 
- 
 bool              gAskToSave;
 
- 
 bool              gAskToDelete;
-
 
 void (*UI_DisplayFunctions[])(void) = {
     [DISPLAY_MAIN] = &UI_DisplayMain,
@@ -51,9 +45,7 @@ void (*UI_DisplayFunctions[])(void) = {
 #endif
 };
 
- 
 static_assert(ARRAY_SIZE(UI_DisplayFunctions) == DISPLAY_N_ELEM);
-
 
 void GUI_DisplayScreen(void)
 {
@@ -63,23 +55,18 @@ void GUI_DisplayScreen(void)
     }
 }
 
-
 void GUI_SelectNextDisplay(GUI_DisplayType_t Display)
 {
     if (Display == DISPLAY_INVALID)
         return;
 
-     
     if (gScreenToDisplay != Display)
     {
 
-
         DTMF_clear_input_box();
-
 
         gInputBoxIndex       = 0;       
         gIsInSubMenu         = false;   
-
 
         gCssBackgroundScan   = false;   
         gScanStateDir        = SCAN_OFF;  
@@ -88,19 +75,15 @@ void GUI_SelectNextDisplay(GUI_DisplayType_t Display)
         gFM_ScanState        = FM_SCAN_OFF;  
 #endif
 
-
         gAskForConfirmation  = 0;       
         gAskToSave           = false;   
         gAskToDelete         = false;   
 
-
         gWasFKeyPressed      = false;   
 
-         
         gUpdateStatus        = true;
     }
 
-     
     gScreenToDisplay = Display;
     gUpdateDisplay   = true;
 }

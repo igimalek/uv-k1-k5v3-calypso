@@ -1,4 +1,4 @@
- 
+
 
 #ifdef ENABLE_AIRCOPY
 
@@ -43,10 +43,10 @@ void UI_DisplayAircopy(void)
     if (gInputBoxIndex == 0) {
         uint32_t frequency = gRxVfo->freq_config_RX.Frequency;
         sprintf(String, "%3u.%05u", frequency / 100000, frequency % 100000);
-         
+        
         UI_PrintStringSmallNormal(String + 7, 97, 0, 3);
         String[7] = 0;
-         
+        
         UI_DisplayFrequency(String, 16, 2, false);
     } else {
         const char *ascii = INPUTBOX_GetAscii();
@@ -64,7 +64,7 @@ void UI_DisplayAircopy(void)
         sprintf(String, "SND:%02u.%02u%%", percent / 100, percent % 100);
     }
 
-     
+    
     if(gAircopyStep != 0)
     {
         UI_PrintString(String, 2, 127, 5, 8);
@@ -83,7 +83,7 @@ void UI_DisplayAircopy(void)
 
     if(gAirCopyBlockNumber + gErrorsDuringAirCopy != 0)
     {
-         
+        
         if(gErrorsDuringAirCopy != lErrorsDuringAirCopy)
         {
             set_bit(crc, gAirCopyBlockNumber + gErrorsDuringAirCopy);

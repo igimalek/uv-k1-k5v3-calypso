@@ -69,9 +69,7 @@ typedef struct VFO_Info_t
     FREQ_Config_t  freq_config_RX;
     FREQ_Config_t  freq_config_TX;
 
-
     FREQ_Config_t *pRX;
-
 
     FREQ_Config_t *pTX;
 
@@ -117,13 +115,10 @@ typedef struct VFO_Info_t
     char           Name[16];
 } VFO_Info_t;
 
-
 extern VFO_Info_t    *gTxVfo;
-
 
 extern VFO_Info_t    *gRxVfo;
 
- 
 extern VFO_Info_t    *gCurrentVfo;
 
 extern DCS_CodeType_t gCurrentCodeType;

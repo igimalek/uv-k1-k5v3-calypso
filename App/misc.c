@@ -1,74 +1,74 @@
- 
+
 
 #include <string.h>
 
 #include "misc.h"
 #include "settings.h"
 
-const uint8_t     fm_radio_countdown_500ms         =  2000 / 500;   
-const uint16_t    fm_play_countdown_scan_10ms      =   100 / 10;    
-const uint16_t    fm_play_countdown_noscan_10ms    =  1200 / 10;    
-const uint16_t    fm_restore_countdown_10ms        =  5000 / 10;    
+const uint8_t     fm_radio_countdown_500ms         =  2000 / 500;  
+const uint16_t    fm_play_countdown_scan_10ms      =   100 / 10;   
+const uint16_t    fm_play_countdown_noscan_10ms    =  1200 / 10;   
+const uint16_t    fm_restore_countdown_10ms        =  5000 / 10;   
 
-const uint8_t     vfo_state_resume_countdown_500ms =  2500 / 500;   
+const uint8_t     vfo_state_resume_countdown_500ms =  2500 / 500;  
 
-const uint8_t     menu_timeout_500ms               =  20000 / 500;   
-const uint16_t    menu_timeout_long_500ms          = 120000 / 500;   
+const uint8_t     menu_timeout_500ms               =  20000 / 500;  
+const uint16_t    menu_timeout_long_500ms          = 120000 / 500;  
 
-const uint8_t     DTMF_RX_live_timeout_500ms       =  6000 / 500;   
+const uint8_t     DTMF_RX_live_timeout_500ms       =  6000 / 500;  
 #ifdef ENABLE_DTMF_CALLING
-const uint8_t     DTMF_RX_timeout_500ms            = 10000 / 500;   
-const uint8_t     DTMF_decode_ring_countdown_500ms = 15000 / 500;   
-const uint8_t     DTMF_txstop_countdown_500ms      =  3000 / 500;   
+const uint8_t     DTMF_RX_timeout_500ms            = 10000 / 500;  
+const uint8_t     DTMF_decode_ring_countdown_500ms = 15000 / 500;  
+const uint8_t     DTMF_txstop_countdown_500ms      =  3000 / 500;  
 #endif
 
-const uint8_t     key_input_timeout_500ms          =  8000 / 500;   
+const uint8_t     key_input_timeout_500ms          =  8000 / 500;  
 
-const uint16_t    key_repeat_delay_10ms            =   400 / 10;    
-const uint16_t    key_repeat_10ms                  =    80 / 10;    
-const uint16_t    key_debounce_10ms                =    20 / 10;    
+const uint16_t    key_repeat_delay_10ms            =   400 / 10;   
+const uint16_t    key_repeat_10ms                  =    80 / 10;   
+const uint16_t    key_debounce_10ms                =    20 / 10;   
 
-const uint8_t     scan_delay_10ms                  =   210 / 10;    
+const uint8_t     scan_delay_10ms                  =   210 / 10;   
 
 #ifdef ENABLE_FEAT_F4HWN
-    const uint16_t    dual_watch_count_after_tx_10ms   =  420;          
-    const uint16_t    dual_watch_count_after_rx_10ms   =  1000 / 10;    
-    const uint16_t    dual_watch_count_after_1_10ms    =  5000 / 10;    
-    const uint16_t    dual_watch_count_after_2_10ms    =  420;          
-    const uint16_t    dual_watch_count_noaa_10ms       =    70 / 10;    
+    const uint16_t    dual_watch_count_after_tx_10ms   =  420;         
+    const uint16_t    dual_watch_count_after_rx_10ms   =  1000 / 10;   
+    const uint16_t    dual_watch_count_after_1_10ms    =  5000 / 10;   
+    const uint16_t    dual_watch_count_after_2_10ms    =  420;         
+    const uint16_t    dual_watch_count_noaa_10ms       =    70 / 10;   
 #else
-    const uint16_t    dual_watch_count_after_tx_10ms   =  3600 / 10;    
-    const uint16_t    dual_watch_count_after_rx_10ms   =  1000 / 10;    
-    const uint16_t    dual_watch_count_after_1_10ms    =  5000 / 10;    
-    const uint16_t    dual_watch_count_after_2_10ms    =  3600 / 10;    
-    const uint16_t    dual_watch_count_noaa_10ms       =    70 / 10;    
+    const uint16_t    dual_watch_count_after_tx_10ms   =  3600 / 10;   
+    const uint16_t    dual_watch_count_after_rx_10ms   =  1000 / 10;   
+    const uint16_t    dual_watch_count_after_1_10ms    =  5000 / 10;   
+    const uint16_t    dual_watch_count_after_2_10ms    =  3600 / 10;   
+    const uint16_t    dual_watch_count_noaa_10ms       =    70 / 10;   
 #endif
 
 #ifdef ENABLE_VOX
-    const uint16_t dual_watch_count_after_vox_10ms  =   200 / 10;    
+    const uint16_t dual_watch_count_after_vox_10ms  =   200 / 10;   
 #endif
-const uint16_t    dual_watch_count_toggle_10ms     =   100 / 10;    
+const uint16_t    dual_watch_count_toggle_10ms     =   100 / 10;   
 
-const uint16_t    scan_pause_delay_in_1_10ms       =  5000 / 10;    
-const uint16_t    scan_pause_delay_in_2_10ms       =   500 / 10;    
-const uint16_t    scan_pause_delay_in_3_10ms       =   200 / 10;    
-const uint16_t    scan_pause_delay_in_4_10ms       =   300 / 10;    
-const uint16_t    scan_pause_delay_in_5_10ms       =  1000 / 10;    
-const uint16_t    scan_pause_delay_in_6_10ms       =   100 / 10;    
-const uint16_t    scan_pause_delay_in_7_10ms       =  3600 / 10;    
+const uint16_t    scan_pause_delay_in_1_10ms       =  5000 / 10;   
+const uint16_t    scan_pause_delay_in_2_10ms       =   500 / 10;   
+const uint16_t    scan_pause_delay_in_3_10ms       =   200 / 10;   
+const uint16_t    scan_pause_delay_in_4_10ms       =   300 / 10;   
+const uint16_t    scan_pause_delay_in_5_10ms       =  1000 / 10;   
+const uint16_t    scan_pause_delay_in_6_10ms       =   100 / 10;   
+const uint16_t    scan_pause_delay_in_7_10ms       =  3600 / 10;   
 
-const uint16_t    battery_save_count_10ms          = 10000 / 10;    
+const uint16_t    battery_save_count_10ms          = 10000 / 10;   
 
-const uint16_t    power_save1_10ms                 =   100 / 10;    
-const uint16_t    power_save2_10ms                 =   200 / 10;    
+const uint16_t    power_save1_10ms                 =   100 / 10;   
+const uint16_t    power_save2_10ms                 =   200 / 10;   
 
 #ifdef ENABLE_VOX
-    const uint16_t    vox_stop_count_down_10ms         =  1000 / 10;    
+    const uint16_t    vox_stop_count_down_10ms         =  1000 / 10;   
 #endif
 
-const uint16_t    NOAA_countdown_10ms              =  5000 / 10;    
-const uint16_t    NOAA_countdown_2_10ms            =   500 / 10;    
-const uint16_t    NOAA_countdown_3_10ms            =   200 / 10;    
+const uint16_t    NOAA_countdown_10ms              =  5000 / 10;   
+const uint16_t    NOAA_countdown_2_10ms            =   500 / 10;   
+const uint16_t    NOAA_countdown_3_10ms            =   200 / 10;   
 
 const uint32_t    gDefaultAesKey[4]                = {0x4AA5CC60, 0x0312CC5F, 0xFFD2DABB, 0x6BBA7F92};
 
@@ -91,7 +91,6 @@ uint8_t           gSetting_F_LOCK;
 bool              gSetting_ScrambleEnable;
 
 enum BacklightOnRxTx_t gSetting_backlight_on_tx_rx;
-
 
 #ifdef ENABLE_FEAT_F4HWN_SLEEP 
     uint8_t       gSetting_set_off = 1;
@@ -131,7 +130,7 @@ enum BacklightOnRxTx_t gSetting_backlight_on_tx_rx;
 bool              gSetting_live_DTMF_decoder;
 uint8_t           gSetting_battery_text;
 
-bool              gMonitor = false;            
+bool              gMonitor = false;           
 
 uint32_t          gCustomAesKey[4];
 bool              bHasCustomAesKey;
@@ -171,7 +170,7 @@ volatile bool     gTxTimeoutReached;
         volatile uint16_t gRxTimerCountdown_500ms;
     #endif
     #ifdef ENABLE_FEAT_F4HWN_SCREENSHOT
-         volatile uint8_t  gUART_LockScreenshot = 0;  
+         volatile uint8_t  gUART_LockScreenshot = 0; 
     #endif
 #endif
 
@@ -289,7 +288,6 @@ volatile uint8_t  boot_counter_10ms;
 
 uint8_t           gIsLocked = 0xFF;
 
-
 #ifdef ENABLE_FEAT_F4HWN
     bool          gK5startup = true;
     bool          gBackLight = false;
@@ -301,7 +299,6 @@ uint8_t           gIsLocked = 0xFF;
 #endif
 
 inline void FUNCTION_NOP() { ; }
-
 
 int32_t NUMBER_AddWithWraparound(int32_t Base, int32_t Add, int32_t LowerLimit, int32_t UpperLimit)
 {

@@ -1,4 +1,4 @@
- 
+
 
 #ifndef UI_BATTERY_H
 #define UI_BATTERY_H

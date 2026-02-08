@@ -31,7 +31,6 @@ void UI_DisplayFM(void)
     
     UI_PrintStringSmallNormal(String, 1, 0, 6);
 
-
     if (gAskToSave) {
         pPrintStr = "SAVE?";
     } else if (gAskToDelete) {

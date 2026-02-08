@@ -4,7 +4,7 @@
 #include "functions.h"
 #include "misc.h"
 #include "settings.h"
-  
+//#include "debugging.h"
 
 int8_t            gScanStateDir;
 bool              gScanKeepResult;
@@ -52,7 +52,7 @@ void CHFRSCANNER_Start(const bool storeBackupSettings, const int8_t scan_directi
     gScanStateDir    = scan_direction;
 
     if (IS_MR_CHANNEL(gNextMrChannel))
-    {     
+    {   // channel mode
         if (storeBackupSettings) {
             initialFrqOrChan = gRxVfo->CHANNEL_SAVE;
             lastFoundFrqOrChan = initialFrqOrChan;
@@ -60,7 +60,7 @@ void CHFRSCANNER_Start(const bool storeBackupSettings, const int8_t scan_directi
         NextMemChannel();
     }
     else
-    {     
+    {   // frequency mode
         if (storeBackupSettings) {
             initialFrqOrChan = gRxVfo->freq_config_RX.Frequency;
             lastFoundFrqOrChan = initialFrqOrChan;
@@ -78,6 +78,29 @@ void CHFRSCANNER_Start(const bool storeBackupSettings, const int8_t scan_directi
     gScanPauseMode         = false;
 }
 
+/*
+void CHFRSCANNER_ContinueScanning(void)
+{
+    if (IS_FREQ_CHANNEL(gNextMrChannel))
+    {
+        if (gCurrentFunction == FUNCTION_INCOMING)
+            APP_StartListening(gMonitor ? FUNCTION_MONITOR : FUNCTION_RECEIVE);
+        else
+            NextFreqChannel();  // switch to next frequency
+    }
+    else
+    {
+        if (gCurrentCodeType == CODE_TYPE_OFF && gCurrentFunction == FUNCTION_INCOMING)
+            APP_StartListening(gMonitor ? FUNCTION_MONITOR : FUNCTION_RECEIVE);
+        else
+            NextMemChannel();    // switch to next channel
+    }
+    
+    gScanPauseMode      = false;
+    gRxReceptionMode    = RX_MODE_NONE;
+    gScheduleScanListen = false;
+}
+*/
 
 void CHFRSCANNER_ContinueScanning(void)
 {
@@ -107,21 +130,56 @@ void CHFRSCANNER_Found(void)
         gScanPauseDelayIn_10ms = 0;
     }
 
-      
+    // gScheduleScanListen is always false...
     gScheduleScanListen = false;
 
+    /*
+    if(gEeprom.SCAN_RESUME_MODE > 1 && gEeprom.SCAN_RESUME_MODE < 26)
+    {
+        if (!gScanPauseMode)
+        {
+            gScanPauseDelayIn_10ms = scan_pause_delay_in_5_10ms * (gEeprom.SCAN_RESUME_MODE - 1) * 5;
+            gScheduleScanListen    = false;
+            gScanPauseMode         = true;
+        }
+    }
+    else
+    {
+        gScanPauseDelayIn_10ms = 0;
+        gScheduleScanListen    = false;
+    }
+    */
+
+    /*
+    switch (gEeprom.SCAN_RESUME_MODE)
+    {
+        case SCAN_RESUME_TO:
+            if (!gScanPauseMode)
+            {
+                gScanPauseDelayIn_10ms = scan_pause_delay_in_1_10ms;
+                gScheduleScanListen    = false;
+                gScanPauseMode         = true;
+            }
+            break;
+
+        case SCAN_RESUME_CO:
+        case SCAN_RESUME_SE:
+            gScanPauseDelayIn_10ms = 0;
+            gScheduleScanListen    = false;
+            break;
+    }
+    */
 
 #ifdef ENABLE_FEAT_F4HWN
     lastFoundFrqOrChanOld = lastFoundFrqOrChan;
 #endif
 
-    if (IS_MR_CHANNEL(gRxVfo->CHANNEL_SAVE)) {   
+    if (IS_MR_CHANNEL(gRxVfo->CHANNEL_SAVE)) { //memory scan
         lastFoundFrqOrChan = gRxVfo->CHANNEL_SAVE;
     }
-    else {   
+    else { // frequency scan
         lastFoundFrqOrChan = gRxVfo->freq_config_RX.Frequency;
     }
-
 
     gScanKeepResult = true;
 }
@@ -180,7 +238,7 @@ static void NextFreqChannel(void)
     RADIO_SetupRegisters(true);
 
 #ifdef ENABLE_FASTER_CHANNEL_SCAN
-    gScanPauseDelayIn_10ms = 9;     
+    gScanPauseDelayIn_10ms = 9;   // 90ms
 #else
     gScanPauseDelayIn_10ms = scan_pause_delay_in_6_10ms;
 #endif
@@ -197,6 +255,7 @@ static void NextMemChannel(void)
     const unsigned int  prev_chan    = gNextMrChannel;
     unsigned int        chan         = 0;
 
+    //char str[64] = "";
 
     if (enabled)
     {
@@ -204,7 +263,9 @@ static void NextMemChannel(void)
         {
             case SCAN_NEXT_CHAN_SCANLIST1:
                 prev_mr_chan = gNextMrChannel;
-
+    
+                //sprintf(str, "-> Chan1 %d\n", chan1 + 1);
+                //LogUart(str);
 
                 if (chan1 >= 0)
                 {
@@ -219,6 +280,8 @@ static void NextMemChannel(void)
                 [[fallthrough]];
             case SCAN_NEXT_CHAN_SCANLIST2:
 
+                //sprintf(str, "-> Chan2 %d\n", chan2 + 1);
+                //LogUart(str);
 
                 if (chan2 >= 0)
                 {
@@ -231,10 +294,33 @@ static void NextMemChannel(void)
                 }
 
                 [[fallthrough]];
-              
-              
+            /*
+            case SCAN_NEXT_CHAN_SCANLIST3:
+                if (chan3 >= 0)
+                {
+                    if (RADIO_CheckValidChannel(chan3, false, 0))
+                    {
+                        currentScanList = SCAN_NEXT_CHAN_SCANLIST3;
+                        gNextMrChannel   = chan3;
+                        break;
+                    }
+                }
+                [[fallthrough]];
+            */
+            // this bit doesn't yet work if the other VFO is a frequency
             case SCAN_NEXT_CHAN_DUAL_WATCH:
-
+                // dual watch is enabled - include the other VFO in the scan
+//              if (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF)
+//              {
+//                  chan = (gEeprom.RX_VFO + 1) & 1u;
+//                  chan = gEeprom.ScreenChannel[chan];
+//                  if (IS_MR_CHANNEL(chan))
+//                  {
+//                      currentScanList = SCAN_NEXT_CHAN_DUAL_WATCH;
+//                      gNextMrChannel   = chan;
+//                      break;
+//                  }
+//              }
 
             default:
             case SCAN_NEXT_CHAN_MR:
@@ -249,13 +335,14 @@ static void NextMemChannel(void)
     {       
         chan = RADIO_FindNextChannel(gNextMrChannel + gScanStateDir, gScanStateDir, true, gEeprom.SCAN_LIST_DEFAULT);
         if (chan == 0xFF)
-        {     
+        {   // no valid channel found
             chan = MR_CHANNEL_FIRST;
         }
         
         gNextMrChannel = chan;
 
-
+        //sprintf(str, "----> Chan %d\n", chan + 1);
+        //LogUart(str);
     }
 
     if (gNextMrChannel != prev_chan)
@@ -270,12 +357,12 @@ static void NextMemChannel(void)
     }
 
 #ifdef ENABLE_FASTER_CHANNEL_SCAN
-    gScanPauseDelayIn_10ms = 9;    
+    gScanPauseDelayIn_10ms = 9;  // 90ms .. <= ~60ms it misses signals (squelch response and/or PLL lock time) ?
 #else
     gScanPauseDelayIn_10ms = scan_pause_delay_in_3_10ms;
 #endif
 
     if (enabled)
         if (++currentScanList >= SCAN_NEXT_NUM)
-            currentScanList = SCAN_NEXT_CHAN_SCANLIST1;    
+            currentScanList = SCAN_NEXT_CHAN_SCANLIST1;  // back round we go
 }

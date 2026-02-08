@@ -1,4 +1,4 @@
-  
+
 
 #include <string.h>
 
@@ -26,22 +26,22 @@
 void GENERIC_Key_F(bool bKeyPressed, bool bKeyHeld)
 {
     if (gInputBoxIndex > 0) {
-        if (!bKeyHeld && bKeyPressed)   
+        if (!bKeyHeld && bKeyPressed) 
             gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
         return;
     }
 
-    if (bKeyHeld || !bKeyPressed) {   
-        if (bKeyHeld || bKeyPressed) {   
-            if (!bKeyHeld)   
+    if (bKeyHeld || !bKeyPressed) { 
+        if (bKeyHeld || bKeyPressed) { 
+            if (!bKeyHeld) 
                 return;
 
-            if (!bKeyPressed)   
+            if (!bKeyPressed) 
                 return;
 
             COMMON_KeypadLockToggle();
         }
-        else {   
+        else { 
 #ifdef ENABLE_FMRADIO
             if ((gFmRadioMode || gScreenToDisplay != DISPLAY_MAIN) && gScreenToDisplay != DISPLAY_FM)
                 return;
@@ -50,7 +50,7 @@ void GENERIC_Key_F(bool bKeyPressed, bool bKeyHeld)
                 return;
 #endif
 
-            gWasFKeyPressed = !gWasFKeyPressed;   
+            gWasFKeyPressed = !gWasFKeyPressed; 
 
             if (gWasFKeyPressed)
                 gKeyInputCountdown = key_input_timeout_500ms;
@@ -62,7 +62,7 @@ void GENERIC_Key_F(bool bKeyPressed, bool bKeyHeld)
             gUpdateStatus = true;
         }
     }
-    else {   
+    else { 
 #ifdef ENABLE_FMRADIO
         if (gScreenToDisplay != DISPLAY_FM)
 #endif
@@ -72,7 +72,7 @@ void GENERIC_Key_F(bool bKeyPressed, bool bKeyHeld)
         }
 
 #ifdef ENABLE_FMRADIO
-        if (gFM_ScanState == FM_SCAN_OFF) {   
+        if (gFM_ScanState == FM_SCAN_OFF) { 
             gBeepToPlay = BEEP_1KHZ_60MS_OPTIONAL;
             return;
         }
@@ -87,9 +87,9 @@ void GENERIC_Key_PTT(bool bKeyPressed)
     gInputBoxIndex = 0;
 
     if (!bKeyPressed || SerialConfigInProgress())
-    {     
+    {   
         if (gCurrentFunction == FUNCTION_TRANSMIT) {    
-              
+            
             if (gFlagEndTransmission) {
                 FUNCTION_Select(FUNCTION_FOREGROUND);
             }
@@ -108,27 +108,27 @@ void GENERIC_Key_PTT(bool bKeyPressed)
 #endif
             RADIO_SetVfoState(VFO_STATE_NORMAL);
 
-            if (gScreenToDisplay != DISPLAY_MENU)       
+            if (gScreenToDisplay != DISPLAY_MENU)     
                 gRequestDisplayScreen = DISPLAY_MAIN;
         }
 
         return;
     }
 
+    
 
     if (SCANNER_IsScanning()) { 
-        SCANNER_Stop();   
+        SCANNER_Stop(); 
         goto cancel_tx;
     }
 
     if (gScanStateDir != SCAN_OFF) {    
-        CHFRSCANNER_Stop();   
+        CHFRSCANNER_Stop(); 
         goto cancel_tx;
     }
 
-
 #ifdef ENABLE_FMRADIO
-    if (gFM_ScanState != FM_SCAN_OFF) {   
+    if (gFM_ScanState != FM_SCAN_OFF) { 
         FM_PlayAndUpdate();
 #ifdef ENABLE_VOICE
         gAnotherVoiceID = VOICE_ID_SCANNING_STOP;
@@ -140,32 +140,32 @@ void GENERIC_Key_PTT(bool bKeyPressed)
 
 #ifdef ENABLE_FMRADIO
     if (gScreenToDisplay == DISPLAY_FM)
-        goto start_tx;    
+        goto start_tx;  
 #endif
 
-    if (gCurrentFunction == FUNCTION_TRANSMIT && gRTTECountdown_10ms == 0) {  
+    if (gCurrentFunction == FUNCTION_TRANSMIT && gRTTECountdown_10ms == 0) {
         gInputBoxIndex = 0;
         return;
     }
 
-    if (gScreenToDisplay != DISPLAY_MENU)       
+    if (gScreenToDisplay != DISPLAY_MENU)     
         gRequestDisplayScreen = DISPLAY_MAIN;
 
-
     if (!gDTMF_InputMode && gDTMF_InputBox_Index == 0)
-        goto start_tx;    
+        goto start_tx;  
 
+    
 
-    if (gDTMF_InputBox_Index > 0 || gDTMF_PreviousIndex > 0) {   
+    if (gDTMF_InputBox_Index > 0 || gDTMF_PreviousIndex > 0) { 
         if (gDTMF_InputBox_Index == 0 && gDTMF_PreviousIndex > 0)
-            gDTMF_InputBox_Index = gDTMF_PreviousIndex;             
+            gDTMF_InputBox_Index = gDTMF_PreviousIndex;           
 
         if (gDTMF_InputBox_Index < sizeof(gDTMF_InputBox))
-            gDTMF_InputBox[gDTMF_InputBox_Index] = 0;               
+            gDTMF_InputBox[gDTMF_InputBox_Index] = 0;             
 
 #ifdef ENABLE_DTMF_CALLING
-          
-          
+        
+        
         if (gDTMF_InputBox_Index == 3 && gTxVfo->DTMF_DECODING_ENABLE > 0)
             gDTMF_CallMode = DTMF_CheckGroupCall(gDTMF_InputBox, 3);
         else
@@ -173,7 +173,7 @@ void GENERIC_Key_PTT(bool bKeyPressed)
 
         gDTMF_State      = DTMF_STATE_0;
 #endif
-          
+        
         gDTMF_PreviousIndex = gDTMF_InputBox_Index;
         strcpy(gDTMF_String, gDTMF_InputBox);
         gDTMF_ReplyState = DTMF_REPLY_ANI;
@@ -182,7 +182,7 @@ void GENERIC_Key_PTT(bool bKeyPressed)
     DTMF_clear_input_box();
 
 start_tx:
-      
+    
     gFlagPrepareTX = true;
     goto done;
 
@@ -198,7 +198,7 @@ done:
         && gRequestDisplayScreen != DISPLAY_FM
 #endif
     ) {
-          
+        
         gRequestDisplayScreen = DISPLAY_MAIN;
     }
 

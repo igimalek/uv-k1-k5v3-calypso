@@ -1,7 +1,24 @@
-  
+/* Copyright 2023 Dual Tachyon
+ * https://github.com/DualTachyon
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *     Unless required by applicable law or agreed to in writing, software
+ *     distributed under the License is distributed on an "AS IS" BASIS,
+ *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *     See the License for the specific language governing permissions and
+ *     limitations under the License.
+ */
 
 #ifdef ENABLE_AIRCOPY
 
+//#if !defined(ENABLE_OVERLAY)
+//  #include "ARMCM0.h"
+//#endif
 
 #include "app/aircopy.h"
 #include "audio.h"
@@ -66,7 +83,7 @@ bool AIRCOPY_SendMessage(void)
         #ifdef ENABLE_FEAT_F4HWN_SCREENSHOT
             getScreenShot(false);
         #endif
-          
+        //NVIC_SystemReset();
     }
 
     RADIO_SetTxParameters();
@@ -91,6 +108,7 @@ void AIRCOPY_StorePacket(void)
     uint16_t Status = BK4819_ReadRegister(BK4819_REG_0B);
     BK4819_PrepareFSKReceive();
 
+    // Doc says bit 4 should be 1 = CRC OK, 0 = CRC FAIL, but original firmware checks for FAIL.
 
     if ((Status & 0x0010U) != 0 || g_FSK_Buffer[0] != 0xABCD || g_FSK_Buffer[35] != 0xDCBA) {
         gErrorsDuringAirCopy++;

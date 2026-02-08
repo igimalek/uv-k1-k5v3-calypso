@@ -96,7 +96,6 @@ void UI_PrintStringSmall(const char *pString, uint8_t Start, uint8_t End, uint8_
     UI_PrintStringBuffer(pString, gFrameBuffer[Line] + Start, char_width, font);
 }
 
-
 void UI_PrintStringSmallNormal(const char *pString, uint8_t Start, uint8_t End, uint8_t Line)
 {
     UI_PrintStringSmall(pString, Start, End, Line, ARRAY_SIZE(gFontSmall[0]), (const uint8_t *)gFontSmall);
@@ -167,7 +166,6 @@ void UI_DisplayFrequency(const char *string, uint8_t X, uint8_t Y, bool center)
     }
 }
 
-
 void UI_DrawPixelBuffer(uint8_t (*buffer)[128], uint8_t x, uint8_t y, bool black)
 {
     const uint8_t pattern = 1 << (y % 8);
@@ -187,7 +185,6 @@ static void sort(int16_t *a, int16_t *b)
 }
 
 #ifdef ENABLE_FEAT_F4HWN
-     
 
     void PutPixel(uint8_t x, uint8_t y, bool fill) {
       UI_DrawPixelBuffer(gFrameBuffer, x, y, fill);
@@ -250,11 +247,9 @@ void UI_DrawRectangleBuffer(uint8_t (*buffer)[128], int16_t x1, int16_t y1, int1
     UI_DrawLineBuffer(buffer, x1,y2, x2,y2, black);
 }
 
-
 void UI_DisplayPopup(const char *string)
 {
     UI_DisplayClear();
-
 
     UI_PrintString(string, 9, 118, 2, 8);
     UI_PrintStringSmallNormal("Press EXIT", 9, 118, 6);

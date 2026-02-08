@@ -39,7 +39,6 @@ const char gModulationStr[MODULATION_UKNOWN][4] = {
 #endif
 };
 
-
 bool RADIO_CheckValidChannel(uint16_t channel, bool checkScanList, uint8_t scanList)
 {
      
@@ -57,7 +56,6 @@ bool RADIO_CheckValidChannel(uint16_t channel, bool checkScanList, uint8_t scanL
     if (!checkScanList || scanList > 4)
         return true;
 
-
     if ((scanList == 0 && (att.scanlist1 == 1 || att.scanlist2 == 1 || att.scanlist3 == 1)) ||
         (scanList == 1 && att.scanlist1 != 1) ||
         (scanList == 2 && att.scanlist2 != 1) ||
@@ -66,14 +64,12 @@ bool RADIO_CheckValidChannel(uint16_t channel, bool checkScanList, uint8_t scanL
         return false;
     }
 
-
     const uint8_t PriorityCh1 = gEeprom.SCANLIST_PRIORITY_CH1[scanList - 1];
     const uint8_t PriorityCh2 = gEeprom.SCANLIST_PRIORITY_CH2[scanList - 1];
 
     return PriorityCh1 != channel && PriorityCh2 != channel;
 }
 
- 
 uint8_t RADIO_FindNextChannel(uint8_t Channel, int8_t Direction, bool bCheckScanList, uint8_t VFO)
 {
     for (unsigned int i = 0; IS_MR_CHANNEL(i); i++, Channel += Direction) {
@@ -91,7 +87,6 @@ uint8_t RADIO_FindNextChannel(uint8_t Channel, int8_t Direction, bool bCheckScan
     return 0xFF;
 }
 
- 
 void RADIO_InitInfo(VFO_Info_t *pInfo, const uint8_t ChannelSave, const uint32_t Frequency)
 {
     memset(pInfo, 0, sizeof(*pInfo));
@@ -120,7 +115,6 @@ void RADIO_InitInfo(VFO_Info_t *pInfo, const uint8_t ChannelSave, const uint32_t
     RADIO_ConfigureSquelchAndOutputPower(pInfo);
 }
 
- 
 void RADIO_ConfigureChannel(const unsigned int VFO, const unsigned int configure)
 {
     VFO_Info_t *pVfo = &gEeprom.VfoInfo[VFO];
@@ -215,7 +209,6 @@ void RADIO_ConfigureChannel(const unsigned int VFO, const unsigned int configure
     {
         uint8_t tmp;
         uint8_t data[8];
-
 
         PY25Q16_ReadBuffer(base + 8, data, sizeof(data));
 
@@ -320,7 +313,6 @@ void RADIO_ConfigureChannel(const unsigned int VFO, const unsigned int configure
             pVfo->DTMF_PTT_ID_TX_MODE  = pttId < ARRAY_SIZE(gSubMenu_PTT_ID) ? pttId : PTT_ID_OFF;
         }
 
-
         struct {
             uint32_t Frequency;
             uint32_t Offset;
@@ -336,12 +328,10 @@ void RADIO_ConfigureChannel(const unsigned int VFO, const unsigned int configure
 
         pVfo->TX_OFFSET_FREQUENCY = info.Offset;
 
-         
     }
 
     uint32_t frequency = pVfo->freq_config_RX.Frequency;
 
-     
     band = FREQUENCY_GetBand(frequency);
 
     if (frequency < frequencyBandTable[band].lower)
@@ -385,14 +375,11 @@ void RADIO_ConfigureChannel(const unsigned int VFO, const unsigned int configure
 
     pVfo->Compander = att.compander;
 
-
     RADIO_ConfigureSquelchAndOutputPower(pVfo);
 }
 
- 
 void RADIO_ConfigureSquelchAndOutputPower(VFO_Info_t *pInfo)
 {
-
 
     FREQUENCY_Band_t Band = FREQUENCY_GetBand(pInfo->pRX->Frequency);
      
@@ -421,7 +408,6 @@ void RADIO_ConfigureSquelchAndOutputPower(VFO_Info_t *pInfo)
         PY25Q16_ReadBuffer(Base + 0x40, &pInfo->SquelchCloseGlitchThresh, 1);   
         PY25Q16_ReadBuffer(Base + 0x50, &pInfo->SquelchOpenGlitchThresh,  1);   
 
-
         uint16_t noise_open   = pInfo->SquelchOpenNoiseThresh;
         uint16_t noise_close  = pInfo->SquelchCloseNoiseThresh;
 
@@ -430,13 +416,11 @@ void RADIO_ConfigureSquelchAndOutputPower(VFO_Info_t *pInfo)
         uint16_t rssi_close   = pInfo->SquelchCloseRSSIThresh;
         uint16_t glitch_open  = pInfo->SquelchOpenGlitchThresh;
         uint16_t glitch_close = pInfo->SquelchCloseGlitchThresh;
-         
-         
+
         rssi_open   = (rssi_open   * 1) / 2;
         noise_open  = (noise_open  * 2) / 1;
         glitch_open = (glitch_open * 2) / 1;
 
-         
         if (rssi_close == rssi_open && rssi_close >= 2)
             rssi_close -= 2;
         if (noise_close == noise_open && noise_close  <= 125)
@@ -454,9 +438,7 @@ void RADIO_ConfigureSquelchAndOutputPower(VFO_Info_t *pInfo)
         pInfo->SquelchCloseNoiseThresh  = (noise_close  > 127) ? 127 : noise_close;
     }
 
-
     Band = FREQUENCY_GetBand(pInfo->pTX->Frequency);
-
 
     uint8_t Txp[3];
     uint8_t Op = 0;  
@@ -490,7 +472,6 @@ void RADIO_ConfigureSquelchAndOutputPower(VFO_Info_t *pInfo)
     PY25Q16_ReadBuffer(0x100D0 + (Band * 16) + (Op * 3), Txp, 3);
 
 #ifdef ENABLE_FEAT_F4HWN
-
 
     static const uint8_t dividers[6] = { 25, 19, 13, 10, 7, 4};
 
@@ -530,10 +511,8 @@ void RADIO_ConfigureSquelchAndOutputPower(VFO_Info_t *pInfo)
          frequencyBandTable[Band].upper,
         pInfo->pTX->Frequency);
 
-     
 }
 
- 
 void RADIO_ApplyOffset(VFO_Info_t *pInfo)
 {
     uint32_t Frequency = pInfo->freq_config_RX.Frequency;
@@ -553,15 +532,12 @@ void RADIO_ApplyOffset(VFO_Info_t *pInfo)
     pInfo->freq_config_TX.Frequency = Frequency;
 }
 
- 
 static void RADIO_SelectCurrentVfo(void)
 {
-
 
     gCurrentVfo = (gEeprom.CROSS_BAND_RX_TX == CROSS_BAND_OFF || gEeprom.DUAL_WATCH != DUAL_WATCH_OFF) ? gRxVfo : gTxVfo;
 }
 
- 
 void RADIO_SelectVfos(void)
 {
      
@@ -572,7 +548,6 @@ void RADIO_SelectVfos(void)
 
     RADIO_SelectCurrentVfo();
 }
-
 
 void RADIO_SetupRegisters(bool switchToForeground)
 {
@@ -626,7 +601,6 @@ void RADIO_SetupRegisters(bool switchToForeground)
     }
     BK4819_WriteRegister(BK4819_REG_3F, 0);
 
-     
     BK4819_WriteRegister(BK4819_REG_7D, 0xE940 | (gEeprom.MIC_SENSITIVITY_TUNING & 0x1f));
 
     uint32_t Frequency;
@@ -647,16 +621,13 @@ void RADIO_SetupRegisters(bool switchToForeground)
 
     BK4819_PickRXFilterPathBasedOnFrequency(Frequency);
 
-     
     BK4819_ToggleGpioOut(BK4819_GPIO0_PIN28_RX_ENABLE, true);
-
 
     BK4819_WriteRegister(BK4819_REG_48,
         (11u << 12)                 |      
         ( 0u << 10)                 |      
         (gEeprom.VOLUME_GAIN << 4) |      
         (gEeprom.DAC_GAIN    << 0));      
-
 
     uint16_t InterruptMask = BK4819_REG_3F_SQUELCH_FOUND | BK4819_REG_3F_SQUELCH_LOST;
 
@@ -682,7 +653,6 @@ void RADIO_SetupRegisters(bool switchToForeground)
                 case CODE_TYPE_CONTINUOUS_TONE:
                     BK4819_SetCTCSSFrequency(CTCSS_Options[Code]);
 
-
                     InterruptMask = 0
                         | BK4819_REG_3F_CxCSS_TAIL
                         | BK4819_REG_3F_CTCSS_FOUND
@@ -703,7 +673,6 @@ void RADIO_SetupRegisters(bool switchToForeground)
                         | BK4819_REG_3F_SQUELCH_LOST;
                     break;
             }
-
 
             if (gRxVfo->SCRAMBLING_TYPE > 0 && gSetting_ScrambleEnable)
                 BK4819_EnableScramble(gRxVfo->SCRAMBLING_TYPE - 1);
@@ -742,7 +711,6 @@ void RADIO_SetupRegisters(bool switchToForeground)
         BK4819_DisableVox();
     }
 
-     
     BK4819_SetCompander((gRxVfo->Modulation == MODULATION_FM && gRxVfo->Compander >= 2) ? gRxVfo->Compander : 0);
 
     BK4819_EnableDTMF();
@@ -750,7 +718,6 @@ void RADIO_SetupRegisters(bool switchToForeground)
 
     RADIO_SetupAGC(gRxVfo->Modulation == MODULATION_AM, false);
 
-     
     BK4819_WriteRegister(BK4819_REG_3F, InterruptMask);
 
     FUNCTION_Init();
@@ -805,7 +772,6 @@ void RADIO_SetupRegisters(bool switchToForeground)
     }
 #endif
 
- 
 void RADIO_SetTxParameters(void)
 {
     BK4819_FilterBandwidth_t Bandwidth = gCurrentVfo->CHANNEL_BANDWIDTH;
@@ -838,7 +804,6 @@ void RADIO_SetTxParameters(void)
 
     BK4819_SetFrequency(gCurrentVfo->pTX->Frequency);
 
-     
     BK4819_SetCompander((gRxVfo->Modulation == MODULATION_FM && (gRxVfo->Compander == 1 || gRxVfo->Compander >= 3)) ? gRxVfo->Compander : 0);
 
     BK4819_PrepareTransmit();
@@ -873,7 +838,6 @@ void RADIO_SetTxParameters(void)
     }
 }
 
- 
 void RADIO_SetModulation(ModulationMode_t modulation)
 {
     BK4819_AF_Type_t mod;
@@ -901,7 +865,6 @@ void RADIO_SetModulation(ModulationMode_t modulation)
 
     BK4819_SetAF(mod);
 
-
     if (modulation != MODULATION_AM)
     {
         uint16_t uVar1 = BK4819_ReadRegister(0x31);
@@ -911,10 +874,8 @@ void RADIO_SetModulation(ModulationMode_t modulation)
         BK4819_WriteRegister(0x2b,0);
         BK4819_WriteRegister(0x2f,0x9890);
 
-         
         BK4819_WriteRegister(0x54, 0x9009);
         BK4819_WriteRegister(0x55, 0x31a9);
-
 
     }
     else
@@ -926,7 +887,6 @@ void RADIO_SetModulation(ModulationMode_t modulation)
         BK4819_WriteRegister(0x2b,0x300);
         BK4819_WriteRegister(0x2f,0x9990);
 
-
         BK4819_SetFilterBandwidth(BK4819_FILTER_BW_AM, true);
     }
     
@@ -937,7 +897,6 @@ void RADIO_SetModulation(ModulationMode_t modulation)
 
 }
 
- 
 void RADIO_SetupAGC(bool listeningAM, bool disable)
 {  
      
@@ -951,10 +910,8 @@ void RADIO_SetupAGC(bool listeningAM, bool disable)
     
     BK4819_SetAGC(!disable);
     BK4819_InitAGC(listeningAM);
-    
 
 }
-
 
 void RADIO_SetVfoState(VfoState_t State)
 {
@@ -974,7 +931,6 @@ void RADIO_SetVfoState(VfoState_t State)
     gUpdateDisplay = true;
 }
 
-
 void RADIO_PrepareTX(void)
 {
     VfoState_t State = VFO_STATE_NORMAL;   
@@ -992,7 +948,6 @@ void RADIO_PrepareTX(void)
             gRxVfoIsActive = true;
         }
 
-         
         gDualWatchActive = false;
         gUpdateStatus    = true;
     }
@@ -1049,7 +1004,6 @@ void RADIO_PrepareTX(void)
         return;
     }
 
-
 #ifdef ENABLE_DTMF_CALLING
     if (gDTMF_ReplyState == DTMF_REPLY_ANI)
     {
@@ -1075,7 +1029,6 @@ void RADIO_PrepareTX(void)
 
         gTxTimerCountdown_500ms = ((gEeprom.TX_TIMEOUT_TIMER + 1) * 5) * 2;
 
-
 #ifdef ENABLE_FEAT_F4HWN 
         gTxTimerCountdownAlert_500ms = gTxTimerCountdown_500ms;
 #endif
@@ -1095,7 +1048,6 @@ void RADIO_PrepareTX(void)
 #endif
 }
 
- 
 void RADIO_SendCssTail(void)
 {
     switch (gCurrentVfo->pTX->CodeType) {
@@ -1111,19 +1063,16 @@ void RADIO_SendCssTail(void)
     SYSTEM_DelayMs(200);
 }
 
- 
 void RADIO_SendEndOfTransmission(void)
 {
     BK4819_PlayRoger();
     DTMF_SendEndOfTransmission();
 
-     
     if(gEeprom.TAIL_TONE_ELIMINATION)
         RADIO_SendCssTail();
     RADIO_SetupRegisters(false);
 }
 
- 
 void RADIO_PrepareCssTX(void)
 {
     RADIO_PrepareTX();

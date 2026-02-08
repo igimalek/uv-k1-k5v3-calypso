@@ -1,4 +1,18 @@
-  
+/* Copyright 2025 Armel F4HWN
+ * https://github.com/armel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *     Unless required by applicable law or agreed to in writing, software
+ *     distributed under the License is distributed on an "AS IS" BASIS,
+ *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *     See the License for the specific language governing permissions and
+ *     limitations under the License.
+ */
 
 #include "app/breakout.h"
 
@@ -138,23 +152,23 @@ const uint8_t BITMAP_blockEmpty[15] =
     0b00000000,
 };
 
-  
+// Initialise seed
 void srand_custom(uint32_t seed) {
     randSeed = seed;
 }
 
-  
+// Return pseudo-random from 0 to RAND_MAX (here 32767)
 int rand_custom(void) {
     randSeed = randSeed * 1103515245 + 12345;
-    return (randSeed >> 16) & 0x7FFF;   
+    return (randSeed >> 16) & 0x7FFF; // 15 bits
 }
 
-  
+// Return integer from min to max include
 int randInt(int min, int max) {
     return min + (rand_custom() % (max - min + 1));
 }
 
-  
+// Reset
 void reset(void)
 {
     ballCount = BALL_NUMBER;
@@ -162,10 +176,10 @@ void reset(void)
     score = 0;
 }
 
-  
+// PlayBeep
 void playBeep(uint16_t tone)
 {
-    BK4819_PlayTone(tone, true);      
+    BK4819_PlayTone(tone, true);    // 500 Hz ON
     AUDIO_AudioPathOn();
     BK4819_ExitTxMute();
     SYSTEM_DelayMs(100);
@@ -173,26 +187,26 @@ void playBeep(uint16_t tone)
     AUDIO_AudioPathOff();
 }
 
-  
+// Draw score
 void drawScore()
 {
-      
+    // Clean status line
     memset(gStatusLine,  0, sizeof(gStatusLine));
 
-      
+    // Level
     sprintf(str, "Level %02u", levelCountBreackout);
     GUI_DisplaySmallest(str, 0, 1, true, true);
 
-      
+    // Ball
     sprintf(str, "Ball %02u", (ballCount < 0) ? 0 : ballCount);
     GUI_DisplaySmallest(str, 45, 1, true, true);
 
-      
+    // Score
     sprintf(str, "Score %04u", score);
     GUI_DisplaySmallest(str, 88, 1, true, true);
 }
 
-  
+// Init ball
 void initBall() {
     ball.x  = 62;
     ball.y  = 30;
@@ -205,7 +219,7 @@ void initBall() {
     UI_DrawLineBuffer(gFrameBuffer, ball.x - 1, ball.y + 1, ball.x + ball.w, ball.y + 1, true);
 }
 
-  
+// Draw ball
 void drawBall() {
     UI_DrawRectangleBuffer(gFrameBuffer, ball.x, ball.y, ball.x + ball.w -1, ball.y + ball.h -1, false);
     UI_DrawLineBuffer(gFrameBuffer, ball.x - 1, ball.y + 1, ball.x + ball.w, ball.y + 1, false);
@@ -213,20 +227,20 @@ void drawBall() {
     ball.x += ball.dx;
     ball.y += ball.dy;
 
-    if (ball.y <= 0)    
+    if (ball.y <= 0)  // Up
     {
         ball.dx = map(randInt(0, 7), 0, 7, 3, -3);
         ball.dy = 1;
     }
-    else if (ball.x <= 2)    
+    else if (ball.x <= 2)  // Left
     {
         ball.dx = abs(ball.dx);
     } 
-    else if (ball.x >= 124)    
+    else if (ball.x >= 124)  // Right
     {
         ball.dx = -abs(ball.dx);
     }
-      
+    // And now Down...
     if (ball.y == 47) {
         if (ball.x + 1 >= racket.x && ball.x - 1 <= racket.x + racket.w) {
             ball.dx = map(racket.x + racket.w - ball.x, 0, racket.w, 3, -3);
@@ -258,7 +272,7 @@ void drawBall() {
     UI_DrawLineBuffer(gFrameBuffer, ball.x - 1, ball.y + 1, ball.x + ball.w, ball.y + 1, true);
 }
 
-  
+// Init wall
 void initWall() {
     uint8_t offset = 6;
     uint8_t i      = 0;
@@ -282,7 +296,7 @@ void initWall() {
     }
 }
 
-  
+// Draw wall
 void drawWall() {
     uint8_t i = 0;
 
@@ -321,7 +335,7 @@ void drawWall() {
     }
 }
 
-  
+// Init racket
 void initRacket() {
     racket.w = 24;
     racket.x = (64) - (racket.w / 2);
@@ -333,7 +347,7 @@ void initRacket() {
     UI_DrawLineBuffer(gFrameBuffer, racket.x, racket.y + 1, racket.x + racket.w - 1, racket.y + 1, true);
 }
 
-  
+// Draw racket
 void drawRacket() {
     if (racket.p != racket.x) {
         UI_DrawRectangleBuffer(gFrameBuffer, racket.p + 1, racket.y, racket.p + racket.w - 2, racket.y + racket.h, false);
@@ -344,7 +358,7 @@ void drawRacket() {
     }
 }
 
-  
+// OnKeyDown
 static void OnKeyDown(uint8_t key)
 {
     bool wasPaused = isPaused;
@@ -379,7 +393,7 @@ static void OnKeyDown(uint8_t key)
     
     if(wasPaused == true && isPaused == false)
     {
-          
+        // Clear the pause text
         for(uint8_t i = 0; i < 8; i++)
         {
             UI_DrawLineBuffer(gFrameBuffer, 32, 32 + i, 96, 32 + i, false);
@@ -387,7 +401,7 @@ static void OnKeyDown(uint8_t key)
     }
 }
 
-
+// Key 
 static KEY_Code_t GetKey()
 {
     KEY_Code_t btn = KEYBOARD_Poll();
@@ -398,16 +412,16 @@ static KEY_Code_t GetKey()
     return btn;
 }
 
-  
+// HandleUserInput 
 static bool HandleUserInput()
 {
-      
+    // Store previous key state
     kbd.prev = kbd.current;
     
-      
+    // Get the current key
     kbd.current = GetKey();
     
-      
+    // Detect valid key press continuation (same key still pressed)
     if (kbd.current != KEY_INVALID && kbd.current == kbd.prev)
     {
         kbd.counter = 1;
@@ -417,12 +431,12 @@ static bool HandleUserInput()
         kbd.counter = 0;
     }
     
-      
+    // Process the key if counter indicates it should be handled
     if (kbd.counter == 1)
     {
         OnKeyDown(kbd.current);
         
-          
+        // Special handling for MENU key
         if(kbd.current == KEY_MENU)
         {
             kbd.counter = 0;
@@ -433,24 +447,24 @@ static bool HandleUserInput()
     return true;
 }
 
-  
+// Tick
 static void Tick()
 {
     HandleUserInput();
     HandleUserInput();
 }
 
-  
+// APP_RunBreakout
 void APP_RunBreakout(void) {
         static uint8_t swap = 0;
 
-          
+        // Init seed
         srand_custom(BK4819_ReadRegister(BK4819_REG_67) & 0x01FF * gBatteryVoltageAverage * gEeprom.VfoInfo[0].pRX->Frequency);
 
-          
+        // Init led
         BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, false);
 
-          
+        // Init game
         UI_DisplayClear();
         reset();
         initWall();
@@ -468,7 +482,7 @@ void APP_RunBreakout(void) {
                 {
                     blockAnim = (blockAnim + 1) % 4;
 
-                      
+                    // For screenshot
                     #ifdef ENABLE_FEAT_F4HWN_SCREENSHOT
                         getScreenShot(false);
                     #endif
@@ -488,11 +502,11 @@ void APP_RunBreakout(void) {
                 }
                 else
                 {
-                    SYSTEM_DelayMs(40 - MIN(levelCountBreackout - 1, 20));   
+                    SYSTEM_DelayMs(40 - MIN(levelCountBreackout - 1, 20)); // Add more fun...
                 }
             }
 
-            ST7565_BlitStatusLine();    
+            ST7565_BlitStatusLine();  // Blank status line
             ST7565_BlitFullScreen();
         }
 }

@@ -4,7 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-
+// scan direction, if not equal SCAN_OFF indicates 
+// that we are in a process of scanning channels/frequencies
 extern int8_t            gScanStateDir;
 extern bool              gScanKeepResult;
 extern bool              gScanPauseMode;

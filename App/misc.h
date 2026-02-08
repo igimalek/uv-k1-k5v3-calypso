@@ -121,7 +121,6 @@ extern const uint16_t        scan_pause_delay_in_5_10ms;
 extern const uint16_t        scan_pause_delay_in_6_10ms;
 extern const uint16_t        scan_pause_delay_in_7_10ms;
 
-
 extern const uint8_t         gMicGain_dB2[5];
 
 #ifndef ENABLE_FEAT_F4HWN
@@ -142,7 +141,6 @@ extern uint8_t               gSetting_F_LOCK;
 extern bool                  gSetting_ScrambleEnable;
 
 extern enum BacklightOnRxTx_t gSetting_backlight_on_tx_rx;
-
 
 #ifdef ENABLE_FEAT_F4HWN_SLEEP 
     extern uint8_t           gSetting_set_off;
@@ -257,13 +255,10 @@ extern bool                  gEndOfRxDetectedMaybe;
 extern int16_t               gVFO_RSSI[2];
 extern uint8_t               gVFO_RSSI_bar_level[2];
 
- 
 extern uint8_t               gReducedService;
 extern uint8_t               gBatteryVoltageIndex;
 
- 
 extern bool         gCssBackgroundScan;
-
 
 enum
 {
@@ -308,7 +303,6 @@ extern bool                  g_CxCSS_TAIL_Found;
     extern uint16_t          gVoxPauseCountdown;
 #endif
 
- 
 extern bool                  g_SquelchLost;
 
 extern volatile uint16_t     gFlashLightBlinkCounter;
@@ -317,7 +311,6 @@ extern bool                  gFlagEndTransmission;
 extern uint8_t               gNextMrChannel;
 extern ReceptionMode_t       gRxReceptionMode;
 
-  
 extern bool                  gRxVfoIsActive;
 extern uint8_t               gAlarmToneCounter;
 extern uint16_t              gAlarmRunningCounter;

@@ -5,7 +5,6 @@
 #include "settings.h"
 #include <assert.h>
 
-
 #define BX4819_band1_lower 1800000
 #define BX4819_band2_upper 130000000
 
@@ -46,7 +45,6 @@ const freq_band_table_t frequencyBandTable[] =
     };
 #endif
 
-
 const uint16_t gStepFrequencyTable[] = {
  
     [STEP_2_5kHz]   = 250,
@@ -76,7 +74,6 @@ const uint16_t gStepFrequencyTable[] = {
     [STEP_500kHz]   = 50000
 };
 
-
 const STEP_Setting_t StepSortedIndexes[] = {
     STEP_0_01kHz, STEP_0_05kHz, STEP_0_1kHz, STEP_0_25kHz, STEP_0_5kHz, STEP_1kHz, STEP_1_25kHz, STEP_2_5kHz, STEP_5kHz, STEP_6_25kHz,
     STEP_8_33kHz, STEP_9kHz, STEP_10kHz, STEP_12_5kHz, STEP_15kHz, STEP_20kHz, STEP_25kHz, STEP_30kHz, STEP_50kHz, STEP_100kHz,
@@ -97,7 +94,6 @@ uint32_t FREQUENCY_GetSortedIdxFromStepIdx(uint8_t stepIdx)
 }
 
 static_assert(ARRAY_SIZE(gStepFrequencyTable) == STEP_N_ELEM);
-
 
 FREQUENCY_Band_t FREQUENCY_GetBand(uint32_t Frequency)
 {
@@ -127,7 +123,6 @@ uint8_t FREQUENCY_CalculateOutputPower(uint8_t TxpLow, uint8_t TxpMid, uint8_t T
     return TxpMid;
 }
 
-
 uint32_t FREQUENCY_RoundToStep(uint32_t freq, uint16_t step)
 {
     if(step == 833) {
@@ -145,7 +140,6 @@ uint32_t FREQUENCY_RoundToStep(uint32_t freq, uint16_t step)
 
 int32_t TX_freq_check(const uint32_t Frequency)
 {    
-     
 
     if (Frequency < frequencyBandTable[0].lower || Frequency > frequencyBandTable[BAND_N_ELEM - 1].upper)
         return -1;   
@@ -255,13 +249,11 @@ int32_t TX_freq_check(const uint32_t Frequency)
             break;
     }
 
-     
     return -1;
 }
 
 int32_t RX_freq_check(const uint32_t Frequency)
 {    
-     
 
     if (Frequency < frequencyBandTable[0].lower || Frequency > frequencyBandTable[BAND_N_ELEM - 1].upper)
         return -1;

@@ -45,7 +45,6 @@ enum TxLockModes_t {
     F_LOCK_LEN
 };
 
-
 enum {
     CROSS_BAND_OFF = 0,
     CROSS_BAND_CHAN_A,
@@ -140,9 +139,7 @@ typedef struct {
     uint8_t           NoaaChannel[2];
 #endif
 
-
     uint8_t               RX_VFO;
-
 
     uint8_t               TX_VFO;
 
@@ -186,7 +183,6 @@ typedef struct {
  
     uint8_t               CURRENT_STATE;
     uint8_t               CURRENT_LIST;
- 
 
     uint8_t               field29_0x26;
     uint8_t               field30_0x27;

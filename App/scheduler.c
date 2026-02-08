@@ -1,4 +1,4 @@
- 
+
 
 #include "scheduler.h"
 #include "app/chFrScanner.h"
@@ -30,7 +30,7 @@
 
 static volatile uint32_t gGlobalSysTickCounter;
 
- 
+
 void SysTick_Handler(void)
 {
     gGlobalSysTickCounter++;
