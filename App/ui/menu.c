@@ -677,12 +677,16 @@ void UI_DisplayMenu(void)
         case MENU_SCR:
             strcpy(String, gSubMenu_SCRAMBLER[gSubMenuSelection]);
             
-            if(gRxVfo->Modulation == MODULATION_FM)
+            if(gRxVfo->Modulation == MODULATION_FM){
                 if (gSubMenuSelection > 0 && gSetting_ScrambleEnable)
+                {
                     BK4819_EnableScramble(gSubMenuSelection - 1);
+                }
                 else
+                {
                     BK4819_DisableScramble();
-            
+                }
+        }
             //if (gRxVfo->Modulation == MODULATION_AM)
             //    BK4819_SetFilterBandwidth(BK4819_FILTER_BW_AM, true);
             break;
