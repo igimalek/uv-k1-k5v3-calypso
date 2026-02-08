@@ -971,35 +971,35 @@ void APP_Update(void)
 #endif
 
     if (gCurrentFunction == FUNCTION_TRANSMIT && (gTxTimeoutReached || SerialConfigInProgress()))
-    {   // transmitter timed out or must de-key
+    {   
         gTxTimeoutReached = false;
 
 #ifdef ENABLE_FEAT_F4HWN
         if(gBacklightCountdown_500ms > 0 || gEeprom.BACKLIGHT_TIME == 61)
         {
-            //BACKLIGHT_TurnOn();
+            
             BACKLIGHT_SetBrightness(gEeprom.BACKLIGHT_MAX);
         }
 
         gTxTimeoutReachedAlert = false;
         gTxTimeoutToneAlert = 800;
 
-        if (gSetting_set_ptt_session) // Improve OnePush if TOT
-        {
-            if(gPttOnePushCounter == 1)
-            {
-                gPttOnePushCounter = 3;
-            }
-            else if(gPttOnePushCounter == 2)
-            {
-                ProcessKey(KEY_PTT, false, false);
-                gPttIsPressed = false;
-                gPttOnePushCounter = 0;
-                gPttWasReleased = true;
-                //if (gKeyReading1 != KEY_INVALID)
-                //  gPttWasReleased = true;
-            }
-        }
+        // if (gSetting_set_ptt_session) 
+        // {
+        //     if(gPttOnePushCounter == 1)
+        //     {
+        //         gPttOnePushCounter = 3;
+        //     }
+        //     else if(gPttOnePushCounter == 2)
+        //     {
+        //         ProcessKey(KEY_PTT, false, false);
+        //         gPttIsPressed = false;
+        //         gPttOnePushCounter = 0;
+        //         gPttWasReleased = true;
+                
+                
+        //     }
+        // } // PTTDEL
 #endif
 
         APP_EndTransmission();
@@ -1195,14 +1195,14 @@ static void CheckKeys(void)
     }
 #endif
 
-// -------------------- PTT ------------------------
+
 #ifdef ENABLE_FEAT_F4HWN
     if (gSetting_set_ptt_session)
     {
         if (GPIO_IsPttPressed() && !SerialConfigInProgress() && gPttOnePushCounter == 0)
-        {   // PTT pressed
-            if (++gPttDebounceCounter >= 3)     // 30ms
-            {   // start transmitting
+        {   
+            if (++gPttDebounceCounter >= 3)     
+            {   
                 boot_counter_10ms   = 0;
                 gPttDebounceCounter = 0;
                 gPttIsPressed       = true;
@@ -1212,23 +1212,23 @@ static void CheckKeys(void)
         }
         else if ((!GPIO_IsPttPressed() || SerialConfigInProgress()) && gPttOnePushCounter == 1)
         {   
-            // PTT released or serial comms config in progress
-            if (++gPttDebounceCounter >= 3 || SerialConfigInProgress())     // 30ms
-            {   // stop transmitting
+            
+            if (++gPttDebounceCounter >= 3 || SerialConfigInProgress())     
+            {   
                 gPttOnePushCounter = 2;
             }
         }
         else if (GPIO_IsPttPressed() && !SerialConfigInProgress() && gPttOnePushCounter == 2)
-        {   // PTT pressed again            
-            if (++gPttDebounceCounter >= 3 || SerialConfigInProgress())     // 30ms
-            {   // stop transmitting
+        {   
+            if (++gPttDebounceCounter >= 3 || SerialConfigInProgress())     
+            {   
                 gPttOnePushCounter = 3;
             }
         }
         else if ((!GPIO_IsPttPressed() || SerialConfigInProgress()) && gPttOnePushCounter == 3)
-        {   // PTT released or serial comms config in progress
-            if (++gPttDebounceCounter >= 3 || SerialConfigInProgress())     // 30ms
-            {   // stop transmitting
+        {   
+            if (++gPttDebounceCounter >= 3 || SerialConfigInProgress())     
+            {   
                 ProcessKey(KEY_PTT, false, false);
                 gPttIsPressed = false;
                 if (gKeyReading1 != KEY_INVALID)
@@ -1242,16 +1242,16 @@ static void CheckKeys(void)
         else
             gPttDebounceCounter = 0;
 
-        //gDebug = gPttOnePushCounter;
+        
     }
     else
     {
         if (gPttIsPressed)
         {
             if (!GPIO_IsPttPressed() || SerialConfigInProgress())
-            {   // PTT released or serial comms config in progress
-                if (++gPttDebounceCounter >= 3 || SerialConfigInProgress())     // 30ms
-                {   // stop transmitting
+            {   
+                if (++gPttDebounceCounter >= 3 || SerialConfigInProgress())     
+                {   
                     ProcessKey(KEY_PTT, false, false);
                     gPttIsPressed = false;
                     if (gKeyReading1 != KEY_INVALID)
@@ -1265,9 +1265,9 @@ static void CheckKeys(void)
                 gPttDebounceCounter = 0;
         }
         else if (GPIO_IsPttPressed() && !SerialConfigInProgress())
-        {   // PTT pressed
-            if (++gPttDebounceCounter >= 3)     // 30ms
-            {   // start transmitting
+        {   
+            if (++gPttDebounceCounter >= 3)     
+            {   
                 boot_counter_10ms   = 0;
                 gPttDebounceCounter = 0;
                 gPttIsPressed       = true;
@@ -1281,9 +1281,9 @@ static void CheckKeys(void)
     if (gPttIsPressed)
     {
         if (GPIO_CheckBit(&GPIOC->DATA, GPIOC_PIN_PTT) || SerialConfigInProgress())
-        {   // PTT released or serial comms config in progress
-            if (++gPttDebounceCounter >= 3 || SerialConfigInProgress())     // 30ms
-            {   // stop transmitting
+        {   
+            if (++gPttDebounceCounter >= 3 || SerialConfigInProgress())     
+            {   
                 ProcessKey(KEY_PTT, false, false);
                 gPttIsPressed = false;
                 if (gKeyReading1 != KEY_INVALID)
@@ -1294,9 +1294,9 @@ static void CheckKeys(void)
             gPttDebounceCounter = 0;
     }
     else if (!GPIO_CheckBit(&GPIOC->DATA, GPIOC_PIN_PTT) && !SerialConfigInProgress())
-    {   // PTT pressed
-        if (++gPttDebounceCounter >= 3)     // 30ms
-        {   // start transmitting
+    {   
+        if (++gPttDebounceCounter >= 3)     
+        {   
             boot_counter_10ms   = 0;
             gPttDebounceCounter = 0;
             gPttIsPressed       = true;

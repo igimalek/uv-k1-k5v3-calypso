@@ -117,14 +117,14 @@ enum
     MENU_350EN,
     MENU_SCREN,
 #ifdef ENABLE_F_CAL_MENU
-    MENU_F_CALI,  // reference xtal calibration
+    MENU_F_CALI,  
 #endif
 #ifdef ENABLE_FEAT_F4HWN_SLEEP
     MENU_SET_OFF,
 #endif
 #ifdef ENABLE_FEAT_F4HWN
     MENU_SET_PWR,
-    MENU_SET_PTT,
+   // PTTDEL MENU_SET_PTT,
     MENU_SET_TOT,
     MENU_SET_EOT,
     MENU_SET_CTR,
@@ -132,7 +132,7 @@ enum
     MENU_SET_LCK,
     MENU_SET_MET,
     MENU_SET_GUI,
-    #ifdef ENABLE_FEAT_F4HWN_RX_TX_TIMER    //calypso
+    #ifdef ENABLE_FEAT_F4HWN_RX_TX_TIMER    
     MENU_SET_TMR,
     #endif
     #ifdef ENABLE_FEAT_F4HWN_NARROWER
@@ -178,7 +178,7 @@ extern const char        gSubMenu_D_RSP[4][11];
 
 #ifdef ENABLE_FEAT_F4HWN
     extern const char    gSubMenu_SET_PWR[7][6];
-    extern const char    gSubMenu_SET_PTT[2][8];
+   // PTTDEL extern const char    gSubMenu_SET_PTT[2][8];
     extern const char    gSubMenu_SET_TOT[4][7];
     extern const char    gSubMenu_SET_LCK[2][9];
     extern const char    gSubMenu_SET_MET[2][8];

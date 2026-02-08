@@ -121,24 +121,45 @@ void UI_DisplayWelcome(void)
         UI_PrintString(WelcomeString1, 0, 127, 2, 10);
 
 #ifdef ENABLE_FEAT_F4HWN
-        UI_PrintStringSmallNormal(Version, 0, 128, 4);
+      //  UI_PrintStringSmallNormal(Edition, 0, 128, 4);
+        UI_PrintString(Edition, 0, 127, 4, 10);
 
-        UI_DrawLineBuffer(gFrameBuffer, 0, 31, 127, 31, 1); // Be ware, status zone = 8 lines, the rest = 56 ->total 64
+        //*******************ЛИНИИ-LINES***************** */
 
-        for (uint8_t i = 18; i < 110; i++)
-        {
-            gFrameBuffer[4][i] ^= 0xFF;
+
+        for (uint8_t y = 47; y <= 57; y += 2) {
+            UI_DrawLineBuffer(gFrameBuffer, 30, y, 30, y, 1); // Левая вертикальная пунктирная(X = 30)
+        }
+        for (uint8_t y = 47; y <= 57; y += 2) {
+            UI_DrawLineBuffer(gFrameBuffer, 94, y, 94, y, 1);  // Правая вертикальная пунктирная (X = 90)
+        }
+        // Горизонтальные у тебя уже были правильные, 
+        // for (uint8_t i = 105; i <= 127; i += 2) {
+        //     UI_DrawLineBuffer(gFrameBuffer, i, 38, i, 38, 1); // Hory X
+        // }
+        // for (uint8_t i = 0; i <= 22; i += 2) {
+        //     UI_DrawLineBuffer(gFrameBuffer, i, 38, i, 38, 1); // Hory X
+        // }
+        for (uint8_t i = 0; i <= 127; i += 2) {
+            UI_DrawLineBuffer(gFrameBuffer, i, 15, i, 15, 1); // Hory X
+        }
+                for (uint8_t i = 0; i <= 127; i += 2) {
+            UI_DrawLineBuffer(gFrameBuffer, i, 30, i, 30, 1); // Hory X
         }
 
-        sprintf(WelcomeString3, "%s Edition", Edition);
-        UI_PrintStringSmallNormal(WelcomeString3, 0, 127, 6);
+ GUI_DisplaySmallest("BETA", 5, 46, false, true);
+ GUI_DisplaySmallest("TEST", 108, 46, false, true);
 
+
+
+        sprintf(WelcomeString3, "%s", Version);
+        UI_PrintStringSmallBold(WelcomeString3, 0, 127, 6);
 
 #else
         UI_PrintStringSmallNormal(Version, 0, 127, 6);
 #endif
 
-        //ST7565_BlitStatusLine();  // blank status line : I think it's useless
+        
         ST7565_BlitFullScreen();
 
         #ifdef ENABLE_FEAT_F4HWN_SCREENSHOT

@@ -5,16 +5,19 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <string.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 #include "app/chFrScanner.h"
 #ifdef ENABLE_FMRADIO
@@ -39,11 +42,8 @@
 static void convertTime(uint8_t *line, uint8_t type) 
 {
     uint16_t t = (type == 0) ? (gTxTimerCountdown_500ms / 2) : (3600 - gRxTimerCountdown_500ms / 2);
-
     uint8_t m = t / 60;
-    uint8_t s = t - (m * 60); // Replace modulo with subtraction for efficiency
-
-    gStatusLine[0] = gStatusLine[7] = gStatusLine[14] = 0x00; // Quick fix on display (on scanning I, II, etc.)
+    uint8_t s = t - (m * 60);
 
     char str[6];
     sprintf(str, "%02u:%02u", m, s);
@@ -56,222 +56,180 @@ static void convertTime(uint8_t *line, uint8_t type)
 
 void UI_DisplayStatus()
 {
-    char str[8] = "";
-
+    char str[12] = "";
     gUpdateStatus = false;
     memset(gStatusLine, 0, sizeof(gStatusLine));
 
-    uint8_t     *line = gStatusLine;
-    unsigned int x    = 0;
+    // ТВОИ КООРДИНАТЫ (X)
+    const uint8_t POS_TMR  = 10;   // Таймер (текст)
+    const uint8_t POS_MOD  = 0;   // DW, XB, MO (глифы)
+    const uint8_t POS_VOX  = 59;   // VOX (глиф)
+   // PTTDEL const uint8_t POS_PTT  = 70;   // PTT (глифы)
+    const uint8_t POS_B    = 80;   // Подсветка (глиф)
+    const uint8_t POS_LOCK = 90;   // Замок (глиф)
+    const uint8_t POS_F    = 90;   // Буква F (глиф)
 
-#ifdef ENABLE_NOAA
-    // NOAA indicator
-    if (!(gScanStateDir != SCAN_OFF || SCANNER_IsScanning()) && gIsNoaaMode) { // NOASS SCAN indicator
-        memcpy(line + x, BITMAP_NOAA, sizeof(BITMAP_NOAA));
-    }
-    // Power Save indicator
-    else if (gCurrentFunction == FUNCTION_POWER_SAVE) {
-        memcpy(line + x, gFontPowerSave, sizeof(gFontPowerSave));
-    }
-    x += 8;
-#else
-    // Power Save indicator
-    if (gCurrentFunction == FUNCTION_POWER_SAVE) {
-        memcpy(line + x, gFontPowerSave, sizeof(gFontPowerSave));
-    }
-    x += 8;
-#endif
+   
 
-    unsigned int x1 = x;
+    // 2. РЕЖИМЫ (DW, DWR, HL, XB, MO) - В СТОЛБИК
+    if (!SCANNER_IsScanning()) {
+        uint8_t dw = (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF) + (gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF) * 2;
+        if (dw == 1 || dw == 3) {
+            if (gDualWatchActive) {
+                if (dw == 1) { // DW (tx)
+                    gStatusLine[POS_MOD + 0] |= 0x7F;
+                    gStatusLine[POS_MOD + 1] |= 0x6B;
+                    gStatusLine[POS_MOD + 2] |= 0x49;
+                    gStatusLine[POS_MOD + 3] |= 0x08;
+                    gStatusLine[POS_MOD + 4] |= 0x49;
+                    gStatusLine[POS_MOD + 5] |= 0x6B;
+                    gStatusLine[POS_MOD + 6] |= 0x7F;
 
-#ifdef ENABLE_DTMF_CALLING
-    if (gSetting_KILLED) {
-        memset(line + x, 0xFF, 10);
-        x1 = x + 10;
-    }
-    else
-#endif
-    { // SCAN indicator
-        if (gScanStateDir != SCAN_OFF || SCANNER_IsScanning()) {
-            if (IS_MR_CHANNEL(gNextMrChannel) && !SCANNER_IsScanning()) { // channel mode
-                switch(gEeprom.SCAN_LIST_DEFAULT) {
-                    case 0:
-                        memcpy(line + 0, BITMAP_ScanList0, sizeof(BITMAP_ScanList0));
-                        break;
-                    case 1: 
-                        memcpy(line + 0, BITMAP_ScanList1, sizeof(BITMAP_ScanList1));
-                        break;
-                    case 2:
-                        memcpy(line + 0, BITMAP_ScanList2, sizeof(BITMAP_ScanList2));
-                        break;
-                    case 3:
-                        memcpy(line + 0, BITMAP_ScanList3, sizeof(BITMAP_ScanList3));
-                        break;
-                    case 4:
-                        memcpy(line + 0, BITMAP_ScanList123, sizeof(BITMAP_ScanList123));
-                        break;
-                    case 5:
-                        memcpy(line + 0, BITMAP_ScanListAll, sizeof(BITMAP_ScanListAll));
-                        break;
+                } else { // DWR
+                    gStatusLine[POS_MOD + 0] |= 0x7F;
+                    gStatusLine[POS_MOD + 1] |= 0x6B;
+                    gStatusLine[POS_MOD + 2] |= 0x4D;
+                    gStatusLine[POS_MOD + 3] |= 0x0E;
+                    gStatusLine[POS_MOD + 4] |= 0x4D;
+                    gStatusLine[POS_MOD + 5] |= 0x6B;
+                    gStatusLine[POS_MOD + 6] |= 0x7F;
+
                 }
+            } else { // HL (HOLD)
+                    gStatusLine[POS_MOD + 0] |= 0x7F;
+                    gStatusLine[POS_MOD + 1] |= 0x49;
+                    gStatusLine[POS_MOD + 2] |= 0x41;
+                    gStatusLine[POS_MOD + 3] |= 0x63;
+                    gStatusLine[POS_MOD + 4] |= 0x41;
+                    gStatusLine[POS_MOD + 5] |= 0x49;
+                    gStatusLine[POS_MOD + 6] |= 0x7F;
             }
-            else {  // frequency mode
-                memcpy(line + x + 1, gFontS, sizeof(gFontS));
-                //UI_PrintStringSmallBufferNormal("S", line + x + 1);
-            }
-            x1 = x + 10;
+        } else if (dw == 2) { // XB
+                gStatusLine[POS_MOD + 0] |= 0x7F;
+                gStatusLine[POS_MOD + 1] |= 0x71;
+                gStatusLine[POS_MOD + 2] |= 0x71;
+                gStatusLine[POS_MOD + 3] |= 0x7F;
+                gStatusLine[POS_MOD + 4] |= 0x47;
+                gStatusLine[POS_MOD + 5] |= 0x47;
+                gStatusLine[POS_MOD + 6] |= 0x7F;
+        } else { // MO
+                gStatusLine[POS_MOD + 0] |= 0x7F;
+                gStatusLine[POS_MOD + 1] |= 0x51;
+                gStatusLine[POS_MOD + 2] |= 0x71;
+                gStatusLine[POS_MOD + 3] |= 0x51;
+                gStatusLine[POS_MOD + 4] |= 0x71;
+                gStatusLine[POS_MOD + 5] |= 0x51;
+                gStatusLine[POS_MOD + 6] |= 0x7F;
+
         }
     }
-    x += 10;  // font character width
 
-    #ifdef ENABLE_FEAT_F4HWN_DEBUG
-        // Only for debug
-        // Only for debug
-        // Only for debug
+    // 3. ТАЙМЕР
+#ifdef ENABLE_FEAT_F4HWN_RX_TX_TIMER
+    if (gSetting_set_tmr) {
+        if (gCurrentFunction == FUNCTION_TRANSMIT) convertTime(gStatusLine + POS_TMR, 0);
+        else if (FUNCTION_IsRx()) convertTime(gStatusLine + POS_TMR, 1);
+    }
+#endif
 
-        sprintf(str, "%d", gDebug);
-        UI_PrintStringSmallBufferNormal(str, line + x + 1);
-        x += 16;
-    #else
-        #ifdef ENABLE_VOICE
-        // VOICE indicator
-        if (gEeprom.VOICE_PROMPT != VOICE_PROMPT_OFF){
-            memcpy(line + x, BITMAP_VoicePrompt, sizeof(BITMAP_VoicePrompt));
-            x1 = x + sizeof(BITMAP_VoicePrompt);
+    // 4. VOX - В СТОЛБИК
+#ifdef ENABLE_VOX
+    if (gEeprom.VOX_SWITCH) {
+        gStatusLine[POS_VOX + 0] |= 0x7F;
+        gStatusLine[POS_VOX + 1] |= 0x41;
+        gStatusLine[POS_VOX + 2] |= 0x1C;
+        gStatusLine[POS_VOX + 3] |= 0x7C;
+        gStatusLine[POS_VOX + 4] |= 0x1C;
+        gStatusLine[POS_VOX + 5] |= 0x41;
+        gStatusLine[POS_VOX + 6] |= 0x7F;
+    }
+#endif
+
+//     // 5. PTT - В СТОЛБИК
+// #ifdef ENABLE_FEAT_F4HWN
+//     if (gSetting_set_ptt_session) {
+//         gStatusLine[POS_PTT + 0] |= 0x3E;
+//         gStatusLine[POS_PTT + 1] |= 0x7F;
+//         gStatusLine[POS_PTT + 2] |= 0x5D;
+//         gStatusLine[POS_PTT + 3] |= 0x49;
+//         gStatusLine[POS_PTT + 4] |= 0x41;
+//         gStatusLine[POS_PTT + 5] |= 0x41;
+//         gStatusLine[POS_PTT + 6] |= 0x3E;
+//     } else {
+//         gStatusLine[POS_PTT + 0] |= 0x3E;
+//         gStatusLine[POS_PTT + 1] |= 0x41;
+//         gStatusLine[POS_PTT + 2] |= 0x63;
+//         gStatusLine[POS_PTT + 3] |= 0x77;
+//         gStatusLine[POS_PTT + 4] |= 0x7F;
+//         gStatusLine[POS_PTT + 5] |= 0x7F;
+//         gStatusLine[POS_PTT + 6] |= 0x3E;
+//     }
+// #endif
+
+    // 6. ПОДСВЕТКА (B) - В СТОЛБИК
+    if (gBackLight) {
+        gStatusLine[POS_B + 0] |= 0x0C;
+        gStatusLine[POS_B + 1] |= 0x12;
+        gStatusLine[POS_B + 2] |= 0x65;
+        gStatusLine[POS_B + 3] |= 0x79;
+        gStatusLine[POS_B + 4] |= 0x65;
+        gStatusLine[POS_B + 5] |= 0x12;
+        gStatusLine[POS_B + 6] |= 0x0C;
+    }
+
+    // 7. F-KEY И ЗАМОК - РАЗДЕЛЬНО
+    if (gWasFKeyPressed) {
+        gStatusLine[POS_F + 0] |= 0x7F;
+        gStatusLine[POS_F + 1] |= 0x41;
+        gStatusLine[POS_F + 2] |= 0x75;
+        gStatusLine[POS_F + 3] |= 0x75;
+        gStatusLine[POS_F + 4] |= 0x75;
+        gStatusLine[POS_F + 5] |= 0x7D;
+        gStatusLine[POS_F + 6] |= 0x7F;
+    }
+    if (gEeprom.KEY_LOCK) {
+        gStatusLine[POS_LOCK + 0] |= 0x7C;
+        gStatusLine[POS_LOCK + 1] |= 0x7A;
+        gStatusLine[POS_LOCK + 2] |= 0x79;
+        gStatusLine[POS_LOCK + 3] |= 0x49;
+        gStatusLine[POS_LOCK + 4] |= 0x79;
+        gStatusLine[POS_LOCK + 5] |= 0x7A;
+        gStatusLine[POS_LOCK + 6] |= 0x7C;
+    }
+
+     // 1. СКАНЕР И СПИСКИ
+    if (gScanStateDir != SCAN_OFF || SCANNER_IsScanning()) {
+        if (IS_MR_CHANNEL(gNextMrChannel) && !SCANNER_IsScanning()) {
+            switch(gEeprom.SCAN_LIST_DEFAULT) {
+                case 0: memcpy(gStatusLine + 0, BITMAP_ScanList0, sizeof(BITMAP_ScanList0)); break;
+                case 1: memcpy(gStatusLine + 0, BITMAP_ScanList1, sizeof(BITMAP_ScanList1)); break;
+                case 2: memcpy(gStatusLine + 0, BITMAP_ScanList2, sizeof(BITMAP_ScanList2)); break;
+                case 3: memcpy(gStatusLine + 0, BITMAP_ScanList3, sizeof(BITMAP_ScanList3)); break;
+                case 4: memcpy(gStatusLine + 0, BITMAP_ScanList123, sizeof(BITMAP_ScanList123)); break;
+                case 5: memcpy(gStatusLine + 0, BITMAP_ScanListAll, sizeof(BITMAP_ScanListAll)); break;
+            }
+        } else {
+            memcpy(gStatusLine + POS_MOD + 1, gFontS, sizeof(gFontS));
         }
-        x += sizeof(BITMAP_VoicePrompt);
-        #endif
+    }
 
-        if(!SCANNER_IsScanning()) {
-        #ifdef ENABLE_FEAT_F4HWN_RX_TX_TIMER
-            if(gCurrentFunction == FUNCTION_TRANSMIT && gSetting_set_tmr == true)
-            {
-                convertTime(line, 0);
-            }
-            else if(FUNCTION_IsRx() && gSetting_set_tmr == true)
-            {
-                convertTime(line, 1);
-            }
-            else
-        #endif
-            {
-                    uint8_t dw = (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF) + (gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF) * 2;
-                    if(dw == 1 || dw == 3) { // DWR - dual watch + respond
-                        if(gDualWatchActive)
-                            memcpy(line + x + (dw==1?0:2), gFontDWR, sizeof(gFontDWR) - (dw==1?0:5));
-                        else
-                            memcpy(line + x + 3, gFontHold, sizeof(gFontHold));
-                    }
-                    else if(dw == 2) { // XB - crossband
-                        memcpy(line + x + 2, gFontXB, sizeof(gFontXB));
-                    }
-                    else
-                    {
-                        memcpy(line + x + 2, gFontMO, sizeof(gFontMO));
-                    }
-            }
-        }
-        x += sizeof(gFontDWR) + 3;
+
+    #ifdef ENABLE_FEAT_F4HWN
+    if (gMute) {
+        // Вывод Mute (например на позиции 100, чтоб не мешал)
+        memcpy(gStatusLine + 100, gFontMute, sizeof(gFontMute));
+    }
     #endif
 
-#ifdef ENABLE_VOX
-    // VOX indicator
-    if (gEeprom.VOX_SWITCH) {
-        memcpy(line + x, gFontVox, sizeof(gFontVox));
-        x1 = x + sizeof(gFontVox) + 1;
-    }
-    x += sizeof(gFontVox) + 3;
-#endif
-
-#ifdef ENABLE_FEAT_F4HWN
-    // PTT indicator
-    if (gSetting_set_ptt_session) {
-        memcpy(line + x, gFontPttOnePush, sizeof(gFontPttOnePush));
-        x1 = x + sizeof(gFontPttOnePush) + 1;
-    }
-    else
-    {
-        memcpy(line + x, gFontPttClassic, sizeof(gFontPttClassic));
-        x1 = x + sizeof(gFontPttClassic) + 1;       
-    }
-    x += sizeof(gFontPttClassic) + 3;
-#endif
-
-    x = MAX(x1, 69u);
-
-    const void *src = NULL;   // Pointer to the font/bitmap to copy
-    size_t size = 0;          // Size of the font/bitmap
-
-    // Determine the source and size based on conditions
-    if (gEeprom.KEY_LOCK) {
-        src = gFontKeyLock;
-        size = sizeof(gFontKeyLock);
-    }
-    else if (gWasFKeyPressed) {
-        src = gFontF;
-        size = sizeof(gFontF);       
+    // 8. БАТАРЕЯ (Твой оригинал)
+    if (gSetting_battery_text == 1) {
+        sprintf(str, "%u.%02u", gBatteryVoltageAverage / 100, gBatteryVoltageAverage % 100);
+    } else {
+        sprintf(str, "%u%%", BATTERY_VoltsToPercent(gBatteryVoltageAverage));
     }
     
-    #ifdef ENABLE_FEAT_F4HWN
-        else if (gMute) {
-            src = gFontMute;
-            size = sizeof(gFontMute);
-        }
-    #endif
-    else if (gBackLight) {
-        src = gFontLight;
-        size = sizeof(gFontLight);
-    }
-    #ifdef ENABLE_FEAT_F4HWN_CHARGING_C
-    else if (gChargingWithTypeC) {
-        src = BITMAP_USB_C;
-        size = sizeof(BITMAP_USB_C);
-    }
-    #endif
-
-    // Perform the memcpy if a source was selected
-    if (src) {
-        memcpy(line + x + 1, src, size);
-    }
-
-    // Battery
-    unsigned int x2 = LCD_WIDTH - sizeof(BITMAP_BatteryLevel1) - 0;
-
-    UI_DrawBattery(line + x2, gBatteryDisplayLevel, gLowBatteryBlink);
-
-    bool BatTxt = true;
-
-    switch (gSetting_battery_text) {
-        default:
-        case 0:
-            BatTxt = false;
-            break;
-
-        case 1:    // voltage
-            const uint16_t voltage = (gBatteryVoltageAverage <= 999) ? gBatteryVoltageAverage : 999; // limit to 9.99V
-            sprintf(str, "%u.%02u", voltage / 100, voltage % 100);
-            break;
-
-        case 2:     // percentage
-            //gBatteryVoltageAverage = 999;
-            sprintf(str, "%02u%%", BATTERY_VoltsToPercent(gBatteryVoltageAverage));
-            break;
-    }
-
-    if (BatTxt) {
-        x2 -= (7 * strlen(str));
-        UI_PrintStringSmallBufferNormal(str, line + x2);
-        /*
-        uint8_t shift = (strlen(str) < 5) ? 92 : 88;
-        GUI_DisplaySmallest(str, shift, 1, true, true);
-
-        for (uint8_t i = shift - 2; i < 110; i++) {
-            gStatusLine[i] ^= 0x7F; // invert
-        }
-        */
-    }
-
-    // **************
+    uint8_t battPos = 127 - (strlen(str) * 7);
+    UI_PrintStringSmallBufferBold(str, gStatusLine + battPos);
 
     ST7565_BlitStatusLine();
 }

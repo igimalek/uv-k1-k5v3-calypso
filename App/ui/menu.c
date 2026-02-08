@@ -123,18 +123,18 @@ const t_menu_item MenuList[] =
     {"D Decd",      MENU_D_DCD         },
     {"D List",      MENU_D_LIST        },
 #endif
-    {"D Live",      MENU_D_LIVE_DEC    }, // live DTMF decoder
+    {"D Live",      MENU_D_LIVE_DEC    },   
     {"VOX",         MENU_VOX           },
 #ifdef ENABLE_FEAT_F4HWN
-    {"SysInf",      MENU_VOL           }, // was "VOL"
+    {"ABOUT",      MENU_VOL           },   
 #else
-    {"BatVol",      MENU_VOL           }, // was "VOL"
+    {"BatVol",      MENU_VOL           },   
 #endif
     {"RxMode",      MENU_TDR           },
     {"Sql",         MENU_SQL           },
 #ifdef ENABLE_FEAT_F4HWN
     {"SetPwr",      MENU_SET_PWR       },
-    {"SetPTT",      MENU_SET_PTT       },
+   // PTTDEL {"SetPTT",      MENU_SET_PTT       },
     {"SetTOT",      MENU_SET_TOT       },
     {"SetEOT",      MENU_SET_EOT       },
     {"SetCtr",      MENU_SET_CTR       },
@@ -368,13 +368,13 @@ const char gSubMenu_SCRAMBLER[][7] =
         "5"
     };
 
-    const char gSubMenu_SET_PTT[][8] =
-    {
-        "CLASSIC",
-        "ONEPUSH"
-    };
+    // const char gSubMenu_SET_PTT[][8] =
+    // {
+    //     "CLASSIC",
+    //     "ONEPUSH"
+    // };// PTTDEL
 
-    const char gSubMenu_SET_TOT[][7] =  // Use by SET_EOT too
+    const char gSubMenu_SET_TOT[][7] =    
     {
         "OFF",
         "SOUND",
@@ -430,16 +430,16 @@ const t_sidefunction gSubMenu_SIDEFUNCTIONS[] =
     {"VFO\nMEM",        ACTION_OPT_VFO_MR},
     {"MODE",            ACTION_OPT_SWITCH_DEMODUL},
 #ifdef ENABLE_BLMIN_TMP_OFF
-    {"BLMIN\nTMP OFF",  ACTION_OPT_BLMIN_TMP_OFF},      //BackLight Minimum Temporay OFF
+    {"BLMIN\nTMP OFF",  ACTION_OPT_BLMIN_TMP_OFF},        
 #endif
 #ifdef ENABLE_FEAT_F4HWN
     {"RX MODE",         ACTION_OPT_RXMODE},
     {"MAIN ONLY",       ACTION_OPT_MAINONLY},
     {"PTT",             ACTION_OPT_PTT},
     {"WIDE\nNARROW",    ACTION_OPT_WN},
-    //#if !defined(ENABLE_SPECTRUM) || !defined(ENABLE_FMRADIO)
+      
     {"MUTE",            ACTION_OPT_MUTE},
-    //#endif
+      
 #endif
 };
 
@@ -973,13 +973,27 @@ void UI_DisplayMenu(void)
         case MENU_ROGER:
             strcpy(String, gSubMenu_ROGER[gSubMenuSelection]);
             break;
-
-        case MENU_VOL:
+case MENU_VOL:
 #ifdef ENABLE_FEAT_F4HWN
-            sprintf(String, "%s\n%s",
-                AUTHOR_STRING_2,
-                VERSION_STRING_2
-            );
+            {
+                char tmp[32];
+                String[0] = '\0'; 
+
+                // Диапазон для правой стороны: от 64 до 127
+                const uint8_t LEFT_X = 60;
+                const uint8_t RIGHT_X = 124;
+
+                // 1. Вольтаж: Page 1, правая сторона
+                sprintf(tmp, "%u.%02uV %u%%",
+                    gBatteryVoltageAverage / 100, gBatteryVoltageAverage % 100,
+                    BATTERY_VoltsToPercent(gBatteryVoltageAverage));
+                UI_PrintStringSmallNormal(tmp, LEFT_X, RIGHT_X, 1);
+                UI_PrintString(EDITION_STRING, LEFT_X, RIGHT_X, 2, 10); // 2. CALYPSO:
+                GUI_DisplaySmallest("AUTHOR:MENTANAH", 62, 32, false, true);
+                GUI_DisplaySmallest("UI|UX:OUROBOROS", 62, 39, false, true);
+                //UI_PrintStringSmallBold(VERSION_STRING_2, LEFT_X, RIGHT_X, 5); // 3.  IGGI
+                UI_PrintStringSmallBold(VERSION_STRING_1, LEFT_X, RIGHT_X, 6);
+            }
 #else
             sprintf(String, "%u.%02uV\n%u%%",
                 gBatteryVoltageAverage / 100, gBatteryVoltageAverage % 100,
@@ -1060,13 +1074,13 @@ void UI_DisplayMenu(void)
             sprintf(String, "%s\n%sW", gSubMenu_TXP[gSubMenuSelection + 1], gSubMenu_SET_PWR[gSubMenuSelection]);
             break;
     
-        case MENU_SET_PTT:
-            strcpy(String, gSubMenu_SET_PTT[gSubMenuSelection]);
-            break;
+        // case MENU_SET_PTT:
+        //     strcpy(String, gSubMenu_SET_PTT[gSubMenuSelection]);
+        //     break; // PTTDEL
 
         case MENU_SET_TOT:
         case MENU_SET_EOT:
-            strcpy(String, gSubMenu_SET_TOT[gSubMenuSelection]); // Same as SET_TOT
+            strcpy(String, gSubMenu_SET_TOT[gSubMenuSelection]);   
             break;
 
         case MENU_SET_CTR:
@@ -1105,7 +1119,7 @@ void UI_DisplayMenu(void)
 
         case MENU_SET_MET:
         case MENU_SET_GUI:
-            strcpy(String, gSubMenu_SET_MET[gSubMenuSelection]); // Same as SET_MET
+            strcpy(String, gSubMenu_SET_MET[gSubMenuSelection]);   
             break;
 
         #ifdef ENABLE_FEAT_F4HWN_NARROWER
@@ -1303,10 +1317,67 @@ void UI_DisplayMenu(void)
          UI_MENU_GetCurrentMenuId() == MENU_MEM_CH   ||
          UI_MENU_GetCurrentMenuId() == MENU_MEM_NAME ||
          UI_MENU_GetCurrentMenuId() == MENU_DEL_CH) && gAskForConfirmation)
-    {   // display confirmation
+    {     
         char *pPrintStr = (gAskForConfirmation == 1) ? "SURE?" : "WAIT!";
         UI_PrintString(pPrintStr, menu_item_x1, menu_item_x2, 5, 8);
     }
+
+typedef struct {
+	uint8_t y;          
+	uint8_t x_start;    
+	uint8_t x_end;      
+	uint8_t step;       
+} dashed_line_t;
+
+static const dashed_line_t dashed_lines[] = {
+	{ 8,  0, 127, 2 },     
+	{ 52,  0, 47, 2 },     
+
+};
+
+const uint8_t num_lines = ARRAY_SIZE(dashed_lines);
+
+for (uint8_t i = 0; i < num_lines; i++)
+{
+	const dashed_line_t *l = &dashed_lines[i];
+	const uint8_t y = l->y;
+
+	for (uint8_t x = l->x_start; x <= l->x_end; x += l->step)
+	{
+		if (y < 8)
+			gStatusLine[x] |= (1u << y);                                           
+		else
+			gFrameBuffer[(y - 8) >> 3][x] |= (1u << ((y - 8) & 7));                
+	}
+}
+
+typedef struct {
+	uint8_t x;          
+	uint8_t y_start;    
+	uint8_t y_end;      
+	uint8_t step;       
+} vertical_line_t;
+
+static const vertical_line_t vertical_lines[] = {
+	{  49,  10, 64, 2 },     
+
+};
+
+const uint8_t num_vlines = ARRAY_SIZE(vertical_lines);
+
+for (uint8_t i = 0; i < num_vlines; i++)
+{
+	const vertical_line_t *l = &vertical_lines[i];
+	const uint8_t x = l->x;
+
+	for (uint8_t y = l->y_start; y <= l->y_end; y += l->step)
+	{
+		if (y < 8)
+			gStatusLine[x] |= (1u << y);
+		else
+			gFrameBuffer[(y - 8) >> 3][x] |= (1u << ((y - 8) & 7));
+	}
+}
 
     ST7565_BlitFullScreen();
 }
