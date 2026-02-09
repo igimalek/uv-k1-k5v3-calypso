@@ -47,7 +47,7 @@ static void convertTime(uint8_t *line, uint8_t type)
 
     char str[6];
     sprintf(str, "%02u:%02u", m, s);
-    UI_PrintStringSmallBufferNormal(str, line);
+    UI_PrintStringSmallBufferBold(str, line);
 
     gUpdateStatus = true;
 }
@@ -61,9 +61,9 @@ void UI_DisplayStatus()
     memset(gStatusLine, 0, sizeof(gStatusLine));
 
     // ТВОИ КООРДИНАТЫ (X)
-    const uint8_t POS_TMR  = 10;   // Таймер (текст)
-    const uint8_t POS_MOD  = 0;   // DW, XB, MO (глифы)
-    const uint8_t POS_VOX  = 59;   // VOX (глиф)
+    const uint8_t POS_MOD  = 3;   // DW, XB, MO (глифы)
+    const uint8_t POS_TMR  = 12;   // Таймер (текст)
+    const uint8_t POS_VOX  = 62;   // VOX (глиф)
    // PTTDEL const uint8_t POS_PTT  = 70;   // PTT (глифы)
     const uint8_t POS_B    = 80;   // Подсветка (глиф)
     const uint8_t POS_LOCK = 90;   // Замок (глиф)

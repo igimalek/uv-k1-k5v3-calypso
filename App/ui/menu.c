@@ -856,6 +856,14 @@ void UI_DisplayMenu(void)
 
         case MENU_TDR:
             strcpy(String, gSubMenu_RXMode[gSubMenuSelection]);
+            gEeprom.DUAL_WATCH = (gEeprom.TX_VFO + 1) * (gSubMenuSelection & 1);
+            gEeprom.CROSS_BAND_RX_TX = (gEeprom.TX_VFO + 1) * ((gSubMenuSelection & 2) > 0);
+
+            #ifdef ENABLE_FEAT_F4HWN
+                gDW = gEeprom.DUAL_WATCH;
+                gCB = gEeprom.CROSS_BAND_RX_TX;
+                gSaveRxMode = true;
+            #endif
             break;
 
         case MENU_TOT:
