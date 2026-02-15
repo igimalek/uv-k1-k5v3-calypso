@@ -62,7 +62,7 @@ void UI_DisplayStatus()
 
     // ТВОИ КООРДИНАТЫ (X)
     const uint8_t POS_MOD  = 3;   // DW, XB, MO (глифы)
-    const uint8_t POS_TMR  = 12;   // Таймер (текст)
+    const uint8_t POS_TMR  = 25;   // Таймер (текст)
     const uint8_t POS_VOX  = 62;   // VOX (глиф)
    // PTTDEL const uint8_t POS_PTT  = 70;   // PTT (глифы)
     const uint8_t POS_B    = 80;   // Подсветка (глиф)
@@ -201,15 +201,22 @@ void UI_DisplayStatus()
     if (gScanStateDir != SCAN_OFF || SCANNER_IsScanning()) {
         if (IS_MR_CHANNEL(gNextMrChannel) && !SCANNER_IsScanning()) {
             switch(gEeprom.SCAN_LIST_DEFAULT) {
-                case 0: memcpy(gStatusLine + 0, BITMAP_ScanList0, sizeof(BITMAP_ScanList0)); break;
-                case 1: memcpy(gStatusLine + 0, BITMAP_ScanList1, sizeof(BITMAP_ScanList1)); break;
-                case 2: memcpy(gStatusLine + 0, BITMAP_ScanList2, sizeof(BITMAP_ScanList2)); break;
-                case 3: memcpy(gStatusLine + 0, BITMAP_ScanList3, sizeof(BITMAP_ScanList3)); break;
-                case 4: memcpy(gStatusLine + 0, BITMAP_ScanList123, sizeof(BITMAP_ScanList123)); break;
-                case 5: memcpy(gStatusLine + 0, BITMAP_ScanListAll, sizeof(BITMAP_ScanListAll)); break;
+                case 0: memcpy(gStatusLine + POS_MOD, BITMAP_ScanList0, sizeof(BITMAP_ScanList0)); break;
+                case 1: memcpy(gStatusLine + POS_MOD, BITMAP_ScanList1, sizeof(BITMAP_ScanList1)); break;
+                case 2: memcpy(gStatusLine + POS_MOD, BITMAP_ScanList2, sizeof(BITMAP_ScanList2)); break;
+                case 3: memcpy(gStatusLine + POS_MOD, BITMAP_ScanList3, sizeof(BITMAP_ScanList3)); break;
+                case 4: memcpy(gStatusLine + POS_MOD, BITMAP_ScanList123, sizeof(BITMAP_ScanList123)); break;
+                case 5: memcpy(gStatusLine + POS_MOD, BITMAP_ScanListAll, sizeof(BITMAP_ScanListAll)); break;
             }
         } else {
-            memcpy(gStatusLine + POS_MOD + 1, gFontS, sizeof(gFontS));
+            //memcpy(gStatusLine + POS_MOD, gFontS, sizeof(gFontS));
+                gStatusLine[POS_MOD + 0] = 0x41;
+                gStatusLine[POS_MOD + 1] = 0x22;
+                gStatusLine[POS_MOD + 2] = 0x14;
+                gStatusLine[POS_MOD + 3] = 0x49;
+                gStatusLine[POS_MOD + 4] = 0x22;
+                gStatusLine[POS_MOD + 5] = 0x14;
+                gStatusLine[POS_MOD + 6] = 0x08;
         }
     }
 
