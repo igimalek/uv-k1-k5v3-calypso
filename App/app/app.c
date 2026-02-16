@@ -602,11 +602,36 @@ void APP_StartListening(FUNCTION_Type_t function)
     gUpdateStatus = true;
 }
 
-uint32_t APP_SetFreqByStepAndLimits(VFO_Info_t *pInfo, int8_t direction, uint32_t lower, uint32_t upper)
+
+bool IsBirdieFrequency(uint32_t Frequency)
 {
+    const uint32_t f0 = 2600000; // 26 MHz fundamental
+    const uint32_t snap = 1000; // 10 kHz snap window around birdie frequencies
+
+    const uint32_t remainder = 4*Frequency % f0;
+
+    return (remainder <= 4*snap || remainder >= (f0 - 4*snap));
+
+}
+
+
+uint32_t APP_SetFreqByStepAndLimits(VFO_Info_t *pInfo, int8_t direction, uint32_t lower, uint32_t upper)
+{   
+    const uint32_t f0 = 2600000; // 26 MHz fundamental
+    const uint32_t snap = 1000; // 10 kHz snap window around birdie frequencies
+    
+    uint32_t nextFrqc = pInfo->freq_config_RX.Frequency + (direction * pInfo->StepFrequency);
+    
+    uint32_t remainder = 4*nextFrqc % f0;
+
+    // 1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 2.75, 3.00, ...
+    if ( remainder <= 4*snap || remainder >= (f0 - 4*snap) )
+        direction = 2*(snap/pInfo->StepFrequency+1) * direction;  // skip birdie frequencies
+
     uint32_t Frequency = FREQUENCY_RoundToStep(pInfo->freq_config_RX.Frequency + (direction * pInfo->StepFrequency), pInfo->StepFrequency);
 
-#ifdef ENABLE_FEAT_F4HWN
+
+    #ifdef ENABLE_FEAT_F4HWN
     if (Frequency > upper)
 #else
     if (Frequency >= upper)

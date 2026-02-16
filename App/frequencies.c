@@ -159,6 +159,8 @@ uint32_t FREQUENCY_RoundToStep(uint32_t freq, uint16_t step)
     return (freq + (step + 1) / 2) / step * step;
 }
 
+
+
 int32_t TX_freq_check(const uint32_t Frequency)
 {   // return '0' if TX frequency is allowed
     // otherwise return '-1'

@@ -594,7 +594,7 @@ static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
                 gEeprom.ScreenChannel[Vfo] = band + FREQ_CHANNEL_FIRST;
                 gEeprom.FreqChannel[Vfo]   = band + FREQ_CHANNEL_FIRST;
 
-                SETTINGS_SaveVfoIndices();  // calypso marker
+                SETTINGS_SaveVfoIndices();
 
                 RADIO_ConfigureChannel(Vfo, VFO_CONFIGURE_RELOAD);
             }
@@ -607,7 +607,7 @@ static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
                 Frequency = (Frequency < center) ? BX4819_band1.upper - gTxVfo->StepFrequency : BX4819_band2.lower;
             }
 
-            gTxVfo->freq_config_RX.Frequency = Frequency;  // calypso marker
+            gTxVfo->freq_config_RX.Frequency = Frequency;
 
             gRequestSaveChannel = 1;
             return;
@@ -1015,11 +1015,11 @@ static void MAIN_Key_UP_DOWN(bool bKeyPressed, bool bKeyHeld, int8_t Direction)
                 gTxVfo->freq_config_RX.Frequency = frequency;
                 BK4819_SetFrequency(frequency); 
                 BK4819_RX_TurnOn();
-                gRequestSaveChannel = 1; // calypso marker
+                gRequestSaveChannel = 1; 
                 return;
             }
 
-            Next = RADIO_FindNextChannel(Channel + Direction, Direction, false, 0);
+            Next = RADIO_FindNextChannel(Channel + Direction, Direction, false, 0);  // calypso marker
             if (Next == 0xFF)
                 return;
             if (Channel == Next)

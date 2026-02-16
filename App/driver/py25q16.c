@@ -182,7 +182,7 @@ static void SPI_Init()
     InitStruct.TransferDirection = LL_SPI_FULL_DUPLEX;
     InitStruct.ClockPhase = LL_SPI_PHASE_2EDGE;
     InitStruct.ClockPolarity = LL_SPI_POLARITY_HIGH;
-    InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV2;  // calypso marker slow down SPI for stability
+    InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV2;
     InitStruct.BitOrder = LL_SPI_MSB_FIRST;
     InitStruct.NSS = LL_SPI_NSS_SOFT;
     InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
@@ -266,13 +266,11 @@ static void SPI_ReadBuf(uint8_t *Buf, uint32_t Size)
     LL_SPI_Enable(SPIx);
     LL_SPI_EnableDMAReq_TX(SPIx);
     
-    // calypso marker
     // Add safety timeout to prevent infinite hang
     uint32_t timeout = 1000000; // ~1 second safety timeout
     while (!TC_Flag && timeout--)
         ;
 
-    // calypso marker
     if (!TC_Flag) {
         // Timeout occurred - disable everything to prevent further issues
         LL_SPI_Disable(SPIx);
@@ -320,7 +318,7 @@ static void SPI_WriteBuf(const uint8_t *Buf, uint32_t Size)
     LL_DMA_DisableChannel(DMA1, CHANNEL_WR);
 
     LL_DMA_ClearFlag_GI4(DMA1);
-    LL_DMA_ClearFlag_GI5(DMA1); // calypso marker
+    LL_DMA_ClearFlag_GI5(DMA1); 
 
     // CRITICAL FIX: RX DMA must use MEMORY_NOINCREMENT (BlackHole buffer) but must use PRIORITY_MEDIUM
     // to ensure RX FIFO empties and TC interrupt fires. Using PRIORITY_LOW starves RX channel.
@@ -362,13 +360,11 @@ static void SPI_WriteBuf(const uint8_t *Buf, uint32_t Size)
     LL_SPI_Enable(SPIx);
     LL_SPI_EnableDMAReq_TX(SPIx);
 
-    // calypso marker
     // Add safety timeout to prevent infinite hang
     uint32_t timeout = 1000000; // ~1 second safety timeout
     while (!TC_Flag && timeout--)
         ;
-    
-    // calypso marker    
+     
     if (!TC_Flag) {
         // Timeout occurred - disable everything to prevent further issues
         LL_SPI_Disable(SPIx);
@@ -433,7 +429,7 @@ static void WriteEnable();
 static void SectorErase(uint32_t Addr);
 static void SectorProgram(uint32_t Addr, const uint8_t *Buf, uint32_t Size);
 static void PageProgram(uint32_t Addr, const uint8_t *Buf, uint32_t Size);
-static void ReadID(uint8_t *ManufID, uint8_t *MemType, uint8_t *CapacityID);
+//static void ReadID(uint8_t *ManufID, uint8_t *MemType, uint8_t *CapacityID);
 
 void PY25Q16_Init()
 {
@@ -830,7 +826,7 @@ static void SectorErase(uint32_t Addr)
 #ifdef DEBUG
     printf("spi flash sector erase: %06x\n", Addr);
 #endif
-    WaitWIP();  // calypso marker CRITICAL: Wait for any previous operation to complete before issuing WriteEnable
+    WaitWIP();  // CRITICAL: Wait for any previous operation to complete before issuing WriteEnable
     WriteEnable();
     
     
@@ -928,7 +924,7 @@ static void PageProgram(uint32_t Addr, const uint8_t *Buf, uint32_t Size)
     printf("spi flash page program: %06x %ld\n", Addr, Size);
 #endif
 
-    WaitWIP();  // calypso marker CRITICAL: Wait for any previous operation to complete before issuing WriteEnable
+    WaitWIP();  // CRITICAL: Wait for any previous operation to complete before issuing WriteEnable
     WriteEnable();
 
     
