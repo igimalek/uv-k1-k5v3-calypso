@@ -303,6 +303,11 @@ volatile uint8_t  boot_counter_10ms;
 
 uint8_t           gIsLocked = 0xFF;
 
+// calypso marker
+bool              gSkipBirdies = true;
+bool              gUpDnButtonReversed = false;
+
+
 
 #ifdef ENABLE_FEAT_F4HWN
     bool          gK5startup = true;

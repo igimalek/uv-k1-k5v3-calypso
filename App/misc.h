@@ -371,6 +371,11 @@ extern volatile uint8_t      gVFOStateResumeCountdown_500ms;
     extern volatile bool     gScheduleFM;
 #endif
 extern uint8_t               gIsLocked;
+extern bool                  gSkipBirdies;
+extern bool                  gUpDnButtonReversed;
+
+
+
 extern volatile uint8_t      boot_counter_10ms;
 
 #ifdef ENABLE_FEAT_F4HWN

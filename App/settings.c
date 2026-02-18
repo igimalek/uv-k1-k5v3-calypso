@@ -362,7 +362,7 @@ void SETTINGS_InitEEPROM(void)
         // TODO: address TBD
         PY25Q16_ReadBuffer(0x00c000, Data, 8);
         gSetting_set_pwr = (((Data[7] & 0xF0) >> 4) < 7) ? ((Data[7] & 0xF0) >> 4) : 0;
-        gSetting_set_ptt = (((Data[7] & 0x0F)) < 2) ? ((Data[7] & 0x0F)) : 0;
+        gSkipBirdies = (((Data[7] & 0x0F)) < 2) ? ((Data[7] & 0x0F)) : 0;
 
         gSetting_set_tot = (((Data[6] & 0xF0) >> 4) < 4) ? ((Data[6] & 0xF0) >> 4) : 0;
         gSetting_set_eot = (((Data[6] & 0x0F)) < 4) ? ((Data[6] & 0x0F)) : 0;
@@ -1061,7 +1061,7 @@ void SETTINGS_SaveSettings(void)
 
     State[5] = ((tmp << 4) | (gSetting_set_ctr & 0x0F));
     State[6] = ((gSetting_set_tot << 4) | (gSetting_set_eot & 0x0F));
-    State[7] = ((gSetting_set_pwr << 4) | (gSetting_set_ptt & 0x0F));
+    State[7] = ((gSetting_set_pwr << 4) | (gSkipBirdies & 0x0F));
 
     gEeprom.KEY_LOCK_PTT = gSetting_set_lck;
 

@@ -625,7 +625,7 @@ uint32_t APP_SetFreqByStepAndLimits(VFO_Info_t *pInfo, int8_t direction, uint32_
     uint32_t remainder = 4*nextFrqc % f0;
 
     // 1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 2.75, 3.00, ...
-    if ( remainder <= 4*snap || remainder >= (f0 - 4*snap) )
+    if ( (remainder <= 4*snap || remainder >= (f0 - 4*snap)) && gSkipBirdies)
         direction = 2*(snap/pInfo->StepFrequency+1) * direction;  // skip birdie frequencies
 
     uint32_t Frequency = FREQUENCY_RoundToStep(pInfo->freq_config_RX.Frequency + (direction * pInfo->StepFrequency), pInfo->StepFrequency);

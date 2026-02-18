@@ -134,7 +134,7 @@ const t_menu_item MenuList[] =
     {"Sql",         MENU_SQL           },
 #ifdef ENABLE_FEAT_F4HWN
     {"SetPwr",      MENU_SET_PWR       },
-   // PTTDEL {"SetPTT",      MENU_SET_PTT       },
+    {"SkipBD",      MENU_SKIP_BIRD     },
     {"SetTOT",      MENU_SET_TOT       },
     {"SetEOT",      MENU_SET_EOT       },
     {"SetCtr",      MENU_SET_CTR       },
@@ -1086,9 +1086,9 @@ case MENU_VOL:
             sprintf(String, "%s\n%sW", gSubMenu_TXP[gSubMenuSelection + 1], gSubMenu_SET_PWR[gSubMenuSelection]);
             break;
     
-        // case MENU_SET_PTT:
-        //     strcpy(String, gSubMenu_SET_PTT[gSubMenuSelection]);
-        //     break; // PTTDEL
+         case MENU_SKIP_BIRD:
+             strcpy(String, gSubMenu_OFF_ON[gSubMenuSelection]);
+             break;
 
         case MENU_SET_TOT:
         case MENU_SET_EOT:

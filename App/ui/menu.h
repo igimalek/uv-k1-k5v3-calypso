@@ -124,7 +124,7 @@ enum
 #endif
 #ifdef ENABLE_FEAT_F4HWN
     MENU_SET_PWR,
-   // PTTDEL MENU_SET_PTT,
+    MENU_SKIP_BIRD,
     MENU_SET_TOT,
     MENU_SET_EOT,
     MENU_SET_CTR,
