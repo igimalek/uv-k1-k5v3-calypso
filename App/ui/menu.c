@@ -46,27 +46,44 @@ const t_menu_item MenuList[] =
 {
 //   text,          menu ID
     {"Step",        MENU_STEP          },
+    {"Sql",         MENU_SQL           },
+    {"RxMode",      MENU_TDR           },
+    {"Mode",        MENU_AM            }, // was "AM"
     {"Power",       MENU_TXP           }, // was "TXP"
     {"RxDCS",       MENU_R_DCS         }, // was "R_DCS"
     {"RxCTCS",      MENU_R_CTCS        }, // was "R_CTCS"
     {"TxDCS",       MENU_T_DCS         }, // was "T_DCS"
     {"TxCTCS",      MENU_T_CTCS        }, // was "T_CTCS"
-    {"TxODir",      MENU_SFT_D         }, // was "SFT_D"
     {"TxOffs",      MENU_OFFSET        }, // was "OFFSET"
+    {"TxODir",      MENU_SFT_D         }, // was "SFT_D" 
     {"W/N",         MENU_W_N           },
-    {"Scramb",      MENU_SCR           }, // was "SCR"
-    {"BusyCL",      MENU_BCL           }, // was "BCL"
+    #ifdef ENABLE_FEAT_F4HWN_NARROWER
+    {"SetNFM",      MENU_SET_NFM       },
+    #endif
     {"Compnd",      MENU_COMPAND       },
-    {"Mode",        MENU_AM            }, // was "AM"
-#ifdef ENABLE_FEAT_F4HWN
+    {"BusyCL",      MENU_BCL           }, // was "BCL"
+    {"VOX",         MENU_VOX           },
+    {"Scramb",      MENU_SCR           }, // was "SCR"
+    #ifdef ENABLE_FEAT_F4HWN
+    {"SkipBD",      MENU_SKIP_BIRD     },
+    #endif
+    {"Roger",       MENU_ROGER         },
+    
+    #ifdef ENABLE_FEAT_F4HWN
+    {"ABOUT",      MENU_VOL           },   
+    #else
+    {"BatVol",      MENU_VOL           },   
+    #endif
+    #ifdef ENABLE_FEAT_F4HWN__
     {"TXLock",      MENU_TX_LOCK       }, 
-#endif
+    #endif
     {"ScAdd1",      MENU_S_ADD1        },
     {"ScAdd2",      MENU_S_ADD2        },
     {"ScAdd3",      MENU_S_ADD3        },
     {"ChSave",      MENU_MEM_CH        }, // was "MEM-CH"
     {"ChDele",      MENU_DEL_CH        }, // was "DEL-CH"
     {"ChName",      MENU_MEM_NAME      },
+    {"ChDisp",      MENU_MDF           }, // was "MDF"
 
     {"SList",       MENU_S_LIST        },
     {"SList1",      MENU_SLIST1        },
@@ -87,20 +104,20 @@ const t_menu_item MenuList[] =
     {"KeyLck",      MENU_AUTOLK        }, // was "AUTOLk"
     {"TxTOut",      MENU_TOT           }, // was "TOT"
     {"BatSav",      MENU_SAVE          }, // was "SAVE"
-    {"BatTxt",      MENU_BAT_TXT       },
     {"Mic",         MENU_MIC           },
     {"MicBar",      MENU_MIC_BAR       },
-    {"ChDisp",      MENU_MDF           }, // was "MDF"
+    
     {"POnMsg",      MENU_PONMSG        },
+    {"Beep",        MENU_BEEP          },
     {"BLTime",      MENU_ABR           }, // was "ABR"
     {"BLMin",       MENU_ABR_MIN       },
     {"BLMax",       MENU_ABR_MAX       },
     {"BLTxRx",      MENU_ABR_ON_TX_RX  },
-    {"Beep",        MENU_BEEP          },
+    
 #ifdef ENABLE_VOICE
     {"Voice",       MENU_VOICE         },
 #endif
-    {"Roger",       MENU_ROGER         },
+    
     {"STE",         MENU_STE           },
     {"RP STE",      MENU_RP_STE        },
     {"1 Call",      MENU_1_CALL        },
@@ -124,22 +141,17 @@ const t_menu_item MenuList[] =
     {"D List",      MENU_D_LIST        },
 #endif
     {"D Live",      MENU_D_LIVE_DEC    },   
-    {"VOX",         MENU_VOX           },
-#ifdef ENABLE_FEAT_F4HWN
-    {"ABOUT",      MENU_VOL           },   
-#else
-    {"BatVol",      MENU_VOL           },   
-#endif
-    {"RxMode",      MENU_TDR           },
-    {"Sql",         MENU_SQL           },
+    
+
+    
 #ifdef ENABLE_FEAT_F4HWN
     {"SetPwr",      MENU_SET_PWR       },
-    {"SkipBD",      MENU_SKIP_BIRD     },
     {"SetTOT",      MENU_SET_TOT       },
     {"SetEOT",      MENU_SET_EOT       },
     {"SetCtr",      MENU_SET_CTR       },
     {"SetInv",      MENU_SET_INV       },
     {"SetLck",      MENU_SET_LCK       },
+    {"BatTxt",      MENU_BAT_TXT       },
     {"SetMet",      MENU_SET_MET       },
     {"SetGUI",      MENU_SET_GUI       },
 #ifdef ENABLE_FEAT_F4HWN_RX_TX_TIMER    // calypso
@@ -148,9 +160,7 @@ const t_menu_item MenuList[] =
 #ifdef ENABLE_FEAT_F4HWN_SLEEP
     {"SetOff",       MENU_SET_OFF      },
 #endif
-#ifdef ENABLE_FEAT_F4HWN_NARROWER
-    {"SetNFM",      MENU_SET_NFM       },
-#endif
+
 #ifdef ENABLE_FEAT_F4HWN_VOL
     {"SetVol",      MENU_SET_VOL       },
 #endif
