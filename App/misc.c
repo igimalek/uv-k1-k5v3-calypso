@@ -305,7 +305,7 @@ uint8_t           gIsLocked = 0xFF;
 
 // calypso marker
 bool              gSkipBirdies = true;
-bool              gUpDnButtonReversed = false;
+bool              gUpDnButtonToLeftRight = true;
 
 
 

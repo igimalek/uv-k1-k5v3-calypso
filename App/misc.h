@@ -372,7 +372,7 @@ extern volatile uint8_t      gVFOStateResumeCountdown_500ms;
 #endif
 extern uint8_t               gIsLocked;
 extern bool                  gSkipBirdies;
-extern bool                  gUpDnButtonReversed;
+extern bool                  gUpDnButtonToLeftRight;
 
 
 
