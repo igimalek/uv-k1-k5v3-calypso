@@ -62,13 +62,8 @@ void UI_DisplayStatus()
 
     // ТВОИ КООРДИНАТЫ (X)
      uint8_t POS_MOD  = 3;   // DW, XB, MO (глифы)
-     uint8_t POS_SCN  = 3;
-    const uint8_t POS_TMR  = 25;   // Таймер (текст)
-    const uint8_t POS_VOX  = 62;   // VOX (глиф)
-   // PTTDEL const uint8_t POS_PTT  = 70;   // PTT (глифы)
-    //const uint8_t POS_B    = 80;   // Подсветка (глиф)
-    const uint8_t POS_LOCK = 77;   // Замок (глиф)
-    const uint8_t POS_F    = 91;   // Буква F (глиф)
+    const uint8_t POS_LOCK = 83;   // Замок (глиф)
+    const uint8_t POS_F    = 83;   // Буква F (глиф)
 
    
 
@@ -78,45 +73,42 @@ void UI_DisplayStatus()
         if (dw == 1 || dw == 3) {
             if (gDualWatchActive) {
                 if (dw == 1) { // DW (tx)
-                    gStatusLine[POS_MOD++] |= 0x7F;
-                    gStatusLine[POS_MOD++] |= 0x6B;
-                    gStatusLine[POS_MOD++] |= 0x49;
-                    gStatusLine[POS_MOD++] |= 0x08;
-                    gStatusLine[POS_MOD++] |= 0x49;
-                    gStatusLine[POS_MOD++] |= 0x6B;
-                    gStatusLine[POS_MOD++] |= 0x7F;
+                    gStatusLine[POS_MOD++] = 0x7F;
+                    gStatusLine[POS_MOD++] = 0x6B;
+                    gStatusLine[POS_MOD++] = 0x49;
+                    gStatusLine[POS_MOD++] = 0x08;
+                    gStatusLine[POS_MOD++] = 0x49;
+                    gStatusLine[POS_MOD++] = 0x6B;
+                    gStatusLine[POS_MOD++] = 0x7F;
 
                 } else { // DWR
-                    gStatusLine[POS_MOD++] |= 0x7F;
-                    gStatusLine[POS_MOD++] |= 0x6B;
-                    gStatusLine[POS_MOD++] |= 0x4D;
-                    gStatusLine[POS_MOD++] |= 0x0E;
-                    gStatusLine[POS_MOD++] |= 0x4D;
-                    gStatusLine[POS_MOD++] |= 0x6B;
-                    gStatusLine[POS_MOD++] |= 0x7F;
+                    gStatusLine[POS_MOD++] = 0x7F;
+                    gStatusLine[POS_MOD++] = 0x6B;
+                    gStatusLine[POS_MOD++] = 0x4D;
+                    gStatusLine[POS_MOD++] = 0x0E;
+                    gStatusLine[POS_MOD++] = 0x4D;
+                    gStatusLine[POS_MOD++] = 0x6B;
+                    gStatusLine[POS_MOD++] = 0x7F;
 
                 }
             } else { // HL (HOLD)
-                    gStatusLine[POS_MOD++] |= 0x7F;
-                    gStatusLine[POS_MOD++] |= 0x7F;
-                    gStatusLine[POS_MOD++] |= 0x08;
-                    gStatusLine[POS_MOD++] |= 0x08;
-                    gStatusLine[POS_MOD++] |= 0x08;
-                    gStatusLine[POS_MOD++] |= 0x7F;
-                    gStatusLine[POS_MOD++] |= 0x7F;
-
-                    
-
+                gStatusLine[POS_MOD++] = 0x7F;
+                gStatusLine[POS_MOD++] = 0x41;
+                gStatusLine[POS_MOD++] = 0x77;
+                gStatusLine[POS_MOD++] = 0x77;
+                gStatusLine[POS_MOD++] = 0x77;
+                gStatusLine[POS_MOD++] = 0x41;
+                gStatusLine[POS_MOD++] = 0x7F;
 
             }
         } else if (dw == 2) { // XB
-                gStatusLine[POS_MOD++] |= 0x7F;
-                gStatusLine[POS_MOD++] |= 0x49;
-                gStatusLine[POS_MOD++] |= 0x41;
-                gStatusLine[POS_MOD++] |= 0x63;
-                gStatusLine[POS_MOD++] |= 0x41;
-                gStatusLine[POS_MOD++] |= 0x49;
-                gStatusLine[POS_MOD++] |= 0x7F;
+                gStatusLine[POS_MOD++] = 0x7F;
+                gStatusLine[POS_MOD++] = 0x49;
+                gStatusLine[POS_MOD++] = 0x41;
+                gStatusLine[POS_MOD++] = 0x63;
+                gStatusLine[POS_MOD++] = 0x41;
+                gStatusLine[POS_MOD++] = 0x49;
+                gStatusLine[POS_MOD++] = 0x7F;
 
                /* gStatusLine[POS_MOD++] |= 0x7F;
                 gStatusLine[POS_MOD++] |= 0x71;
@@ -127,13 +119,13 @@ void UI_DisplayStatus()
                 gStatusLine[POS_MOD++] |= 0x7F;
                 */
         } else { // MO
-                gStatusLine[POS_MOD++] |= 0x7F;
-                gStatusLine[POS_MOD++] |= 0x51;
-                gStatusLine[POS_MOD++] |= 0x71;
-                gStatusLine[POS_MOD++] |= 0x51;
-                gStatusLine[POS_MOD++] |= 0x71;
-                gStatusLine[POS_MOD++] |= 0x51;
-                gStatusLine[POS_MOD++] |= 0x7F;
+                gStatusLine[POS_MOD++] = 0x7F;
+                gStatusLine[POS_MOD++] = 0x51;
+                gStatusLine[POS_MOD++] = 0x71;
+                gStatusLine[POS_MOD++] = 0x51;
+                gStatusLine[POS_MOD++] = 0x71;
+                gStatusLine[POS_MOD++] = 0x51;
+                gStatusLine[POS_MOD++] = 0x7F;
 
         }
     }
@@ -164,17 +156,21 @@ void UI_DisplayStatus()
             }
         } else {
             //memcpy(gStatusLine + POS_MOD, gFontS, sizeof(gFontS));
+            gStatusLine[POS_MOD++] = 0x7F;
+            gStatusLine[POS_MOD++] = 0x41;
             gStatusLine[POS_MOD++] = 0x63;
-            gStatusLine[POS_MOD++] = 0x36;
-            gStatusLine[POS_MOD++] = 0x1C;
-            gStatusLine[POS_MOD++] = 0x08;
-            gStatusLine[POS_MOD++] = 0x22;
-            gStatusLine[POS_MOD++] = 0x14;
-            gStatusLine[POS_MOD++] = 0x08;
+            gStatusLine[POS_MOD++] = 0x55;
+            gStatusLine[POS_MOD++] = 0x49;
             gStatusLine[POS_MOD++] = 0x63;
-            gStatusLine[POS_MOD++] = 0x36;
-            gStatusLine[POS_MOD++] = 0x1C;
-            gStatusLine[POS_MOD++] = 0x08;
+            gStatusLine[POS_MOD++] = 0x77;
+            gStatusLine[POS_MOD++] = 0x5D;
+            gStatusLine[POS_MOD++] = 0x49;
+            gStatusLine[POS_MOD++] = 0x63;
+            gStatusLine[POS_MOD++] = 0x77;
+            gStatusLine[POS_MOD++] = 0x5D;
+            gStatusLine[POS_MOD++] = 0x49;
+            gStatusLine[POS_MOD++] = 0x41;
+            gStatusLine[POS_MOD++] = 0x7F;
         }
     }
 
@@ -183,14 +179,14 @@ void UI_DisplayStatus()
 #ifdef ENABLE_FEAT_F4HWN_RX_TX_TIMER
     if (gSetting_set_tmr) {      
         if (gCurrentFunction == FUNCTION_TRANSMIT){
-            POS_MOD += 3;
+            POS_MOD += 2;
             convertTime(gStatusLine + POS_MOD, 0);
-            POS_MOD += 36;
+            POS_MOD += 35;
         }
         else if (FUNCTION_IsRx()) {
-            POS_MOD += 3;
+            POS_MOD += 2;
             convertTime(gStatusLine + POS_MOD, 1);
-            POS_MOD += 36;
+            POS_MOD += 35;
         }
     }
 #endif
@@ -232,13 +228,13 @@ void UI_DisplayStatus()
         gStatusLine[POS_F + 6] = 0x7F;
     }
     if (gEeprom.KEY_LOCK) {
-        gStatusLine[POS_F + 0] = 0x7C;
-        gStatusLine[POS_F + 1] = 0x7A;
-        gStatusLine[POS_F + 2] = 0x79;
-        gStatusLine[POS_F + 3] = 0x49;
-        gStatusLine[POS_F + 4] = 0x79;
-        gStatusLine[POS_F + 5] = 0x7A;
-        gStatusLine[POS_F + 6] = 0x7C;
+        gStatusLine[POS_LOCK + 0] = 0x7C;
+        gStatusLine[POS_LOCK + 1] = 0x7A;
+        gStatusLine[POS_LOCK + 2] = 0x79;
+        gStatusLine[POS_LOCK + 3] = 0x49;
+        gStatusLine[POS_LOCK + 4] = 0x79;
+        gStatusLine[POS_LOCK + 5] = 0x7A;
+        gStatusLine[POS_LOCK + 6] = 0x7C;
     }
 
 

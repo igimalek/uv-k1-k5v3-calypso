@@ -228,11 +228,22 @@ const char gSubMenu_NA[4] =
 
 const char* const gSubMenu_RXMode[] =
 {
-    "MAIN\nONLY",       // TX and RX on main only
-    "DUAL RX\nRESPOND", // Watch both and respond
-    "CROSS\nBAND",      // TX on main, RX on secondary
-    "MAIN TX\nDUAL RX"  // always TX on main, but RX on both
+    "MAIN\nONLY",       // 0 TX and RX on main only
+    "DUAL RX\nRESPOND", // 1 Watch both and respond
+    "CROSS\nBAND",      // 2 TX on main, RX on secondary
+    "MAIN TX\nDUAL RX"  // 3 always TX on main, but RX on both
 };
+
+
+/*const char* const gSubMenu_RXMode[] =
+{
+    "MAIN\nONLY",       // 0 -> 0   TX and RX on main only
+    "DUAL RX\nMAIN TX"  // 1 -> 3   always TX on main, but RX on both
+    "DUAL RX\nRESPOND", // 2 -> 1   Watch both and respond
+    "CROSS\nBAND",      // 3 -> 2   TX on main, RX on secondary
+};
+*/
+
 
 #ifdef ENABLE_VOICE
     const char gSubMenu_VOICE[][4] =
