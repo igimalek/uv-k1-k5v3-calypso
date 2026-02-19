@@ -296,9 +296,9 @@ const char gSubMenu_PONMSG[][8] =
     "SOUND",
 #else
     "FULL",
+    "VOLTAGE",
 #endif
     "MESSAGE",
-    "VOLTAGE",
     "NONE"
 };
 
