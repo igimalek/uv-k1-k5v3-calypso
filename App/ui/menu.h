@@ -123,7 +123,7 @@ enum
     MENU_SET_OFF,
 #endif
 #ifdef ENABLE_FEAT_F4HWN
-    MENU_SET_PWR,
+ //   MENU_SET_PWR,
     MENU_SKIP_BIRD,
     MENU_SET_TOT,
     MENU_SET_EOT,

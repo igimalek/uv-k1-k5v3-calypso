@@ -386,9 +386,9 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
 #endif
 
 #ifdef ENABLE_FEAT_F4HWN
-        case MENU_SET_PWR:
-            *pMax = ARRAY_SIZE(gSubMenu_SET_PWR) - 1;
-            break;
+      //  case MENU_SET_PWR:
+      //      *pMax = ARRAY_SIZE(gSubMenu_SET_PWR) - 1;
+      //      break;
 
         case MENU_SKIP_BIRD:            
              *pMax = ARRAY_SIZE(gSubMenu_OFF_ON) - 1;
@@ -903,10 +903,10 @@ void MENU_AcceptSetting(void)
 #endif
 
 #ifdef ENABLE_FEAT_F4HWN
-        case MENU_SET_PWR:
-            gSetting_set_pwr = gSubMenuSelection;
-            gRequestSaveChannel = 1;
-            break;
+     //   case MENU_SET_PWR:
+     //       gSetting_set_pwr = gSubMenuSelection;
+     //       gRequestSaveChannel = 1;
+     //       break;
         case MENU_SKIP_BIRD:
             gSkipBirdies = gSubMenuSelection;
             break;
@@ -1343,9 +1343,9 @@ void MENU_ShowCurrentSetting(void)
 #endif
 
 #ifdef ENABLE_FEAT_F4HWN
-        case MENU_SET_PWR:
-            gSubMenuSelection = gSetting_set_pwr;
-            break;
+    //    case MENU_SET_PWR:
+    //        gSubMenuSelection = gSetting_set_pwr;
+    //        break;
         case MENU_SKIP_BIRD:
              gSubMenuSelection = gSkipBirdies;  //mentanah
              break;
