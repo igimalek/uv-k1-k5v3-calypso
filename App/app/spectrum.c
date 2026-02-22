@@ -1202,19 +1202,23 @@ static void OnKeyDown(uint8_t key)
 #ifdef ENABLE_SCAN_RANGES
         if (!gScanRangeStart)
 #endif
+        {
         if(gUpDnButtonToLeftRight != 0)
-          UpdateCurrentFreq(false);
+            UpdateCurrentFreq(false);
         else
-          UpdateCurrentFreq(true);
+            UpdateCurrentFreq(true);
+        }
         break;
     case KEY_DOWN:
 #ifdef ENABLE_SCAN_RANGES
         if (!gScanRangeStart)
 #endif
+        {
         if(gUpDnButtonToLeftRight != 0)
-          UpdateCurrentFreq(true);
+            UpdateCurrentFreq(true);
         else
-          UpdateCurrentFreq(false);
+            UpdateCurrentFreq(false);
+        }
         break;
     case KEY_SIDE1:
         Blacklist();
@@ -1329,39 +1333,45 @@ void OnKeyDownStill(KEY_Code_t key)
     case KEY_9:
         UpdateDBMax(false);
         break;
-    case KEY_UP:
-        if (menuState)
-          if(gUpDnButtonToLeftRight != 0){
-           {
-            SetRegMenuValue(menuState, false);
-            break;
-           }
-            UpdateCurrentFreqStill(false);
-          }
-          else
-          {
-            SetRegMenuValue(menuState, true);
-            break;
-          }
-          UpdateCurrentFreqStill(true);
 
-        break;
-    case KEY_DOWN:
-        if (menuState)
-          if(gUpDnButtonToLeftRight != 0){
-           {
-            SetRegMenuValue(menuState, true);
-            break;
-           }
+    case KEY_UP:  
+        if(gUpDnButtonToLeftRight != 0){
+            if (menuState)
+            {
+                SetRegMenuValue(menuState, false);
+                break;
+            }
+            UpdateCurrentFreqStill(false);
+        }
+        else{
+            if (menuState)
+            {
+                SetRegMenuValue(menuState, true);
+                break;
+            }
             UpdateCurrentFreqStill(true);
-          }
-          else
-          {
-            SetRegMenuValue(menuState, false);
-            break;
-          }
-          UpdateCurrentFreqStill(false);
+        }
         break;
+
+    case KEY_DOWN:
+        if(gUpDnButtonToLeftRight != 0){
+            if (menuState)
+            {
+                SetRegMenuValue(menuState, true);
+                break;
+            }
+            UpdateCurrentFreqStill(true);
+        }
+        else{
+            if (menuState)
+            {
+                SetRegMenuValue(menuState, false);
+                break;
+            }
+            UpdateCurrentFreqStill(false);
+        }
+        break;
+
     case KEY_STAR:
         UpdateRssiTriggerLevel(true);
         break;
