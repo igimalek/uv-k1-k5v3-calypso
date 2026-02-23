@@ -505,6 +505,7 @@ void UI_DisplayMenu(void)
     UI_DisplayClear();
 
 
+
 #ifndef ENABLE_CUSTOM_MENU_LAYOUT
         // original menu layout
     for (i = 0; i < 3; i++)
@@ -1029,16 +1030,9 @@ case MENU_VOL:
             strcpy(String, gSubMenu_RESET[gSubMenuSelection]);
             break;
 
-        case MENU_F_LOCK:
-#ifdef ENABLE_FEAT_F4HWN
-            if(!gIsInSubMenu && gUnlockAllTxConfCnt>0 && gUnlockAllTxConfCnt<3)
-#else
-            if(!gIsInSubMenu && gUnlockAllTxConfCnt>0 && gUnlockAllTxConfCnt<10)
-#endif
-                strcpy(String, "READ\nMANUAL");
-            else
-                strcpy(String, gSubMenu_F_LOCK[gSubMenuSelection]);
-            break;
+case MENU_F_LOCK: // разрешить всё
+    strcpy(String, gSubMenu_F_LOCK[gSubMenuSelection]);
+    break;
 
         #ifdef ENABLE_F_CAL_MENU
             case MENU_F_CALI:

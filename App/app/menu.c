@@ -816,27 +816,19 @@ void MENU_AcceptSetting(void)
             break;
 #endif
 
-        case MENU_F_LOCK: {
-            if(gSubMenuSelection == F_LOCK_NONE) { // select 10 times to enable
-                gUnlockAllTxConfCnt++;
-#ifdef ENABLE_FEAT_F4HWN
-                if(gUnlockAllTxConfCnt < 3)
-#else
-                if(gUnlockAllTxConfCnt < 10)
+case MENU_F_LOCK: {
+    gSetting_F_LOCK = gSubMenuSelection;
+
+#ifdef ENABLE_FEAT_F4HWN // разрешить всё
+    if(gSetting_F_LOCK == F_LOCK_ALL) {
+        SETTINGS_ResetTxLock();
+    }
 #endif
-                    return;
-            }
-            else
-                gUnlockAllTxConfCnt = 0;
 
-            gSetting_F_LOCK = gSubMenuSelection;
+    gUnlockAllTxConfCnt = 0;   // сбрасываем счётчик
+    break;
 
-            #ifdef ENABLE_FEAT_F4HWN
-            if(gSetting_F_LOCK == F_LOCK_ALL) {
-                SETTINGS_ResetTxLock();
-            }
-            #endif
-            break;
+
         }
 #ifndef ENABLE_FEAT_F4HWN
         case MENU_200TX:

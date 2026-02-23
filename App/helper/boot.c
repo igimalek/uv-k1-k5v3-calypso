@@ -30,7 +30,7 @@
 #include "ui/menu.h"
 #include "ui/ui.h"
 
-BOOT_Mode_t BOOT_GetMode(void)
+BOOT_Mode_t BOOT_GetMode(void) //скрытое меню
 {
     unsigned int i;
     KEY_Code_t   Keys[2];
@@ -38,12 +38,11 @@ BOOT_Mode_t BOOT_GetMode(void)
     for (i = 0; i < 2; i++)
     {
         if (!GPIO_IsPttPressed())
-            return BOOT_MODE_NORMAL;   // PTT not pressed
+            return BOOT_MODE_NORMAL;   // PTT не нажат — обычный запуск
+
         Keys[i] = KEYBOARD_Poll();
         SYSTEM_DelayMs(20);
     }
-
-
 
     if (Keys[0] == Keys[1])
     {
@@ -52,8 +51,9 @@ BOOT_Mode_t BOOT_GetMode(void)
 
         gDebounceCounter = 2;
 
-        if (Keys[0] == KEY_SIDE1)
-            return BOOT_MODE_F_LOCK;
+        // УБРАЛИ запуск скрытого меню по PTT + FN
+        // if (Keys[0] == KEY_SIDE1)
+        //     return BOOT_MODE_F_LOCK;
 
         #ifdef ENABLE_AIRCOPY
             if (Keys[0] == KEY_SIDE2)
@@ -62,7 +62,7 @@ BOOT_Mode_t BOOT_GetMode(void)
     }
 
     return BOOT_MODE_NORMAL;
-}
+} // конец
 
 void BOOT_ProcessMode(BOOT_Mode_t Mode)
 {

@@ -120,39 +120,17 @@ void Main(void)
     BATTERY_GetReadings(false);
 
 
-    BOOT_Mode_t  BootMode = BOOT_GetMode();
+  BOOT_Mode_t  BootMode = BOOT_GetMode(); // теперь никогда не будет F_LOCK от PTT+FN
 
+    gF_LOCK = true;   // ← ВСЕГДА показываем скрытые пункты (F Lock + Tx 350 + ScraEn + BatCal + Reset и т.д.)
 
-
-    if (BootMode == BOOT_MODE_F_LOCK)
-    {
-
-        gF_LOCK = true;            // flag to say include the hidden menu items
-        #ifdef ENABLE_FEAT_F4HWN
-            gEeprom.KEY_LOCK = 0;
-            SETTINGS_SaveSettings();
-            #ifndef ENABLE_VOX
-                gMenuCursor = 67; // move to hidden section, fix me if change... !!! Remove VOX and Mic Bar
-            #else
-                gMenuCursor = 68; // move to hidden section, fix me if change... !!!
-            #endif
-
-            #ifdef ENABLE_NOAA
-                gMenuCursor += 1; // move to hidden section, fix me if change... !!!
-            #endif
-  
-            gSubMenuSelection = gSetting_F_LOCK;
-        #endif
-    }
-
-    // count the number of menu items
+    // count the number of menu items — теперь ВСЕ пункты меню
     gMenuListCount = 0;
     while (MenuList[gMenuListCount].name[0] != '\0') {
-        if(!gF_LOCK && MenuList[gMenuListCount].menu_id == FIRST_HIDDEN_MENU_ITEM)
-            break;
-
+        // УБРАЛИ условие if(!gF_LOCK && ... == FIRST_HIDDEN_MENU_ITEM) break;
+        // Теперь меню всегда полное, без обрезания
         gMenuListCount++;
-    }
+    }  //скрытое меню конец
 
     // wait for user to release all butts before moving on
     if (GPIO_IsPttPressed() ||
