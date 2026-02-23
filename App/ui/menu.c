@@ -74,9 +74,9 @@ const t_menu_item MenuList[] =
     #else
     {"BatVol",      MENU_VOL           },   
     #endif
-    #ifdef ENABLE_FEAT_F4HWN__
-    {"TXLock",      MENU_TX_LOCK       }, 
-    #endif
+    //#ifdef ENABLE_FEAT_F4HWN_
+    //{"TXLock",      MENU_TX_LOCK       }, 
+    //#endif
     {"ScAdd1",      MENU_S_ADD1        },
     {"ScAdd2",      MENU_S_ADD2        },
     {"ScAdd3",      MENU_S_ADD3        },
@@ -192,7 +192,7 @@ const uint8_t FIRST_HIDDEN_MENU_ITEM = MENU_F_LOCK;
 
 const char gSubMenu_TXP[][6] =
 {
-    "USER",
+    "OFF",
     "LOW 1",
     "LOW 2",
     "LOW 3",
@@ -1135,7 +1135,7 @@ case MENU_VOL:
             #endif
             break;
 
-        case MENU_TX_LOCK:
+      /*  case MENU_TX_LOCK:
             if(TX_freq_check(gEeprom.VfoInfo[gEeprom.TX_VFO].pTX->Frequency) == 0)
             {
                 strcpy(String, "Inside\nF Lock\nPlan");
@@ -1145,7 +1145,7 @@ case MENU_VOL:
                 strcpy(String, gSubMenu_OFF_ON[gSubMenuSelection]);
             }
             break;
-
+      */
         case MENU_SET_LCK:
             strcpy(String, gSubMenu_SET_LCK[gSubMenuSelection]);
             break;

@@ -86,7 +86,7 @@ enum {
 };
 
 enum {
-    OUTPUT_POWER_USER = 0,
+    OUTPUT_POWER_OFF = 0,
     OUTPUT_POWER_LOW1,
     OUTPUT_POWER_LOW2,
     OUTPUT_POWER_LOW3,

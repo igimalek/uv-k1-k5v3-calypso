@@ -552,9 +552,11 @@ void RADIO_ConfigureSquelchAndOutputPower(VFO_Info_t *pInfo)
     uint8_t Op = 0; // Low eeprom calibration data 
     uint8_t currentPower = pInfo->OUTPUT_POWER;
 
-    if(currentPower == OUTPUT_POWER_USER)
+    if(currentPower == OUTPUT_POWER_OFF)
     {
-        if(gSetting_set_pwr == 5)
+        AUDIO_PlayBeep(BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL);
+       /* 
+       if(gSetting_set_pwr == 5)
         {
             Op = 1; // Mid eeprom calibration data
         }
@@ -563,6 +565,7 @@ void RADIO_ConfigureSquelchAndOutputPower(VFO_Info_t *pInfo)
             Op = 2; // High eeprom calibration data
         }
         currentPower = gSetting_set_pwr;
+        */
     }
     else
     {
@@ -1274,6 +1277,11 @@ void RADIO_PrepareTX(void)
         State = VFO_STATE_TX_DISABLE;
     }
 #endif
+
+    if (gTxVfo->OUTPUT_POWER == OUTPUT_POWER_OFF) {
+        // not allowed to TX power is off
+        State = VFO_STATE_TX_DISABLE;
+    }
 
     if (State != VFO_STATE_NORMAL) {
         // TX not allowed
