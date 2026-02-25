@@ -911,7 +911,7 @@ void UI_DisplayMain(void)
             {
                 if(RxOnVfofrequency == frequency && !isMainOnly())
                 {
-                    UI_PrintStringSmallNormal(">>", 8, 0, line);
+                    UI_PrintStringSmallBold(">>", 8, 0, line);
                     //memcpy(p_line0 + 14, BITMAP_VFO_Default, sizeof(BITMAP_VFO_Default));
                 }
 
@@ -999,15 +999,15 @@ void UI_DisplayMain(void)
                     frequency = gEeprom.VfoInfo[vfo_num].pTX->Frequency;
             }
 
-            if (IS_MR_CHANNEL(gEeprom.ScreenChannel[vfo_num]))
-            {   // it's a channel
+if (IS_MR_CHANNEL(gEeprom.ScreenChannel[vfo_num]))
+            {     
 
                 uint8_t countList = 0;
                 uint8_t shiftList = 0;
 
                 if(gMR_ChannelExclude[gEeprom.ScreenChannel[vfo_num]] == false)
                 {
-                    // show the scan list assigment symbols
+                      
                     const ChannelAttributes_t att = gMR_ChannelAttributes[gEeprom.ScreenChannel[vfo_num]];
 
                     countList = att.scanlist1 + att.scanlist2 + att.scanlist3;
@@ -1041,48 +1041,44 @@ void UI_DisplayMain(void)
                     memcpy(p_line0 + 127 - (1 * 6), BITMAP_ScanListE, sizeof(BITMAP_ScanListE));
                 }
 
-
-
-                // compander symbol
 #ifndef ENABLE_BIG_FREQ
                 if (att.compander)
                     memcpy(p_line0 + 120 + LCD_WIDTH, BITMAP_compand, sizeof(BITMAP_compand));
 #else
-                // TODO:  // find somewhere else to put the symbol
+                  
 #endif
 
                 switch (gEeprom.CHANNEL_DISPLAY_MODE)
                 {
-                    case MDF_FREQUENCY: // show the channel frequency
+                    case MDF_FREQUENCY:   
                         sprintf(String, "%3u.%05u", frequency / 100000, frequency % 100000);
 #ifdef ENABLE_BIG_FREQ
                         if(frequency < _1GHz_in_KHz) {
-                            // show the remaining 2 small frequency digits
+                              
                             UI_PrintStringSmallNormal(String + 7, 113, 0, line + 1);
                             String[7] = 0;
-                            // show the main large frequency digits
+                              
                             UI_DisplayFrequency(String, 32, line, false);
                         }
                         else
 #endif
                         {
-                            // show the frequency in the main font
+                              
                             UI_PrintString(String, 32, 0, line, 8);
                         }
 
                         break;
 
-                    case MDF_CHANNEL:   // show the channel number
+                    case MDF_CHANNEL:     
                         sprintf(String, "CH-%03u", gEeprom.ScreenChannel[vfo_num] + 1);
                         UI_PrintString(String, 32, 0, line, 8);
                         break;
 
-                    case MDF_NAME:      // show the channel name
-                    case MDF_NAME_FREQ: // show the channel name and frequency
-
+                    case MDF_NAME:        
+                    case MDF_NAME_FREQ:   
+                        // --- 1. ИМЯ КАНАЛА (Верхняя строка VFO) ---
                         SETTINGS_FetchChannelName(String, gEeprom.ScreenChannel[vfo_num]);
-                        if (String[0] == 0)
-                        {   // no channel name, show the channel number instead
+                        if (String[0] == 0) {
                             sprintf(String, "CH-%03u", gEeprom.ScreenChannel[vfo_num] + 1);
                         }
 
@@ -1091,57 +1087,56 @@ void UI_DisplayMain(void)
                         }
                         else {
 #ifdef ENABLE_FEAT_F4HWN
-                            if (isMainOnly())
-                            {
-                                UI_PrintString(String, 32, 0, line, 8);
+                            if (isMainOnly()) {
+                                UI_PrintString(String, 32, 0, line, 8); 
                             }
-                            else
-                            {
-                                if(activeTxVFO == vfo_num) {
+                            else {
+#endif
+                                // Имя: Жирное для активного, обычное для неактивного
+                                if(activeTxVFO == vfo_num) 
                                     UI_PrintStringSmallBold(String, 32 + 4, 0, line);
-                                }
                                 else
-                                {
-                                    UI_PrintStringSmallNormal(String, 32 + 4, 0, line);     
-                                }
+                                    UI_PrintStringSmallNormal(String, 32 + 4, 0, line);
+#ifdef ENABLE_FEAT_F4HWN
                             }
-#else
-                            UI_PrintStringSmallBold(String, 32 + 4, 0, line);
 #endif
 
+                            // --- 2. НОМЕР КАНАЛА (Нижняя строка, Y = line + 1, X = 2) ---
+                            sprintf(String, "M%u", gEeprom.ScreenChannel[vfo_num] + 1);
+                            if (activeTxVFO == vfo_num) {
+                                UI_PrintStringSmallBold(String, 2, 0, line + 1);   // ЖИРНЫЙ номер
+                            } else {
+                                UI_PrintStringSmallNormal(String, 2, 0, line + 1); // ТОНКИЙ номер
+                            }
+
+                            // --- 3. ЧАСТОТА (Нижняя строка, Y = line + 1, X = 36) ---
+                            sprintf(String, "%03u.%05u", frequency / 100000, frequency % 100000);
 #ifdef ENABLE_FEAT_F4HWN
-                            if (isMainOnly())
-                            {
-                                sprintf(String, "%3u.%05u", frequency / 100000, frequency % 100000);
+                            if (isMainOnly()) {
                                 if(frequency < _1GHz_in_KHz) {
-                                    // show the remaining 2 small frequency digits
                                     UI_PrintStringSmallNormal(String + 7, 113, 0, line + 4);
                                     String[7] = 0;
-                                    // show the main large frequency digits
                                     UI_DisplayFrequency(String, 32, line + 3, false);
-                                }
-                                else
-                                {
-                                    // show the frequency in the main font
+                                } else {
                                     UI_PrintString(String, 32, 0, line + 3, 8);
                                 }
                             }
-                            else
-                            {
-                                sprintf(String, "%03u.%05u", frequency / 100000, frequency % 100000);
-                                UI_PrintStringSmallNormal(String, 32 + 4, 0, line + 1);
+                            else {
+#endif
+                                // Частота: Жирная для активного, обычная для неактивного
+                                if(activeTxVFO == vfo_num)
+                                    UI_PrintStringSmallBold(String, 32 + 4, 0, line + 1);
+                                else
+                                    UI_PrintStringSmallNormal(String, 32 + 4, 0, line + 1);
+#ifdef ENABLE_FEAT_F4HWN
                             }
-#else                           // show the channel frequency below the channel number/name
-                            sprintf(String, "%03u.%05u", frequency / 100000, frequency % 100000);
-                            UI_PrintStringSmallNormal(String, 32 + 4, 0, line + 1);
 #endif
                         }
-
                         break;
                 }
             }
             else
-            {   // frequency mode
+            {     
                 sprintf(String, "%3u.%05u", frequency / 100000, frequency % 100000);
 
 #ifdef ENABLE_BIG_FREQ
